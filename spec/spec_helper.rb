@@ -1,3 +1,8 @@
+if ENV['TRAVIS']
+  require 'simplecov'
+  SimpleCov.start
+end
+
 require 'bundler/setup'
 require 'rggen/core'
 

@@ -23,3 +23,11 @@ before_install:
 
 script:
   - bundle exec rake spec
+
+after_success:
+  - bundle exec codeclimate-test-reporter
+
+addons:
+  code_climate:
+    repo_token:
+      2f942f4a05296524cd98df81dff1ee549ddbbf39b1f0bd44e62212452affe5a1
