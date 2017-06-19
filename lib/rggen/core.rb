@@ -1,7 +1,3 @@
-require "rggen/core/version"
+require_relative 'core/version'
 
-module RgGen
-  module Core
-    # Your code goes here...
-  end
-end
+require_relative 'core/base/component'
