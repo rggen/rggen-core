@@ -2,6 +2,8 @@ module RgGen
   module Core
     module Base
       class Item
+        include InternalStruct
+
         def initialize(component, item_name)
           @component = component
           @item_name = item_name
