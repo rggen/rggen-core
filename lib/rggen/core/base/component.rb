@@ -24,8 +24,7 @@ module RgGen
         end
 
         def add_child(child)
-          return unless need_children?
-          children << child
+          need_children? && (children << child)
         end
 
         def add_item(key, item)
