@@ -7,6 +7,7 @@ module RgGen
         def initialize(component, item_name)
           @component = component
           @item_name = item_name
+          block_given? && yield(self)
         end
 
         attr_reader :component
