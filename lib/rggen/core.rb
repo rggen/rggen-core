@@ -9,3 +9,5 @@ require_relative 'core/base/item'
 require_relative 'core/base/item_factory'
 require_relative 'core/base/hierarchical_accessors'
 require_relative 'core/base/hierarchical_item_accessors'
+
+require_relative 'core/input_base/input_matcher'
