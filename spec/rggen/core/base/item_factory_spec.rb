@@ -86,7 +86,7 @@ module RgGen::Core::Base
 
       context "生成したアイテムオブジェクトが使用不可(Item#available?がfalseを返す)場合" do
         before do
-          item_class_a.class_eval { available? { false} }
+          item_class_a.class_eval { available? { false } }
         end
 
         it "コンポーネントに生成したアイテムを追加しない" do
