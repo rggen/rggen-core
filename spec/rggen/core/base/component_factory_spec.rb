@@ -8,10 +8,6 @@ module RgGen::Core::Base
           @target_component.new(parent, &block)
         end
 
-        def post_create(component)
-          component
-        end
-
         def finalize(component)
         end
 
