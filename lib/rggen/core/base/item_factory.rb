@@ -12,7 +12,7 @@ module RgGen
 
         def create_item(component, *args)
           select_item(*args).new(component, @item_name) do |item|
-            item.available? || return
+            item.available? || break
             block_given? && yield(item)
             component.add_item(@item_name, item)
           end
