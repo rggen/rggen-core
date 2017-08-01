@@ -1,6 +1,7 @@
 require_relative 'core/version'
 
-require_relative 'core/core_extensions/facets'
+require_relative 'core/facets'
+require_relative 'core/core_extensions/object'
 
 require_relative 'core/base/internal_struct'
 require_relative 'core/base/component'
@@ -11,3 +12,4 @@ require_relative 'core/base/hierarchical_accessors'
 require_relative 'core/base/hierarchical_item_accessors'
 
 require_relative 'core/input_base/input_matcher'
+require_relative 'core/input_base/item'
