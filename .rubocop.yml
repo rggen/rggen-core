@@ -1,0 +1,12 @@
+AllCops:
+  Exclude:
+    - spec/**/*
+
+Style/EndOfLine:
+  EnforcedStyle: lf
+
+Style/Alias:
+  EnforcedStyle: prefer_alias_method
+
+Style/EmptyMethod:
+  EnforcedStyle: expanded

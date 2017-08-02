@@ -102,12 +102,9 @@ module RgGen
         end
 
         def default_field_method(field_name, default)
-          variable_name =
-            if field_name[-1] == '?'
-              field_name[0..-2].variablize
-            else
-              field_name.variablize
-            end
+          variable_name = (
+            (field_name[-1] == '?' && field_name[0..-2]) || field_name
+          ).variablize
           if instance_variable_defined?(variable_name)
             instance_variable_get(variable_name)
           else

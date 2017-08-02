@@ -17,9 +17,9 @@ module RgGen
 
           def inherited(subclass)
             super
-            subclass.instance_variable_set(
+            :@internal_structs && subclass.instance_variable_set(
               :@internal_structs, Hash[internal_structs]
-            ) if instance_variable_defined?(:@internal_structs)
+            )
           end
         end
 

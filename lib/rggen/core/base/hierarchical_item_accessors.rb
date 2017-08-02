@@ -68,7 +68,7 @@ module RgGen
 
         private
 
-        ACCESSOR_EXTENSIONS  = [
+        ACCESSOR_EXTENSIONS = [
           RegisterMap, RegisterBlock, Register, BitField
         ].freeze
 

@@ -3,7 +3,7 @@ module RgGen
     module Base
       class ItemFactory
         def initialize(item_name)
-          @item_name  = item_name
+          @item_name = item_name
           block_given? && yield(self)
         end
 
