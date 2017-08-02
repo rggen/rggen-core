@@ -71,18 +71,26 @@ module RgGen::Core::Base
 
     describe "#add_item" do
       let(:component) { Component.new }
-      let(:items) { {foo: Object.new, bar: Object.new} }
+
+      let(:items) do
+        [:foo, :bar].each_with_object({}) do |item_name, hash|
+          hash[item_name] = Object.new.tap do |item|
+            allow(item).to receive(:item_name).and_return(item_name)
+          end
+        end
+      end
 
       before do
-        items.each { |k, i| component.add_item(k, i) }
+        items.each_value { |item| component.add_item(item) }
       end
 
       it "アイテムコンポーネントを追加する" do
-        aggregate_failures do
-          expect(component.items).to match [eql(items[:foo]), eql(items[:bar])]
-          expect(component.item(:foo)).to eql items[:foo]
-          expect(component.item(:bar)).to eql items[:bar]
-        end
+        expect(component.items).to match [equal(items[:foo]), equal(items[:bar])]
+      end
+
+      specify "追加したアイテムは、アイテム名で参照できる" do
+        expect(component.item(:foo)).to equal items[:foo]
+        expect(component.item(:bar)).to equal items[:bar]
       end
     end
   end

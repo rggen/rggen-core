@@ -14,7 +14,7 @@ module RgGen
           select_item(*args).new(component, @item_name) do |item|
             item.available? || break
             block_given? && yield(item)
-            component.add_item(@item_name, item)
+            component.add_item(item)
           end
         end
 

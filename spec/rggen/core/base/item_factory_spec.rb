@@ -50,7 +50,7 @@ module RgGen::Core::Base
       it "対象アイテムを生成し、コンポーネントに追加する" do
         allow(component).to receive(:add_item)
         item_factory.create_item(component)
-        expect(component).to have_received(:add_item).with(item_name, equal(created_items.first))
+        expect(component).to have_received(:add_item).with(equal(created_items.first))
       end
 
       it "生成したアイテムにアイテム名を付与する" do

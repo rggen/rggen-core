@@ -27,8 +27,8 @@ module RgGen
           need_children? && (children << child)
         end
 
-        def add_item(key, item)
-          @items[key] = item
+        def add_item(item)
+          @items[item.item_name] = item
         end
 
         def items
