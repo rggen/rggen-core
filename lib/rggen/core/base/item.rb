@@ -3,6 +3,7 @@ module RgGen
     module Base
       class Item
         include InternalStruct
+        extend Forwardable
 
         def initialize(component, item_name)
           @component = component

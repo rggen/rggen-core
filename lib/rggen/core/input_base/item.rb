@@ -57,22 +57,14 @@ module RgGen
           export_instance_variable(:@match_automatically, subclass)
         end
 
-        def fields
-          self.class.fields
-        end
+        def_class_delegator :fields
+        def_class_delegator :active_item?
+        def_class_delegator :passive_item?
 
         def build(*args)
           return unless self.class.builders
           pattern_match(args.last) if self.class.match_automatically?
           self.class.builders.each { |b| instance_exec(*args, &b) }
-        end
-
-        def active_item?
-          self.class.active_item?
-        end
-
-        def passive_item?
-          self.class.passive_item?
         end
 
         def validate
