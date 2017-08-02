@@ -2,6 +2,8 @@ module RgGen
   module Core
     module Base
       class Component
+        include SingleForwardable
+
         def initialize(parent = nil)
           @parent = parent
           @children = []
