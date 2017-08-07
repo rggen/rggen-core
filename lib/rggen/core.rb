@@ -12,6 +12,7 @@ require_relative 'core/base/item_factory'
 require_relative 'core/base/hierarchical_accessors'
 require_relative 'core/base/hierarchical_item_accessors'
 
+require_relative 'core/input_base/input_value'
 require_relative 'core/input_base/input_matcher'
 require_relative 'core/input_base/component'
 require_relative 'core/input_base/item'
