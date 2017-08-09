@@ -10,3 +10,7 @@ Style/Alias:
 
 Style/EmptyMethod:
   EnforcedStyle: expanded
+
+Style/OptionalArguments:
+  Exclude:
+    - lib/rggen/core/input_base/input_data.rb
