@@ -6,8 +6,6 @@ engines:
       - ruby:
   fixme:
     enabled: true
-  reek:
-    enabled: true
   rubocop:
     enabled: true
     channel: rubocop-0-48
