@@ -67,6 +67,11 @@ module RgGen::Core::InputBase
         expect(foo_data).to have_value :foo_2, foo_values[:foo_2], position
       end
 
+      it "入力値名が文字列でも入力値を設定できる" do
+        foo_data.value 'foo_0', foo_values[:foo_0]
+        expect(foo_data).to have_value :foo_0, foo_values[:foo_0]
+      end
+
       it "インスタンス時に指定した名前を持たない入力値は設定しない" do
         foo_data.value :bar_0, bar_values[:bar_0]
         foo_data.value :qux_0, 0

@@ -12,8 +12,9 @@ module RgGen
         end
 
         def value(value_name, value, position = nil)
-          return unless valid_value?(value_name)
-          @values[value_name] =
+          symbolized_name = value_name.to_sym
+          return unless valid_value?(symbolized_name)
+          @values[symbolized_name] =
             case value
             when InputValue
               value
@@ -61,13 +62,13 @@ module RgGen
           end
         end
 
-        DEFAULT_CALLER_FRAME = 3
-        CALLER_FRAME_VIA_DOCILE = 4
-
         def value_setter(value_name, value, position)
           position ||= get_position_from_caller
           value(value_name, value, position)
         end
+
+        DEFAULT_CALLER_FRAME = 3
+        CALLER_FRAME_VIA_DOCILE = 4
 
         def get_position_from_caller
           caller_locations(@caller_frame || DEFAULT_CALLER_FRAME, 1).first
