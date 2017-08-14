@@ -63,8 +63,9 @@ module RgGen
 
         def build(*args)
           return unless self.class.builders
-          pattern_match(args.last) if self.class.match_automatically?
-          self.class.builders.each { |b| instance_exec(*args, &b) }
+          extracted_args = extract_last_arg(args)
+          pattern_match(extracted_args.last) if self.class.match_automatically?
+          self.class.builders.each { |b| instance_exec(*extracted_args, &b) }
         end
 
         def validate
@@ -75,6 +76,14 @@ module RgGen
         end
 
         private
+
+        def extract_last_arg(args)
+          @position = args.last.position
+          Array[*args.thru(0, -2), args.last.value].compact
+        end
+
+        attr_reader :position
+        private :position
 
         def pattern_match(rhs)
           input_matcher = self.class.input_matcher

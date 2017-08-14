@@ -10,6 +10,10 @@ module RgGen::Core::InputBase
       define_item(base, &body).new(RgGen::Core::Base::Component.new, :item)
     end
 
+    def create_input_value(value, position = nil)
+      InputValue.new(value, position)
+    end
+
     describe ".field" do
       matcher :have_field do |field_name, *field_value|
         match do |item|
@@ -250,13 +254,13 @@ module RgGen::Core::InputBase
     describe "#build" do
       let(:item) do
         create_item do
-          build { |s| foo(s) }
+          build { |*args| foo(*args) }
         end
       end
 
       let(:child_item) do
         create_item(item.class) do
-          build { |s| bar(s) }
+          build { |*args| bar(*args) }
         end
       end
 
@@ -264,22 +268,49 @@ module RgGen::Core::InputBase
         create_item(child_item.class)
       end
 
-      let(:source) { Object.new }
+      let(:value) { Object.new }
+
+      let(:position) { Struct.new(:x, :y).new(0, 1) }
+
+      let(:input_value) { create_input_value(value, position) }
+
+      let(:other_value) { Object.new }
+
+      let(:other_position) { Struct.new(:a, :b).new(2, 3) }
+
+      let(:other_input_value) { create_input_value(other_value, other_position) }
 
       it ".buildで登録されたブロックを実行し、アイテムの組み立てを行う" do
-        expect(item).to receive(:foo).with(equal(source))
-        item.build(source)
+        expect(item).to receive(:foo)
+        item.build(input_value)
+      end
+
+      specify "入力データの#valueが組み立てブロックに渡される" do
+        expect(item).to receive(:foo).with(equal(value))
+        item.build(input_value)
+      end
+
+      specify "入力データの#positionは、アイテム内に#positionとして保持される" do
+        allow(item).to receive(:foo)
+        item.build(input_value)
+        expect(item.send(:position)).to eq position
+      end
+
+      specify "#value/#positionの取り出しは、末尾の入力値に対して行われる" do
+        expect(item).to receive(:foo).with(equal(other_input_value), equal(value))
+        item.build(other_input_value, input_value)
+        expect(item.send(:position)).to eq position
       end
 
       specify "登録された組み立てブロックは、継承される" do
-        expect(grandchild_item).to receive(:foo).with(equal(source))
-        expect(grandchild_item).to receive(:bar).with(equal(source))
-        grandchild_item.build(source)
+        expect(grandchild_item).to receive(:foo).with(equal(value))
+        expect(grandchild_item).to receive(:bar).with(equal(value))
+        grandchild_item.build(input_value)
       end
 
       it "組み立てブロックの登録がなくても、実行できる" do
         expect {
-          create_item.build(source)
+          create_item.build(input_value)
         }.not_to raise_error
       end
 
@@ -389,6 +420,8 @@ module RgGen::Core::InputBase
       end
 
       describe "match_automaticallyオプション" do
+        let(:input_values) { [:foo, :bar].map { |value| create_input_value(value) } }
+
         context "trueが設定された場合" do
           let(:item) do
             create_item do
@@ -399,7 +432,7 @@ module RgGen::Core::InputBase
 
           it "#build実行時に、自動で末尾の引数に対して一致比較を行う" do
             expect(item).to receive(:pattern_match).with(:bar)
-            item.build(:foo, :bar)
+            item.build(*input_values)
           end
         end
 
@@ -413,7 +446,7 @@ module RgGen::Core::InputBase
 
           it "#build実行時に、自動で一致比較を行わない" do
             expect(item).not_to receive(:pattern_match)
-            item.build(:foo, :bar)
+            item.build(*input_values)
           end
         end
 
@@ -427,7 +460,7 @@ module RgGen::Core::InputBase
 
           it "#build実行時に、自動で一致比較を行わない" do
             expect(item).not_to receive(:pattern_match)
-            item.build(:foo, :bar)
+            item.build(*input_values)
           end
         end
       end
@@ -437,7 +470,7 @@ module RgGen::Core::InputBase
           input_pattern %r{foo}, match_automatically: true
           build {}
         })
-        item.build('foo')
+        item.build(create_input_value(:foo))
         expect(item.send(:pattern_matched?)).to be true
       end
     end
