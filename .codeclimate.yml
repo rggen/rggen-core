@@ -1,4 +1,13 @@
 engines:
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - ruby:
+  fixme:
+    enabled: true
+  reek:
+    enabled: true
   rubocop:
     enabled: true
     channel: rubocop-0-48
