@@ -232,5 +232,54 @@ module RgGen::Core::InputBase
         end
       end
     end
+
+    describe "#load_file" do
+      let(:foo_data) { InputData.new(:foo, valid_value_list) }
+
+      let(:bar_data) { foo_data.children[0] }
+
+      let(:foo_rb) do
+        <<'CODE'
+value :foo_0, :foo_0
+foo_1 :foo_1
+child :bar do
+  load_file 'bar.rb'
+end
+CODE
+      end
+
+      let(:bar_rb) do
+        <<'CODE'
+value :bar_0, :bar_0
+
+bar_1 :bar_1
+CODE
+      end
+
+      let(:position_foo_1) { foo_data[:foo_1].position }
+
+      let(:position_bar_1) { bar_data[:bar_1].position }
+
+      before do
+        allow(File).to receive(:binread).with('foo.rb').once.and_return(foo_rb)
+        allow(File).to receive(:binread).with('bar.rb').once.and_return(bar_rb)
+      end
+
+      before do
+        foo_data.load_file('foo.rb')
+      end
+
+      it "フィアルを読み込んで、自身の組み立てを行う" do
+        expect(foo_data).to  have_value(:foo_0, :foo_0).
+                         and have_value(:foo_1, :foo_1)
+        expect(bar_data).to  have_value(:bar_0, :bar_0).
+                         and have_value(:bar_1, :bar_1)
+      end
+
+      it "読み出し元のファイルの位置情報がInputValue#positionに記録される" do
+        expect(position_foo_1).to have_attributes(path: 'foo.rb', lineno: 2)
+        expect(position_bar_1).to have_attributes(path: 'bar.rb', lineno: 3)
+      end
+    end
   end
 end

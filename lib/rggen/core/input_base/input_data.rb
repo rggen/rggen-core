@@ -40,10 +40,15 @@ module RgGen
 
         def child(name, value_list = nil, &block)
           InputData.new(name, @valid_value_list) do |child_data|
-            block && process_build_block(child_data, block)
+            block && child_data.build_by_block(block)
             value_list && child_data.values(value_list)
             @children << child_data
           end
+        end
+
+        def load_file(file)
+          contents = File.binread(file)
+          build_by_block(eval("proc { #{contents} }", binding, file))
         end
 
         private
@@ -67,19 +72,15 @@ module RgGen
           value(value_name, value, position)
         end
 
-        DEFAULT_CALLER_FRAME = 3
-        CALLER_FRAME_VIA_DOCILE = 4
-
         def get_position_from_caller
-          caller_locations(@caller_frame || DEFAULT_CALLER_FRAME, 1).first
+          locations = caller_locations(3, 2)
+          locations[0].path.include?('docile') ? locations[1] : locations[0]
         end
 
-        def process_build_block(child_data, block)
-          child_data.instance_variable_set(
-            :@caller_frame, CALLER_FRAME_VIA_DOCILE
-          )
-          Docile.dsl_eval(child_data, &block)
-          child_data.remove_instance_variable(:@caller_frame)
+        protected
+
+        def build_by_block(block)
+          Docile.dsl_eval(self, &block)
         end
       end
     end
