@@ -261,6 +261,7 @@ CODE
       let(:position_bar_1) { bar_data[:bar_1].position }
 
       before do
+        allow(File).to receive(:binread).and_call_original
         allow(File).to receive(:binread).with('foo.rb').once.and_return(foo_rb)
         allow(File).to receive(:binread).with('bar.rb').once.and_return(bar_rb)
       end
@@ -279,6 +280,14 @@ CODE
       it "読み出し元のファイルの位置情報がInputValue#positionに記録される" do
         expect(position_foo_1).to have_attributes(path: 'foo.rb', lineno: 2)
         expect(position_bar_1).to have_attributes(path: 'bar.rb', lineno: 3)
+      end
+
+      context "指定したファイルが存在しない場合" do
+        it "RgGen::LoadErrorを起こす" do
+          expect {
+            foo_data.load_file('baz.rb')
+          }.to raise_error RgGen::Core::LoadError, 'cannot load such file -- baz.rb'
+        end
       end
     end
   end

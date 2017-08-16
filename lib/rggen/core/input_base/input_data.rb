@@ -32,7 +32,7 @@ module RgGen
         end
 
         def values(value_list = nil)
-          Hash(value_list).each { |n, v| value(n, v) }
+          value_list && Hash(value_list).each { |n, v| value(n, v) }
           @values
         end
 
@@ -40,15 +40,20 @@ module RgGen
 
         def child(name, value_list = nil, &block)
           InputData.new(name, @valid_value_list) do |child_data|
-            block && child_data.build_by_block(block)
-            value_list && child_data.values(value_list)
+            child_data.build_by_block(block)
+            child_data.values(value_list)
             @children << child_data
           end
         end
 
         def load_file(file)
-          contents = File.binread(file)
-          build_by_block(eval("proc { #{contents} }", binding, file))
+          contents =
+            begin
+              File.binread(file)
+            rescue
+              raise RgGen::Core::LoadError.new(file)
+            end
+          build_by_block(binding.eval("proc { #{contents} }", file))
         end
 
         private
@@ -68,11 +73,11 @@ module RgGen
         end
 
         def value_setter(value_name, value, position)
-          position ||= get_position_from_caller
+          position ||= position_from_caller
           value(value_name, value, position)
         end
 
-        def get_position_from_caller
+        def position_from_caller
           locations = caller_locations(3, 2)
           locations[0].path.include?('docile') ? locations[1] : locations[0]
         end
@@ -80,7 +85,7 @@ module RgGen
         protected
 
         def build_by_block(block)
-          Docile.dsl_eval(self, &block)
+          block && Docile.dsl_eval(self, &block)
         end
       end
     end

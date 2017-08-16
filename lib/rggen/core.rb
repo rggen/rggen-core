@@ -6,6 +6,8 @@ require_relative 'core/facets'
 require_relative 'core/core_extensions/object'
 require_relative 'core/core_extensions/forwardable'
 
+require_relative 'core/exceptions'
+
 require_relative 'core/base/internal_struct'
 require_relative 'core/base/component'
 require_relative 'core/base/component_factory'

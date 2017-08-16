@@ -2,15 +2,18 @@ AllCops:
   Exclude:
     - spec/**/*
 
-Style/EndOfLine:
-  EnforcedStyle: lf
-
 Style/Alias:
   EnforcedStyle: prefer_alias_method
 
 Style/EmptyMethod:
   EnforcedStyle: expanded
 
+Style/EndOfLine:
+  EnforcedStyle: lf
+
 Style/OptionalArguments:
   Exclude:
     - lib/rggen/core/input_base/input_data.rb
+
+Style/RaiseArgs:
+  EnforcedStyle: compact
