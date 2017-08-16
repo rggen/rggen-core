@@ -19,10 +19,7 @@ module RgGen
           parent = (child_factory? && args.first) || nil
           sources = preprocess((child_factory? && args.from(1)) || args)
           create_component(parent, *sources) do |component|
-            create_items? && create_items(component, *sources)
-            child_factory? && parent.add_child(component)
-            create_children?(component) && create_children(component, *sources)
-            root_factory? && finalize(component)
+            build_component(parent, component, sources)
           end
         end
 
@@ -34,6 +31,13 @@ module RgGen
 
         def child_factory?
           !@root_factory
+        end
+
+        def build_component(parent, component, sources)
+          create_items(component, *sources) if create_items?
+          parent.add_child(component) if child_factory?
+          create_children(component, *sources) if create_children?(component)
+          finalize(component) if root_factory?
         end
 
         def create_items?
