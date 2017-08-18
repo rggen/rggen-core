@@ -48,4 +48,10 @@ module RgGen::Core::InputBase
       end
     end
   end
+
+  describe NilValue do
+    it "空の入力値である" do
+      expect(NilValue).to be_empty_value
+    end
+  end
 end

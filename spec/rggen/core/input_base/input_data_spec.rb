@@ -5,7 +5,7 @@ module RgGen::Core::InputBase
     matcher :have_value do |name, value = nil, position = nil|
       match do |data|
         @actual = data[name]
-        return false unless @actual
+        return false if @actual.equal?(NilValue)
         return false unless InputValue === @actual
         return false if value && @actual.value != value
         return false if position && !match_position?(@actual.position, position)
@@ -88,6 +88,16 @@ module RgGen::Core::InputBase
         expect(foo_data).to have_value :foo_0, foo_values[:foo_0]
         expect(foo_data).to have_value :foo_1, foo_values[:foo_1], position
         expect(foo_data).to have_value :foo_2, foo_values[:foo_2], position
+      end
+    end
+
+    describe "#[]" do
+      let(:foo_data) { InputData.new(:foo, valid_value_list) }
+
+      context "存在しない入力値を指定した場合" do
+        it "NilValueを返す" do
+          expect(foo_data[:bar_0]).to be NilValue
+        end
       end
     end
 

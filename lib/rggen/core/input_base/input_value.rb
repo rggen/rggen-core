@@ -16,6 +16,8 @@ module RgGen
           false
         end
       end
+
+      NilValue = InputValue.new(nil, nil).freeze
     end
   end
 end

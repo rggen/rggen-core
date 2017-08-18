@@ -5,7 +5,7 @@ module RgGen
         def initialize(name, valid_value_list)
           @name = name
           @valid_value_list = valid_value_list
-          @values = {}
+          @values = Hash.new(NilValue)
           @children = []
           define_setter_methods
           block_given? && yield(self)
