@@ -47,12 +47,7 @@ module RgGen
         end
 
         def load_file(file)
-          contents =
-            begin
-              File.binread(file)
-            rescue
-              raise RgGen::Core::LoadError.new(file)
-            end
+          contents = File.binread(file)
           build_by_block(binding.eval("proc { #{contents} }", file))
         end
 
