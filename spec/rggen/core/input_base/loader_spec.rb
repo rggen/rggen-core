@@ -41,8 +41,14 @@ module RgGen::Core::InputBase
             binding.eval(File.read(file))
           end
           def form(read_data)
-            input_data.values read_data['foo']
-            input_data.bar read_data['bar']
+            input_data.values foo_data(read_data)
+            input_data.bar bar_data(read_data)
+          end
+          def foo_data(read_data)
+            Hash[valid_value_list[:foo].zip(read_data[0])]
+          end
+          def bar_data(read_data)
+            Hash[valid_value_list[:bar].zip(read_data[1])]
           end
         end
       end
@@ -68,10 +74,9 @@ module RgGen::Core::InputBase
 
       let(:file_contents) do
         <<'FILE'
-{
-  'foo' => {'foo_0' => 0, 'foo_1' => 1},
-  'bar' => {'bar_0' => 2, 'bar_1' => 3}
-}
+[
+  [0, 1], [2, 3]
+]
 FILE
       end
 
@@ -83,12 +88,12 @@ FILE
       end
 
       it "指定されたファイルを読み出す" do
-        loader.load_file(file_name, input_data)
+        loader.load_file(file_name, input_data, valid_value_list)
         expect(File).to have_received(:read).with(file_name)
       end
 
       context "ファイル読み出しに成功した場合" do
-        before { loader.load_file(file_name, input_data) }
+        before { loader.load_file(file_name, input_data, valid_value_list) }
 
         let(:foo_values) do
           {}.tap do |values|
@@ -113,7 +118,7 @@ FILE
 
         it "LoadErrorを起こす" do
           expect {
-            loader.load_file(invalid_file_name, input_data)
+            loader.load_file(invalid_file_name, input_data, valid_value_list)
           }.to raise_error RgGen::Core::LoadError, "cannot load such file -- #{invalid_file_name}"
         end
       end

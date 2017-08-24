@@ -12,13 +12,14 @@ module RgGen
             @supported_types.any? { |type| type.casecmp(file_ext).zero? }
           end
 
-          def load_file(file, input_data)
-            new(input_data).load_file(file)
+          def load_file(file, input_data, valid_value_list)
+            new(input_data, valid_value_list).load_file(file)
           end
         end
 
-        def initialize(input_data)
+        def initialize(input_data, valid_value_list)
           @input_data = input_data
+          @valid_value_list = valid_value_list
         end
 
         def load_file(file)
@@ -33,6 +34,11 @@ module RgGen
 
         attr_reader :input_data
         private :input_data
+
+        attr_reader :valid_value_list
+        private :valid_value_list
+
+        private
 
         def form(_read_data)
         end
