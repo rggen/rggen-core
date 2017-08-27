@@ -45,10 +45,10 @@ module RgGen::Core::InputBase
             input_data.bar bar_data(read_data)
           end
           def foo_data(read_data)
-            Hash[valid_value_list[:foo].zip(read_data[0])]
+            Hash[valid_value_lists[0].zip(read_data[0])]
           end
           def bar_data(read_data)
-            Hash[valid_value_list[:bar].zip(read_data[1])]
+            Hash[valid_value_lists[1].zip(read_data[1])]
           end
         end
       end
@@ -56,21 +56,16 @@ module RgGen::Core::InputBase
       let(:input_data) do
         Class.new(InputData) do
           def initialize(valid_value_list)
-            super(:foo, valid_value_list)
+            super(valid_value_list)
           end
 
           def bar(value_list = nil, &block)
-            child(:bar, value_list, &block)
+            child(value_list, &block)
           end
-        end.new(valid_value_list)
+        end.new(valid_value_lists)
       end
 
-      let(:valid_value_list) do
-        {
-          foo: [:foo_0, :foo_1],
-          bar: [:bar_0, :bar_1],
-        }
-      end
+      let(:valid_value_lists) { [[:foo_0, :foo_1], [:bar_0, :bar_1]] }
 
       let(:file_contents) do
         <<'FILE'
@@ -88,12 +83,12 @@ FILE
       end
 
       it "指定されたファイルを読み出す" do
-        loader.load_file(file_name, input_data, valid_value_list)
+        loader.load_file(file_name, input_data, valid_value_lists)
         expect(File).to have_received(:read).with(file_name)
       end
 
       context "ファイル読み出しに成功した場合" do
-        before { loader.load_file(file_name, input_data, valid_value_list) }
+        before { loader.load_file(file_name, input_data, valid_value_lists) }
 
         let(:foo_values) do
           {}.tap do |values|
@@ -118,7 +113,7 @@ FILE
 
         it "LoadErrorを起こす" do
           expect {
-            loader.load_file(invalid_file_name, input_data, valid_value_list)
+            loader.load_file(invalid_file_name, input_data, valid_value_lists)
           }.to raise_error RgGen::Core::LoadError, "cannot load such file -- #{invalid_file_name}"
         end
       end

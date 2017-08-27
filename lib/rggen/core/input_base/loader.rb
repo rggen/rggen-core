@@ -17,9 +17,9 @@ module RgGen
           end
         end
 
-        def initialize(input_data, valid_value_list)
+        def initialize(input_data, valid_value_lists)
           @input_data = input_data
-          @valid_value_list = valid_value_list
+          @valid_value_lists = valid_value_lists
         end
 
         def load_file(file)
@@ -35,8 +35,8 @@ module RgGen
         attr_reader :input_data
         private :input_data
 
-        attr_reader :valid_value_list
-        private :valid_value_list
+        attr_reader :valid_value_lists
+        private :valid_value_lists
 
         private
 

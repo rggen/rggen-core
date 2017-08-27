@@ -2,9 +2,8 @@ module RgGen
   module Core
     module InputBase
       class InputData
-        def initialize(name, valid_value_list)
-          @name = name
-          @valid_value_list = valid_value_list
+        def initialize(valid_value_lists)
+          @valid_value_lists = valid_value_lists
           @values = Hash.new(NilValue)
           @children = []
           define_setter_methods
@@ -38,8 +37,8 @@ module RgGen
 
         attr_reader :children
 
-        def child(name, value_list = nil, &block)
-          InputData.new(name, @valid_value_list) do |child_data|
+        def child(value_list = nil, &block)
+          InputData.new(@valid_value_lists.from(1)) do |child_data|
             child_data.build_by_block(block)
             child_data.values(value_list)
             @children << child_data
@@ -54,11 +53,11 @@ module RgGen
         private
 
         def valid_value?(value_name)
-          @valid_value_list[@name].include?(value_name)
+          @valid_value_lists.first.include?(value_name)
         end
 
         def define_setter_methods
-          @valid_value_list[@name].each(&method(:define_setter_method))
+          @valid_value_lists.first.each(&method(:define_setter_method))
         end
 
         def define_setter_method(value_name)
