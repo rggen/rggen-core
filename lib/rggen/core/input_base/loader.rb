@@ -23,13 +23,8 @@ module RgGen
         end
 
         def load_file(file)
-          read_data =
-            begin
-              read_file(file)
-            rescue
-              raise Core::LoadError.new(file)
-            end
-          form(read_data)
+          File.readable?(file) || (raise Core::LoadError.new(file))
+          form(read_file(file))
         end
 
         attr_reader :input_data

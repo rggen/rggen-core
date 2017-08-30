@@ -55,8 +55,8 @@ module RgGen::Core::InputBase
 
       let(:input_data) do
         Class.new(InputData) do
-          def initialize(valid_value_list)
-            super(valid_value_list)
+          def initialize(valid_value_lists)
+            super(valid_value_lists)
           end
 
           def bar(value_list = nil, &block)
@@ -78,7 +78,7 @@ FILE
       let(:file_name) { 'foo_bar.rb' }
 
       before do
-        allow(File).to receive(:read).and_call_original
+        allow(File).to receive(:readable?).with(file_name).and_return(true)
         allow(File).to receive(:read).with(file_name).and_return(file_contents)
       end
 
@@ -108,8 +108,12 @@ FILE
         end
       end
 
-      context "ファイル読み出しに失敗した場合" do
+      context "ファイルが存在しない場合" do
         let(:invalid_file_name) { 'baz.rb' }
+
+        before do
+          allow(File).to receive(:readable?).with(invalid_file_name).and_return(false)
+        end
 
         it "LoadErrorを起こす" do
           expect {
