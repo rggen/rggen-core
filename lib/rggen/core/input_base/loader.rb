@@ -23,7 +23,9 @@ module RgGen
         end
 
         def load_file(file)
-          File.readable?(file) || (raise Core::LoadError.new(file))
+          File.readable?(file) || (
+            raise Core::LoadError.new('cannot load such file', file)
+          )
           form(read_file(file))
         end
 

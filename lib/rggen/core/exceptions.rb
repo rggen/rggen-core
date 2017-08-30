@@ -4,12 +4,13 @@ module RgGen
     end
 
     class LoadError < RgGenError
-      def initialize(path)
+      def initialize(message, path)
+        super(message)
         @path = path
       end
 
       def to_s
-        "cannot load such file -- #{@path}"
+        "#{super.to_s} -- #{@path}"
       end
     end
   end
