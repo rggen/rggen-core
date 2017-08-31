@@ -10,7 +10,7 @@ module RgGen
       end
 
       def to_s
-        "#{super.to_s} -- #{@path}"
+        "#{super} -- #{@path}"
       end
     end
   end
