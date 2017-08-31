@@ -29,16 +29,13 @@ module RgGen
           form(read_file(file))
         end
 
-        attr_reader :input_data
-        private :input_data
-
-        attr_reader :valid_value_lists
-        private :valid_value_lists
-
         private
 
         def form(_read_data)
         end
+
+        attr_private_reader :input_data
+        attr_private_reader :valid_value_lists
       end
     end
   end
