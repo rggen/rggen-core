@@ -40,7 +40,7 @@ module RgGen::Core::InputBase
           def read_file(file)
             binding.eval(File.read(file))
           end
-          def form(read_data)
+          def form(read_data, _file)
             input_data.values foo_data(read_data)
             input_data.bar bar_data(read_data)
           end
