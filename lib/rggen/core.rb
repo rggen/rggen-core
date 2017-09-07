@@ -25,3 +25,5 @@ require_relative 'core/input_base/component'
 require_relative 'core/input_base/component_factory'
 require_relative 'core/input_base/item'
 require_relative 'core/input_base/item_factory'
+
+require_relative 'core/configuration/error'

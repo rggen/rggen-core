@@ -3,7 +3,10 @@ module RgGen
     class RgGenError < StandardError
     end
 
-    class LoadError < RgGenError
+    class RuntimeError < RgGenError
+    end
+
+    class LoadError < Core::RuntimeError
       def initialize(message, path)
         super(message)
         @path = path
