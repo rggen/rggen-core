@@ -90,21 +90,9 @@ FILE
       context "ファイル読み出しに成功した場合" do
         before { loader.load_file(file_name, input_data, valid_value_lists) }
 
-        let(:foo_values) do
-          {}.tap do |values|
-            input_data.values.each { |name, value| values[name] = value.value }
-          end
-        end
-
-        let(:bar_values) do
-          {}.tap do |values|
-            input_data.children[0].values.each { |name, value| values[name] = value.value }
-          end
-        end
-
         it "指定されたファイルを読み込んで、与えられた入力データを組み立てる" do
-          expect(foo_values).to match foo_0: 0, foo_1: 1
-          expect(bar_values).to match bar_0: 2, bar_1: 3
+          expect(input_data).to have_values([:foo_0, 0], [:foo_1, 1])
+          expect(input_data.children[0]).to have_values([:bar_0, 2], [:bar_1, 3])
         end
       end
 

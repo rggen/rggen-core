@@ -2,42 +2,6 @@ require 'spec_helper'
 
 module RgGen::Core::InputBase
   describe InputData do
-    matcher :have_value do |name, value = nil, position = nil|
-      match do |data|
-        @actual = data[name]
-        return false if @actual.equal?(NilValue)
-        return false unless InputValue === @actual
-        return false if value && @actual.value != value
-        return false if position && !match_position?(@actual.position, position)
-        true
-      end
-
-      failure_message do
-        if !@actual
-          "no such value included: #{name}"
-        elsif position
-          "expected to have value[#{name}]: #{value.inspect} (position: #{position}) " \
-          "but got #{@actual.value.inspect} (position: #{@actual.position})"
-        elsif value
-          "expected to have value[#{name}]: #{value.inspect} but got #{@actual.value.inspect}"
-        end
-      end
-
-      failure_message_when_negated do
-        "expect not to have value[#{name}]"
-      end
-
-      def match_position?(actual_position, expected_position)
-        if [actual_position, expected_position].all? { |position|
-          position.kind_of?(Thread::Backtrace::Location)
-        }
-          actual_position.to_s == expected_position.to_s
-        else
-          actual_position == expected_position
-        end
-      end
-    end
-
     let(:foo_values) { { foo_0: 0, foo_1: 1, foo_2: 2} }
 
     let(:bar_values) { { bar_0: 3, bar_1: 4, bar_2: 5} }
