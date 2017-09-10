@@ -30,8 +30,8 @@ module RgGen
           @values[value_name]
         end
 
-        def values(value_list = nil)
-          value_list && Hash(value_list).each { |n, v| value(n, v) }
+        def values(value_list = nil, position = nil)
+          value_list && Hash(value_list).each { |n, v| value(n, v, position) }
           @values
         end
 

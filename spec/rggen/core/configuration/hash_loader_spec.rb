@@ -35,8 +35,8 @@ module RgGen::Core::Configuration
       end
 
       it "読み出したHashを使って、入力データを組み立てる" do
-        expect(input_data).to have_value(:foo, 0)
-        expect(input_data).to have_value(:bar, 1)
+        expect(input_data).to have_value(:foo, 0, file)
+        expect(input_data).to have_value(:bar, 1, file)
         expect(input_data[:baz]).to be_empty_value
       end
     end

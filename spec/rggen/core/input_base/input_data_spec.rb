@@ -75,13 +75,13 @@ module RgGen::Core::InputBase
       context "入力値列が与えられた場合" do
         before do
           foo_data.values foo_0: foo_values[:foo_0]
-          foo_data.values foo_1: foo_values[:foo_1], foo_2: foo_values[:foo_2]
+          foo_data.values({ foo_1: foo_values[:foo_1], foo_2: foo_values[:foo_2] }, position)
         end
 
         it "入力値を設定する" do
           expect(foo_data).to  have_value(:foo_0, foo_values[:foo_0]).
-                           and have_value(:foo_1, foo_values[:foo_1]).
-                           and have_value(:foo_2, foo_values[:foo_2])
+                           and have_value(:foo_1, foo_values[:foo_1], position).
+                           and have_value(:foo_2, foo_values[:foo_2], position)
         end
       end
 
