@@ -113,7 +113,7 @@ module RgGen::Core::InputBase
       describe "入力データの生成と入力ファイルの読み出し" do
         let(:rb_loader) do
           Class.new(Loader) do
-            supported_types [:rb]
+            support_types [:rb]
             def read_file(file)
               input_data.load_file(file)
             end

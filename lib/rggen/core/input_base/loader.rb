@@ -3,13 +3,13 @@ module RgGen
     module InputBase
       class Loader
         class << self
-          def supported_types(types)
-            @supported_types = types.map(&:to_sym)
+          def support_types(types)
+            @support_types = types.map(&:to_sym)
           end
 
           def support?(file)
             file_ext = File.ext(file).to_sym
-            @supported_types.any? { |type| type.casecmp(file_ext).zero? }
+            @support_types.any? { |type| type.casecmp(file_ext).zero? }
           end
 
           def load_file(file, input_data, valid_value_list)

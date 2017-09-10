@@ -8,26 +8,26 @@ module RgGen::Core::InputBase
 
     describe ".support?" do
       let(:loader) do
-        define_loader { supported_types [:csv, :txt] }
+        define_loader { support_types [:csv, :txt] }
       end
 
-      let(:supported_files) do
+      let(:support_files) do
         %w(test.csv test.txt test.CSV test.TxT)
       end
 
-      let(:unsupported_files) do
+      let(:unsupport_files) do
         %w(test.xls test.csvv test.ttxt)
       end
 
-      it "入力ファイルが、.supported_typesで登録された、対応する拡張子を持つかどうかを返す" do
+      it "入力ファイルが、.support_typesで登録された、対応する拡張子を持つかどうかを返す" do
         aggregate_failures do
-          supported_files.each do |file|
+          support_files.each do |file|
             expect(loader.support?(file)).to be true
           end
         end
 
         aggregate_failures do
-          unsupported_files.each do |file|
+          unsupport_files.each do |file|
             expect(loader.support?(file)).to be false
           end
         end
