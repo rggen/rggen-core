@@ -17,3 +17,6 @@ Style/OptionalArguments:
 
 Style/RaiseArgs:
   EnforcedStyle: compact
+
+Style/SymbolArray:
+  EnforcedStyle: brackets
