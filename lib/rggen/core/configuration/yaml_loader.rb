@@ -7,7 +7,7 @@ module RgGen
         support_types [:yaml, :yml]
 
         def read_file(file)
-          YAML.load(File.binread(file), file)
+          YAML.safe_load(File.binread(file), [], [], true, file)
         end
       end
     end
