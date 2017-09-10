@@ -1,4 +1,6 @@
 require 'docile'
+require 'json'
+require 'yaml'
 
 require_relative 'core/version'
 
@@ -32,3 +34,5 @@ require_relative 'core/configuration/item'
 require_relative 'core/configuration/loader'
 require_relative 'core/configuration/ruby_loader'
 require_relative 'core/configuration/hash_loader'
+require_relative 'core/configuration/json_loader'
+require_relative 'core/configuration/yaml_loader'
