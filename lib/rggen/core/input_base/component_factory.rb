@@ -2,10 +2,6 @@ module RgGen
   module Core
     module InputBase
       class ComponentFactory < Base::ComponentFactory
-        class << self
-          attr_setter :input_data
-        end
-
         attr_setter :loaders
 
         private
@@ -32,7 +28,6 @@ module RgGen
         end
 
         def create_input_data(&block)
-          self.class.input_data.new(valid_value_lists, &block)
         end
 
         def create_items(component, *sources)

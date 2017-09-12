@@ -6,9 +6,11 @@ module RgGen::Core::InputBase
 
     let(:factory_class) do
       Class.new(ComponentFactory) do
-        input_data InputData
         def create_component(parent, *_, &block)
           @target_component.new(parent, &block)
+        end
+        def create_input_data(&block)
+          InputData.new(valid_value_lists, &block)
         end
       end
     end
