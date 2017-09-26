@@ -38,3 +38,6 @@ require_relative 'core/configuration/ruby_loader'
 require_relative 'core/configuration/hash_loader'
 require_relative 'core/configuration/json_loader'
 require_relative 'core/configuration/yaml_loader'
+
+require_relative 'core/register_map/input_data'
+

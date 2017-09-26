@@ -38,7 +38,7 @@ module RgGen
         attr_reader :children
 
         def child(value_list = nil, &block)
-          InputData.new(@valid_value_lists.from(1)) do |child_data|
+          create_child_data do |child_data|
             child_data.build_by_block(block)
             child_data.values(value_list)
             @children << child_data
@@ -74,6 +74,10 @@ module RgGen
         def position_from_caller
           locations = caller_locations(3, 2)
           locations[0].path.include?('docile') ? locations[1] : locations[0]
+        end
+
+        def create_child_data(&block)
+          InputData.new(@valid_value_lists.from(1), &block)
         end
 
         protected
