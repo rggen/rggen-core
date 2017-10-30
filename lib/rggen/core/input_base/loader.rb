@@ -26,12 +26,12 @@ module RgGen
           File.readable?(file) || (
             raise Core::LoadError.new('cannot load such file', file)
           )
-          form(read_file(file), file)
+          format(read_file(file), file)
         end
 
         private
 
-        def form(_read_data, _file)
+        def format(_read_data, _file)
         end
 
         attr_private_reader :input_data
