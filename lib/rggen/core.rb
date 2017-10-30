@@ -40,4 +40,5 @@ require_relative 'core/configuration/json_loader'
 require_relative 'core/configuration/yaml_loader'
 
 require_relative 'core/register_map/input_data'
-
+require_relative 'core/register_map/loader'
+require_relative 'core/register_map/ruby_loader'
