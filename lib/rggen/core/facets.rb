@@ -1,5 +1,6 @@
 require 'facets/array/from'
 require 'facets/file/ext'
+require 'facets/hash/symbolize_keys'
 require 'facets/module/attr_setter'
 require 'facets/string/variablize'
 require 'facets/symbol/variablize'
