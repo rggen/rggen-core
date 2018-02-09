@@ -33,7 +33,7 @@ module RgGen::Core::Base
       end
 
       it "特異クラスにヘルパーメソッドを追加する" do
-        expect(item_class.singleton_methods(false)).to match [:foo, :bar]
+        expect(item_class.singleton_methods(false)).to contain_exactly :foo, :bar
       end
     end
 
