@@ -5,12 +5,13 @@ module RgGen::Core::Configuration
     let(:loader) { YAMLLoader }
 
     describe ".support?" do
-      let(:files) { ['foo.yaml', 'foo.yml'] }
+      let(:supported_files) { ['foo.yaml', 'foo.yml'] }
+      let(:unsupported_file) { 'foo.txt' }
 
       it "yaml/yml形式のファイルに対応する" do
-        files.each do |file|
-          expect(loader.support?(file)).to be true
-        end
+        expect(loader.support?(supported_files[0])).to be true
+        expect(loader.support?(supported_files[1])).to be true
+        expect(loader.support?(unsupported_file)).to be false
       end
     end
 
@@ -34,11 +35,8 @@ YAML
         allow(File).to receive(:binread).and_return(file_contents)
       end
 
-      before do
-        loader.load_file(file, input_data, valid_value_lists)
-      end
-
       it "入力ファイルを元に、入力データを組み立てる" do
+        loader.load_file(file, input_data, valid_value_lists)
         expect(input_data).to have_values([:foo, 0, file], [:bar, 1, file], [:baz, 2, file])
       end
     end

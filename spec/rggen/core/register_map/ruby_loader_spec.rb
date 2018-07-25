@@ -7,8 +7,12 @@ module RgGen::Core::RegisterMap
     let(:file) { 'ruby.rb' }
 
     describe ".support?" do
+      let(:supported_file) { file }
+      let(:unsupported_file) { 'foo.txt' }
+
       it "rb形式のファイルに対応する" do
-        expect(loader.support?(file)).to be true
+        expect(loader.support?(supported_file)).to be true
+        expect(loader.support?(unsupported_file)).to be false
       end
     end
 
@@ -60,11 +64,8 @@ RUBY
         allow(File).to receive(:binread).and_return(file_contents)
       end
 
-      before do
-        loader.load_file(file, input_data, valid_value_lists)
-      end
-
       it "入力したフィアルを元に、入力データを組み立てる" do
+        loader.load_file(file, input_data, valid_value_lists)
         expect(register_blocks).to match [
           have_value(:foo, 'foo_0'), have_value(:foo, 'foo_1')
         ]
@@ -79,6 +80,7 @@ RUBY
       end
 
       it "位置情報に入力ファイルでの位置を設定する" do
+        loader.load_file(file, input_data, valid_value_lists)
         expect(register_blocks[0][:foo].position).to have_attributes(path: file, lineno: 2)
         expect(registers[0][:bar].position).to have_attributes(path: file, lineno: 4)
         expect(bit_fields[0][:baz].position).to have_attributes(path: file, lineno: 5)

@@ -7,9 +7,12 @@ module RgGen::Core::Configuration
     let(:file) { 'foo.json' }
 
     describe ".support?" do
+      let(:supported_file) { file }
+      let(:unsupported_file) { 'foo.txt' }
 
       it "json形式のファイルに対応する" do
-        expect(loader.support?(file)).to be true
+        expect(loader.support?(supported_file)).to be true
+        expect(loader.support?(unsupported_file)).to be false
       end
     end
 
@@ -33,11 +36,8 @@ JSON
         allow(File).to receive(:binread).and_return(file_contents)
       end
 
-      before do
-        loader.load_file(file, input_data, valid_value_lists)
-      end
-
       it "入力ファイルを元に、入力データを組み立てる" do
+        loader.load_file(file, input_data, valid_value_lists)
         expect(input_data).to have_values([:foo, 0, file], [:bar, 1, file], [:baz, 2, file])
       end
     end

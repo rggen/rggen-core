@@ -5,11 +5,13 @@ module RgGen::Core::RegisterMap
     let(:loader) { YAMLLoader }
 
     describe ".support?" do
-      let(:files) { ['foo.yaml', 'bar.yml'] }
+      let(:supported_files) { ['foo.yaml', 'bar.yml'] }
+      let(:unsupported_file) { 'foo.txt' }
 
       it "yaml/yml形式のフィルに対応する" do
-        expect(loader.support?(files[0])).to be true
-        expect(loader.support?(files[1])).to be true
+        expect(loader.support?(supported_files[0])).to be true
+        expect(loader.support?(supported_files[1])).to be true
+        expect(loader.support?(unsupported_file)).to be false
       end
     end
 
@@ -59,11 +61,8 @@ YAML
         allow(File).to receive(:binread).and_return(file_contents)
       end
 
-      before do
-        loader.load_file(file, input_data, valid_value_lists)
-      end
-
       it "入力したYAMLファイルを元に、入力データを組み立てる" do
+        loader.load_file(file, input_data, valid_value_lists)
         expect(register_blocks).to match [
           have_value(:foo, 'foo_0'), have_value(:foo, 'foo_1')
         ]
