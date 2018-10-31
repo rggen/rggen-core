@@ -9,7 +9,7 @@ module RgGen::Core::RegisterMap
     describe ".support?" do
       let(:supported_file) { file }
       let(:unsupported_file) { 'foo.txt' }
-    
+
       it "json形式のフィルに対応する" do
         expect(loader.support?(supported_file)).to be true
         expect(loader.support?(unsupported_file)).to be false
