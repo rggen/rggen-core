@@ -5,19 +5,50 @@ module RgGen::Core::Configuration
     describe "#error" do
       let(:message) { 'configuration error !' }
 
+      let(:positions) { [Struct.new(:x, :y).new(0, 1), Struct.new(:x, :y).new(2, 3)]}
+
       let(:object) do
         Class.new do
           include RaiseError
-          def error_test(message)
-            error message
+          attr_writer :position
+          def error_test(message, position = nil)
+            if position
+              error message, position
+            else
+              error message
+            end
           end
         end.new
       end
 
-      it "与えられたメッセージで、ConfigurationErrorを発生させる" do
-        expect {
-          object.error_test(message)
-        }.to raise_error RgGen::Core::Configuration::ConfigurationError, message
+      context "位置情報がない場合" do
+        it "与えられたメッセージで、ConfigurationError を発生させる" do
+          expect {
+            object.error_test(message)
+          }.to raise_error ConfigurationError, message
+        end
+      end
+
+      context "エラーの発生元が位置情報を持つ場合" do
+        it "位置情報と与えられたメッセージで、ConfigurationError を発生させる" do
+          object.position = positions[0]
+          expect {
+            object.error_test(message)
+          }.to raise_error ConfigurationError, "#{message} -- #{positions[0]}"
+        end
+      end
+
+      context "位置情報が与えられた場合" do
+        it "与えられた位置情報とメッセージで、ConfigurationError を発生させる" do
+          expect {
+            object.error_test(message, positions[1])
+          }.to raise_error ConfigurationError, "#{message} -- #{positions[1]}"
+
+          object.position = positions[0]
+          expect {
+            object.error_test(message, positions[1])
+          }.to raise_error ConfigurationError, "#{message} -- #{positions[1]}"
+        end
       end
     end
   end

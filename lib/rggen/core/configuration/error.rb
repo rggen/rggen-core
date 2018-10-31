@@ -1,12 +1,12 @@
 module RgGen
   module Core
     module Configuration
-      class ConfigurationError < Core::RuntimeError
+      class ConfigurationError < InputBase::InputError
       end
 
       module RaiseError
-        def error(message)
-          raise ConfigurationError.new(message)
+        def error(message, position = nil)
+          raise ConfigurationError.new(message, position || @position)
         end
       end
     end
