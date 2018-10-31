@@ -8,6 +8,7 @@ module RgGen
         def initialize(component, item_name)
           @component = component
           @item_name = item_name
+          post_initialize
           block_given? && yield(self)
         end
 
@@ -27,6 +28,11 @@ module RgGen
         end
 
         available? { true }
+
+        private
+
+        def post_initialize
+        end
       end
     end
   end

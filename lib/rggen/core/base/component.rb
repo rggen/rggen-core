@@ -4,12 +4,13 @@ module RgGen
       class Component
         include SingleForwardable
 
-        def initialize(parent = nil)
-          @parent = parent
+        def initialize(*args)
+          @parent = ((args.size > 0) && args.first) || nil
           @children = []
           @need_children = true
           @level = (parent && parent.level + 1) || 0
           @items = {}
+          post_initialize(*args)
           block_given? && yield(self)
         end
 
@@ -39,6 +40,11 @@ module RgGen
 
         def item(key)
           @items[key]
+        end
+
+        private
+
+        def post_initialize(*argv)
         end
       end
     end
