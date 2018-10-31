@@ -3,6 +3,7 @@ module RgGen
     module RegisterMap
       class Item < InputBase::Item
         include Base::HierarchicalItemAccessors
+        include RaiseError
 
         private
 
