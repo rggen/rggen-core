@@ -1,10 +1,14 @@
 require 'docile'
+require 'erubi'
+require 'fileutils'
 require 'json'
+require 'pathname'
 require 'yaml'
 
 require_relative 'core/version'
 
 require_relative 'core/facets'
+require_relative 'core/core_extensions/erubi'
 require_relative 'core/core_extensions/object'
 require_relative 'core/core_extensions/forwardable'
 require_relative 'core/core_extensions/module'
@@ -51,3 +55,6 @@ require_relative 'core/register_map/ruby_loader'
 require_relative 'core/register_map/hash_loader'
 require_relative 'core/register_map/json_loader'
 require_relative 'core/register_map/yaml_loader'
+
+require_relative 'core/output_base/file_writer'
+
