@@ -56,5 +56,6 @@ require_relative 'core/register_map/hash_loader'
 require_relative 'core/register_map/json_loader'
 require_relative 'core/register_map/yaml_loader'
 
+require_relative 'core/output_base/code_generator'
 require_relative 'core/output_base/file_writer'
 
