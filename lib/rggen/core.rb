@@ -3,6 +3,7 @@ require 'erubi'
 require 'fileutils'
 require 'json'
 require 'pathname'
+require 'singleton'
 require 'yaml'
 
 require_relative 'core/version'
@@ -56,6 +57,6 @@ require_relative 'core/register_map/hash_loader'
 require_relative 'core/register_map/json_loader'
 require_relative 'core/register_map/yaml_loader'
 
+require_relative 'core/output_base/template_engine'
 require_relative 'core/output_base/code_generator'
 require_relative 'core/output_base/file_writer'
-
