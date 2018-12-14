@@ -18,7 +18,7 @@ module RgGen
 
         def generate_path(context, directory)
           [
-            *Array(directory), @pattern.render(context)
+            *Array(directory), context.instance_eval(@pattern.src)
           ].map(&:to_s).reject(&:empty?).to_path
         end
 
