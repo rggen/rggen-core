@@ -1,4 +1,5 @@
-engines:
+version: "2"
+plugins:
   duplication:
     enabled: true
     config:
@@ -8,9 +9,5 @@ engines:
     enabled: true
   rubocop:
     enabled: true
-    channel: rubocop-0-48
-ratings:
-   paths:
-    - "lib/**/*"
-exclude_paths:
+exclude_patterns:
   - "spec/"
