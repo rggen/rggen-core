@@ -3,6 +3,7 @@ module RgGen
     module OutputBase
       class CodeGenerator
         def register(kind, block)
+          return unless block
           (@code_generators ||= {})[kind] = block
         end
 
