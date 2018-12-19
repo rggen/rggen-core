@@ -2,8 +2,6 @@ module RgGen
   module Core
     module OutputBase
       class Item < Base::Item
-        CODE_GENRATION_PHASES = [:pre, :main, :post].freeze
-
         class << self
           attr_reader :builders
 
@@ -16,8 +14,12 @@ module RgGen
             @code_generators ||= {}
           end
 
-          CODE_GENRATION_PHASES.each do |phase|
-            define_method("#{phase}_code") do |kind, options = {}, &body|
+          {
+            pre: :pre_code,
+            main: :main_code,
+            post: :post_code
+          }.each do |phase, method_name|
+            define_method(method_name) do |kind, options = {}, &body|
               code_generators[phase] ||= CodeGenerator.new
               block =
                 if from_template?(options)
@@ -87,11 +89,9 @@ module RgGen
           builders && builders.each { |body| instance_exec(&body) }
         end
 
-        CODE_GENRATION_PHASES.each do |phase|
-          define_method("generate_#{phase}_code") do |kind, code = nil|
-            generator = self.class.code_generators[phase]
-            (generator && generator.generate(self, kind, code)) || code
-          end
+        def generate_code(phase, kind, code = nil)
+          generator = self.class.code_generators[phase]
+          (generator && generator.generate(self, kind, code)) || code
         end
 
         def write_file(directory = nil)
