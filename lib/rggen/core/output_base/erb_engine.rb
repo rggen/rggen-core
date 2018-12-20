@@ -7,11 +7,11 @@ module RgGen
         end
 
         def parse_template(path)
-          Erubi::Engine.new(File.binread(path))
+          Erubi::Engine.new(File.binread(path), filename: path)
         end
 
         def render(context, template)
-          context.instance_eval(template.src)
+          context.instance_eval(template.src, template.filename, 1)
         end
       end
     end
