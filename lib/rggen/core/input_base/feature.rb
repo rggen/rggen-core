@@ -3,15 +3,17 @@ module RgGen
     module InputBase
       class Feature < Base::Feature
         class << self
-          def field(field_name, options = {}, &body)
-            define_method(field_name) do |*args, &block|
-              field_method(field_name, options, body, args, block)
+          def property(name, options = {}, &body)
+            define_method(name) do |*args, &block|
+              property_method(name, options, body, args, block)
             end
-            fields.include?(field_name) || fields << field_name
+            properties.include?(name) || properties << name
           end
 
-          def fields
-            @fields ||= []
+          alias_method :field, :property
+
+          def properties
+            @properties ||= []
           end
 
           def build(&block)
@@ -49,7 +51,7 @@ module RgGen
 
           def inherited(subclass)
             super
-            export_instance_variable(:@fields, subclass, &:dup)
+            export_instance_variable(:@properties, subclass, &:dup)
             export_instance_variable(:@builders, subclass, &:dup)
             export_instance_variable(:@validators, subclass, &:dup)
             export_instance_variable(:@input_matcher, subclass)
@@ -57,7 +59,7 @@ module RgGen
           end
         end
 
-        def_class_delegator :fields
+        def_class_delegator :properties
         def_class_delegator :active_feature?
         def_class_delegator :passive_feature?
 
@@ -106,22 +108,22 @@ module RgGen
           !match_data.nil?
         end
 
-        def field_method(field_name, options, body, args, block)
+        def property_method(name, options, body, args, block)
           options[:need_validation] && validate
           if body
             instance_exec(*args, &body)
           elsif options[:forward_to_helper]
-            self.class.__send__(field_name, *args, &block)
+            self.class.__send__(name, *args, &block)
           elsif options.key?(:forward_to)
             __send__(options[:forward_to], *args, &block)
           else
-            default_field_method(field_name, options[:default])
+            default_property_method(name, options[:default])
           end
         end
 
-        def default_field_method(field_name, default)
+        def default_property_method(name, default)
           variable_name = (
-            (field_name[-1] == '?' && field_name[0..-2]) || field_name
+            (name[-1] == '?' && name[0..-2]) || name
           ).variablize
           if instance_variable_defined?(variable_name)
             instance_variable_get(variable_name)

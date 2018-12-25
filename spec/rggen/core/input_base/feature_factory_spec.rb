@@ -53,7 +53,7 @@ module RgGen::Core::InputBase
       describe "入力値の変換" do
         let(:feature_class) do
           Class.new(Feature) do
-            field :value
+            property :value
             build { |value| @value = value }
           end
         end

@@ -7,8 +7,8 @@ module RgGen::Core::InputBase
 
       let(:features) do
         [
-          Class.new(Feature) { field :foo, default: :foo; field :bar, default: :bar; }.new(component, :feature_0),
-          Class.new(Feature) { field :baz, default: :baz }.new(component, :feature_1)
+          Class.new(Feature) { property :foo, default: :foo; property :bar, default: :bar; }.new(component, :feature_0),
+          Class.new(Feature) { property :baz, default: :baz }.new(component, :feature_1)
         ]
       end
 
@@ -27,13 +27,13 @@ module RgGen::Core::InputBase
       end
     end
 
-    describe "#fields" do
+    describe "#properties" do
       let(:component) { Component.new }
 
       let(:features) do
         [
-          Class.new(Feature) { field :foo; field :bar}.new(component, :feature_0),
-          Class.new(Feature) { field :baz }.new(component, :feature_1)
+          Class.new(Feature) { property :foo; property :bar}.new(component, :feature_0),
+          Class.new(Feature) { property :baz }.new(component, :feature_1)
         ]
       end
 
@@ -41,8 +41,8 @@ module RgGen::Core::InputBase
         features.each { |feature| component.add_feature(feature) }
       end
 
-      it "配下のフィーチャーが持つフィールドの一覧を返す" do
-        expect(component.fields).to match [:foo, :bar, :baz]
+      it "配下のフィーチャーが持つプロパティの一覧を返す" do
+        expect(component.properties).to match [:foo, :bar, :baz]
       end
     end
 

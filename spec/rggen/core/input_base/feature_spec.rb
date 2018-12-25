@@ -14,50 +14,52 @@ module RgGen::Core::InputBase
       InputValue.new(value, position)
     end
 
-    describe ".field" do
-      matcher :have_field do |field_name, *field_value|
+    describe ".property" do
+      matcher :have_property do |name, *value|
         match do |feature|
           case feature
           when Class
-            @field_defined = feature.method_defined?(field_name)
+            @property_defined = feature.method_defined?(name)
             @match_value = true
           when Feature
-            @field_defined = feature.public_methods(false).include?(field_name)
-            @match_value = field_value.empty? || (@field_defined && values_match?(field_value[0], actual_field_value))
+            @property_defined = feature.public_methods(false).include?(name)
+            @match_value = value.empty? || (@property_defined && values_match?(value[0], actual_property_value))
           end
-          @field_defined && @match_value
+          @property_defined && @match_value
         end
 
         failure_message do
-          if !@field_defined
-            "no such field defined: #{field_name}"
+          if !@property_defined
+            "no such property defined: #{property_name}"
           elsif !@match_value
-            "expected #{field_value[0].inspect} as field value but got #{actual_field_value.inspect}"
+            "expected #{property_value[0].inspect} as property value but got #{actual_property_value.inspect}"
           end
         end
 
-        define_method(:actual_field_value) do
-          @actual_field_value ||= feature.__send__(field_name)
+        define_method(:actual_property_value) do
+          @actual_property_value ||= feature.__send__(name)
         end
       end
 
-      it "フィールドを定義する" do
-        expect(define_feature { field :foo }).to have_field :foo
+      it "プロパティを定義する" do
+        expect(define_feature { property :foo }).to have_property :foo
       end
 
-      specify "定義済みのフィールドは.fieldsで参照できる" do
-        expect(define_feature { field :foo; field :bar }.fields).to match [:foo, :bar]
+      specify "定義済みのプロパティは.propertiesで参照できる" do
+        feature = define_feature { property :foo; property :bar }
+        expect(feature.properties).to match [:foo, :bar]
       end
 
-      specify "定義したフィールドは継承される" do
-        parent = define_feature { field :foo; field :bar }
-        expect(define_feature(parent) { field :baz }.fields).to match [:foo, :bar, :baz]
+      specify "定義したプロパティは継承される" do
+        parent = define_feature { property :foo; property :bar }
+        feature = define_feature(parent) { property :baz }
+        expect(feature.properties).to match [:foo, :bar, :baz]
       end
 
-      context "フィールド名のみが与えられた場合" do
+      context "プロパティ名のみが与えられた場合" do
         let(:feature) do
           create_feature do
-            field :foo
+            property :foo
             def initialize(component, feature_name)
               super
               @foo = 1
@@ -65,15 +67,15 @@ module RgGen::Core::InputBase
           end
         end
 
-        it "同名のインスタンス変数を返すフィールドを定義する" do
-          expect(feature).to have_field :foo, 1
+        it "同名のインスタンス変数を返すプロパティを定義する" do
+          expect(feature).to have_property :foo, 1
         end
       end
 
-      context "?付きフィールド名が与えられた場合" do
+      context "?付きプロパティ名が与えられた場合" do
         let(:feature) do
           create_feature do
-            field :foo?
+            property :foo?
             def initialize(component, feature_name)
               super
               @foo = true
@@ -81,26 +83,26 @@ module RgGen::Core::InputBase
           end
         end
 
-        it "?を除いた同名のインスタンス変数を返すフィールドを定義する" do
-          expect(feature).to have_field :foo?, true
+        it "?を除いた同名のインスタンス変数を返すプロパティを定義する" do
+          expect(feature).to have_property :foo?, true
         end
       end
 
       context "ブロックが与えられた場合" do
         let(:feature) do
           create_feature do
-            field(:foo) { baz }
-            field(:bar) { |v| v }
+            property(:foo) { baz }
+            property(:bar) { |v| v }
             private
             def baz; 1 end
           end
         end
 
-        it "ブロックを自身のコンテキストで実行するフィールドを定義する" do
-          expect(feature).to have_field :foo, 1
+        it "ブロックを自身のコンテキストで実行するプロパティを定義する" do
+          expect(feature).to have_property :foo, 1
         end
 
-        specify "定義されたフィールドは引数を取ることができる" do
+        specify "定義されたプロパティは引数を取ることができる" do
           expect(feature.bar(2)).to eq 2
         end
       end
@@ -108,8 +110,8 @@ module RgGen::Core::InputBase
       describe "defaultオプション" do
         let(:feature) do
           create_feature do
-            field :foo, default: 1
-            field :bar, default: 2
+            property :foo, default: 1
+            property :bar, default: 2
             def initialize(component, feature_name)
               super
               @bar = 3
@@ -117,9 +119,9 @@ module RgGen::Core::InputBase
           end
         end
 
-        it "フィールドのデフォルト値を設定する" do
-          expect(feature).to have_field :foo, 1
-          expect(feature).to have_field :bar, 3
+        it "プロパティのデフォルト値を設定する" do
+          expect(feature).to have_property :foo, 1
+          expect(feature).to have_property :bar, 3
         end
       end
 
@@ -127,8 +129,8 @@ module RgGen::Core::InputBase
         context "trueが設定された場合" do
           let(:feature) do
             create_feature do
-              field :foo, forward_to_helper: true
-              field :bar, forward_to_helper: true
+              property :foo, forward_to_helper: true
+              property :bar, forward_to_helper: true
               define_helpers do
                 def foo; 1 end
                 def bar(v)
@@ -139,12 +141,12 @@ module RgGen::Core::InputBase
             end
           end
 
-          it "ヘルパーメソッドに委譲するフィールドを定義する" do
+          it "ヘルパーメソッドに委譲するプロパティを定義する" do
             expect(feature.class).to receive(:foo).and_call_original
-            expect(feature).to have_field :foo, 1
+            expect(feature).to have_property :foo, 1
           end
 
-          specify "定義するフィールドは引数およびブロックを取ることができる" do
+          specify "定義するプロパティは引数およびブロックを取ることができる" do
             expect(feature.bar(1)).to eq 1
             expect(feature.bar(2) { |v| 2 * v} ).to eq 4
           end
@@ -153,7 +155,7 @@ module RgGen::Core::InputBase
         context "falseが設定された場合" do
           let(:feature) do
             create_feature do
-              field :foo, forward_to_helper: false
+              property :foo, forward_to_helper: false
               define_helpers { def foo; 1 end }
               def initialize(component, feature_name)
                 super
@@ -166,8 +168,8 @@ module RgGen::Core::InputBase
             expect(feature.class).not_to receive(:foo)
           end
 
-          it "通常のフィールドを定義する" do
-            expect(feature).to have_field :foo, 2
+          it "通常のプロパティを定義する" do
+            expect(feature).to have_property :foo, 2
           end
         end
       end
@@ -175,8 +177,8 @@ module RgGen::Core::InputBase
       describe "forward_toオプション" do
         let(:feature) do
           create_feature do
-            field :foo, forward_to: :bar
-            field :baz, forward_to: :qux
+            property :foo, forward_to: :bar
+            property :baz, forward_to: :qux
             def bar; 1 end
             def qux(v)
               return v unless block_given?
@@ -185,12 +187,12 @@ module RgGen::Core::InputBase
           end
         end
 
-        it "指定したメソッドに移譲するフィールドを定義する" do
+        it "指定したメソッドに移譲するプロパティを定義する" do
           expect(feature).to receive(:bar).and_call_original
-          expect(feature).to have_field :foo, 1
+          expect(feature).to have_property :foo, 1
         end
 
-        specify "定義するフィールドは引数およびブロックを取ることができる" do
+        specify "定義するプロパティは引数およびブロックを取ることができる" do
           expect(feature.baz(2)).to eq 2
           expect(feature.baz(2) { |v| 2 * v}).to eq 4
         end
@@ -199,10 +201,10 @@ module RgGen::Core::InputBase
       describe "need_validationオプション" do
         context "trueが設定された場合" do
           let(:feature) do
-            create_feature { field :foo, need_validation: true }
+            create_feature { property :foo, need_validation: true }
           end
 
-          specify "フィールド呼び出し時に、#validateを呼び出して、検査を実施する" do
+          specify "プロパティ呼び出し時に、#validateを呼び出して、検査を実施する" do
             expect(feature).to receive(:validate)
             feature.foo
           end
@@ -210,10 +212,10 @@ module RgGen::Core::InputBase
 
         context "falseが設定された場合" do
           let(:feature) do
-            create_feature { field :foo, need_validation: false }
+            create_feature { property :foo, need_validation: false }
           end
 
-          specify "フィールド呼び出し時に、検査を実施しない" do
+          specify "プロパティ呼び出し時に、検査を実施しない" do
             expect(feature).not_to receive(:validate)
             feature.foo
           end
@@ -221,21 +223,21 @@ module RgGen::Core::InputBase
 
         context "指定がない場合" do
           let(:feature) do
-            create_feature  { field :foo }
+            create_feature  { property :foo }
           end
 
-          specify "フィールド呼び出し時に、検査を実施しない" do
+          specify "プロパティ呼び出し時に、検査を実施しない" do
             expect(feature).not_to receive(:validate)
             feature.foo
           end
         end
       end
 
-      context "同名のフィールドを複数定義した場合" do
+      context "同名のプロパティを複数定義した場合" do
         let(:feature) do
           create_feature do
-            field(:foo) { foo_0 }
-            field(:foo) { foo_1 }
+            property(:foo) { foo_0 }
+            property(:foo) { foo_1 }
           end
         end
 
@@ -245,9 +247,17 @@ module RgGen::Core::InputBase
           feature.foo
         end
 
-        specify ".fieldsへの追加は1度だけ行う" do
-          expect(feature.fields).to match [:foo]
+        specify ".propertiesへの追加は1度だけ行う" do
+          expect(feature.properties).to match [:foo]
         end
+      end
+
+      specify ".fieldでもプロパティを定義できる" do
+        feature = define_feature do
+          field :foo
+          field :bar
+        end
+        expect(feature.properties).to match [:foo, :bar]
       end
     end
 

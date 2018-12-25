@@ -22,8 +22,8 @@ module RgGen::Core::OutputBase
       feature
     end
 
-    it "レジスタマップオブジェクトの各フィールドメソッドを呼び出すことができる" do
-      allow(register_map).to receive(:fields).and_return([:foo, :bar, :baz])
+    it "レジスタマップオブジェクトの各プロパティドメソッドを呼び出すことができる" do
+      allow(register_map).to receive(:properties).and_return([:foo, :bar, :baz])
       expect(register_map).to receive(:foo)
       expect(register_map).to receive(:bar)
       expect(register_map).to receive(:baz)

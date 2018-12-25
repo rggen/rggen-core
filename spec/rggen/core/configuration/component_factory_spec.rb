@@ -4,7 +4,7 @@ module RgGen::Core::Configuration
   describe ComponentFactory do
     def define_feature(feature_name)
       Class.new(Feature) do
-        field feature_name
+        property feature_name
         build { |value| instance_variable_set(feature_name.variablize, value) }
       end
     end

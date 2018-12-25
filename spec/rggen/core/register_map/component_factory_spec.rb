@@ -4,7 +4,7 @@ module RgGen::Core::RegisterMap
   describe ComponentFactory do
     def define_feature(feature_name)
       Class.new(Feature) do
-        field feature_name
+        property feature_name
         build { |v| instance_variable_set(feature_name.variablize, v) }
       end
     end
@@ -127,45 +127,45 @@ module RgGen::Core::RegisterMap
       it "レジスタマップコンポーネントの生成と組み立てを行う" do
         register_map = register_map_component_factory.create(configuration, [file])
 
-        expect(register_map.register_blocks[0]).to have_fields({
+        expect(register_map.register_blocks[0]).to have_properties({
           foo: feature_values[:register_blocks][0][:foo],
           bar: feature_values[:register_blocks][0][:bar]
         })
-        expect(register_map.register_blocks[1]).to have_fields({
+        expect(register_map.register_blocks[1]).to have_properties({
           foo: feature_values[:register_blocks][1][:foo],
           bar: feature_values[:register_blocks][1][:bar]
         })
 
-        expect(register_map.registers[0]).to have_fields({
+        expect(register_map.registers[0]).to have_properties({
           foo: feature_values[:register_blocks][0][:registers][0][:foo],
           bar: feature_values[:register_blocks][0][:registers][0][:bar]
         })
-        expect(register_map.registers[1]).to have_fields({
+        expect(register_map.registers[1]).to have_properties({
           foo: feature_values[:register_blocks][0][:registers][1][:foo],
           bar: feature_values[:register_blocks][0][:registers][1][:bar]
         })
-        expect(register_map.registers[2]).to have_fields({
+        expect(register_map.registers[2]).to have_properties({
           foo: feature_values[:register_blocks][1][:registers][0][:foo],
           bar: feature_values[:register_blocks][1][:registers][0][:bar]
         })
 
-        expect(register_map.bit_fields[0]).to have_fields({
+        expect(register_map.bit_fields[0]).to have_properties({
           foo: feature_values[:register_blocks][0][:registers][0][:bit_fields][0][:foo],
           bar: feature_values[:register_blocks][0][:registers][0][:bit_fields][0][:bar]
         })
-        expect(register_map.bit_fields[1]).to have_fields({
+        expect(register_map.bit_fields[1]).to have_properties({
           foo: feature_values[:register_blocks][0][:registers][0][:bit_fields][1][:foo],
           bar: feature_values[:register_blocks][0][:registers][0][:bit_fields][1][:bar]
         })
-        expect(register_map.bit_fields[2]).to have_fields({
+        expect(register_map.bit_fields[2]).to have_properties({
           foo: feature_values[:register_blocks][0][:registers][1][:bit_fields][0][:foo],
           bar: feature_values[:register_blocks][0][:registers][1][:bit_fields][0][:bar]
         })
-        expect(register_map.bit_fields[3]).to have_fields({
+        expect(register_map.bit_fields[3]).to have_properties({
           foo: feature_values[:register_blocks][1][:registers][0][:bit_fields][0][:foo],
           bar: feature_values[:register_blocks][1][:registers][0][:bit_fields][0][:bar]
         })
-        expect(register_map.bit_fields[4]).to have_fields({
+        expect(register_map.bit_fields[4]).to have_properties({
           foo: feature_values[:register_blocks][1][:registers][0][:bit_fields][1][:foo],
           bar: feature_values[:register_blocks][1][:registers][0][:bit_fields][1][:bar]
         })

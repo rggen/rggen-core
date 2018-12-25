@@ -12,7 +12,7 @@ module RgGen
           @source = source
           @need_children = source.need_children?
           define_hierarchical_accessors
-          define_field_accessors
+          define_property_accessors
         end
 
         def add_feature(feature)
@@ -38,8 +38,8 @@ module RgGen
 
         private
 
-        def define_field_accessors
-          def_delegators(:@source, *@source.fields)
+        def define_property_accessors
+          def_delegators(:@source, *@source.properties)
         end
 
         def define_feature_method_accessor(feature)

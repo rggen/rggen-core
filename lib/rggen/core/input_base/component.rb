@@ -4,11 +4,11 @@ module RgGen
       class Component < Base::Component
         def add_feature(feature)
           super
-          define_field_methods(feature)
+          define_property_methods(feature)
         end
 
-        def fields
-          @features.each_value.flat_map(&:fields)
+        def properties
+          @features.each_value.flat_map(&:properties)
         end
 
         def validate
@@ -18,9 +18,9 @@ module RgGen
 
         private
 
-        def define_field_methods(feature)
+        def define_property_methods(feature)
           target = "@features[:#{feature.name}]"
-          def_delegators(target, *feature.fields)
+          def_delegators(target, *feature.properties)
         end
       end
     end
