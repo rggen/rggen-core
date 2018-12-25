@@ -7,8 +7,11 @@ module RgGen
         private
 
         def preprocess(args)
-          return args unless root_factory?
-          [*args.thru(-2), load_files(args.last)]
+          if root_factory?
+            [*args.thru(-2), load_files(args.last)]
+          else
+            args
+          end
         end
 
         def load_files(files)
@@ -22,28 +25,27 @@ module RgGen
         end
 
         def find_loader(file)
-          loaders.find { |loader| loader.support?(file) } || (
-            raise Core::LoadError.new('unsupported file type', file)
-          )
+          loader = loaders.find { |l| l.support?(file) }
+          loader || (raise Core::LoadError.new('unsupported file type', file))
         end
 
         def create_input_data(&block)
         end
 
-        def create_items(component, *sources)
-          create_active_items(component, sources.last)
-          create_passive_items(component)
+        def create_features(component, *sources)
+          create_active_features(component, sources.last)
+          create_passive_features(component)
         end
 
-        def create_active_items(component, input_data)
-          active_item_factories.each do |item_name, factory|
-            create_item(component, factory, input_data[item_name])
+        def create_active_features(component, input_data)
+          active_feature_factories.each do |name, factory|
+            create_feature(component, factory, input_data[name])
           end
         end
 
-        def create_passive_items(component)
-          passive_item_factories.each_value do |factory|
-            create_item(component, factory)
+        def create_passive_features(component)
+          passive_feature_factories.each_value do |factory|
+            create_feature(component, factory)
           end
         end
 
@@ -57,24 +59,22 @@ module RgGen
           component.validate
         end
 
-        def active_item_factories
-          @active_item_factories ||= Hash[
-            *@item_factories.select { |_, f| f.active_item_factory? }.flatten
-          ]
+        def active_feature_factories
+          @active_feature_factories ||=
+            @feature_factories.select { |_, f| f.active_feature_factory? }
         end
 
-        def passive_item_factories
-          @passive_item_factories ||= Hash[
-            *@item_factories.select { |_, f| f.passive_item_factory? }.flatten
-          ]
+        def passive_feature_factories
+          @passive_feature_factories ||=
+            @feature_factories.select { |_, f| f.passive_feature_factory? }
         end
 
         protected
 
         def valid_value_lists
-          [active_item_factories.keys].tap do |list|
-            list.concat(child_factory.valid_value_lists) if child_factory
-          end
+          list = [active_feature_factories.keys]
+          child_factory && list.concat(child_factory.valid_value_lists)
+          list
         end
       end
     end

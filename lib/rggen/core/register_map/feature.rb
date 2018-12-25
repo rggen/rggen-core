@@ -1,8 +1,8 @@
 module RgGen
   module Core
     module RegisterMap
-      class Item < InputBase::Item
-        include Base::HierarchicalItemAccessors
+      class Feature < InputBase::Feature
+        include Base::HierarchicalFeatureAccessors
         include RaiseError
 
         private
@@ -12,7 +12,7 @@ module RgGen
         end
 
         def post_initialize
-          define_hierarchical_item_accessors
+          define_hierarchical_accessors
         end
       end
     end

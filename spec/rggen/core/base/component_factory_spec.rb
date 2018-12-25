@@ -25,14 +25,16 @@ module RgGen::Core::Base
       let(:factory) { define_factory.new { |f| f.target_component component_class } }
 
       it "#target_componentで登録されたコンポーネントオブジェクトを生成する" do
-        expect(factory.create(parent, *arguments)).to be_instance_of(component_class)
+        component = factory.create(parent, *arguments)
+        expect(component).to be_instance_of(component_class)
       end
 
       context "ルートファクトリのとき" do
         before { factory.root_factory }
 
         it "ルートコンポーネントを生成する" do
-          expect(factory.create.parent).to be_nil
+          component = factory.create
+          expect(component.parent).to be_nil
         end
 
         it "引数すべてに対して、#preprocessを実行し、引数の前処理を行う" do
@@ -50,7 +52,8 @@ module RgGen::Core::Base
 
       context "ルートファクトリではないとき" do
         it "親コンポーネントの子コンポーネントを生成する" do
-          expect(factory.create(parent).parent).to equal parent
+          component = factory.create(parent)
+          expect(component.parent).to equal parent
         end
 
         it "#add_childを呼び出して、親コンポーネントに生成したコンポーネントを登録する" do
@@ -90,7 +93,8 @@ module RgGen::Core::Base
         end
 
         it "子コンポーネントを含むコンポーネントオブジェクトを生成する" do
-          expect(factory.create(parent, *arguments).children).to match [
+          component = factory.create(parent, *arguments)
+          expect(component.children).to match [
             be_instance_of(child_component_class), be_instance_of(child_component_class)
           ]
         end
@@ -102,41 +106,49 @@ module RgGen::Core::Base
 
           it "子コンポーネントを含まないコンポーネントオブジェクトを生成する" do
             expect(child_factory).not_to receive(:create)
-            expect(factory.create(parent, *arguments).children).to be_empty
+            component = factory.create(parent, *arguments)
+            expect(component.children).to be_empty
           end
         end
       end
 
-      context "アイテムファクトリが登録されているとき" do
-        let(:foo_item) { Class.new(Item) }
+      context "フィーチャーファクトリが登録されているとき" do
+        let(:foo_feature) { Class.new(Feature) }
 
-        let(:bar_item) { Class.new(Item) }
+        let(:bar_feature) { Class.new(Feature) }
 
-        let(:item_factory_class) do
-          Class.new(ItemFactory) do
+        let(:feature_factory_class) do
+          Class.new(FeatureFactory) do
             def create(component, *args)
-              create_item(component, *args)
+              create_feature(component, *args)
             end
           end
         end
 
-        let(:foo_item_factory) { item_factory_class.new(:foo) { |f| f.target_item foo_item } }
+        let(:foo_feature_factory) do
+          feature_factory_class.new(:foo) { |f| f.target_feature foo_feature }
+        end
 
-        let(:bar_item_factory) { item_factory_class.new(:bar) { |f| f.target_item bar_item } }
+        let(:bar_feature_factory) do
+          feature_factory_class.new(:bar) { |f| f.target_feature bar_feature }
+        end
 
         let(:factory) do
           define_factory {
-            def create_items(component, *args)
-              @item_factories.each_value { |f| create_item(component, f, *args) }
+            def create_features(component, *args)
+              @feature_factories.each_value { |f| create_feature(component, f, *args) }
             end
           }.new { |f|
             f.target_component Class.new(Component)
-            f.item_factories(foo: foo_item_factory, bar: bar_item_factory)
+            f.feature_factories(foo: foo_feature_factory, bar: bar_feature_factory)
           }
         end
 
-        it "アイテムを含むコンポーネントオブジェクトを生成する" do
-          expect(factory.create(parent).items).to match [be_instance_of(foo_item), be_instance_of(bar_item)]
+        it "フィf－チャーを含むコンポーネントオブジェクトを生成する" do
+          component = factory.create(parent)
+          expect(component.features).to match [
+            be_instance_of(foo_feature), be_instance_of(bar_feature)
+          ]
         end
       end
     end

@@ -16,10 +16,10 @@ module RgGen::Core::OutputBase
       component
     end
 
-    def define_and_create_item(component, item_name, super_class = nil, &body)
-      item = Class.new(super_class || Item, &body).new(component, item_name)
-      component.add_item(item)
-      item
+    def define_and_create_feature(component, feature_name, super_class = nil, &body)
+      feature = Class.new(super_class || Feature, &body).new(component, feature_name)
+      component.add_feature(feature)
+      feature
     end
 
     it "レジスタマップオブジェクトの各フィールドメソッドを呼び出すことができる" do
@@ -34,20 +34,20 @@ module RgGen::Core::OutputBase
       component.baz
     end
 
-    it "配下のアイテムのItem.exportで指定されたメソッドを呼び出すことができる" do
+    it "配下のフィーチャーのFeature.exportで指定されたメソッドを呼び出すことができる" do
       component = create_component(nil)
 
-      foo_item = define_and_create_item(component, :foo) do
+      foo_feature = define_and_create_feature(component, :foo) do
         export :foo_0
         export :foo_1
       end
-      expect(foo_item).to receive(:foo_0)
-      expect(foo_item).to receive(:foo_1)
+      expect(foo_feature).to receive(:foo_0)
+      expect(foo_feature).to receive(:foo_1)
 
-      bar_item = define_and_create_item(component, :bar) do
+      bar_feature = define_and_create_feature(component, :bar) do
         export :bar_0
       end
-      expect(bar_item).to receive(:bar_0)
+      expect(bar_feature).to receive(:bar_0)
 
       component.foo_0
       component.foo_1
@@ -87,37 +87,37 @@ module RgGen::Core::OutputBase
         end
       end
 
-      let(:foo_items) do
+      let(:foo_features) do
         [
-          define_and_create_item(foo_component, :foo_0),
-          define_and_create_item(foo_component, :foo_1),
+          define_and_create_feature(foo_component, :foo_0),
+          define_and_create_feature(foo_component, :foo_1),
         ]
       end
 
-      let(:bar_items) do
+      let(:bar_features) do
         bar_components.flat_map do |bar_component|
           [
-            define_and_create_item(bar_component, :bar_0),
-            define_and_create_item(bar_component, :bar_1)
+            define_and_create_feature(bar_component, :bar_0),
+            define_and_create_feature(bar_component, :bar_1)
           ]
         end
       end
 
-      let(:baz_items) do
+      let(:baz_features) do
         baz_components.flat_map do |baz_component|
           [
-            define_and_create_item(baz_component, :baz_0),
-            define_and_create_item(baz_component, :baz_1)
+            define_and_create_feature(baz_component, :baz_0),
+            define_and_create_feature(baz_component, :baz_1)
           ]
         end
       end
 
-      it "配下の全コンポーネント/アイテムの#buildを呼び出して、自身の組み立てを行う" do
+      it "配下の全コンポーネント/フィーチャーの#buildを呼び出して、自身の組み立てを行う" do
         [*bar_components, *baz_components].each do |component|
           expect(component).to receive(:build).and_call_original
         end
-        [*foo_items, *bar_items, *baz_items].each do |item|
-          expect(item).to receive(:build).and_call_original
+        [*foo_features, *bar_features, *baz_features].each do |feature|
+          expect(feature).to receive(:build).and_call_original
         end
         foo_component.build
       end
@@ -141,7 +141,7 @@ module RgGen::Core::OutputBase
       end
 
       before do
-        allow_any_instance_of(Item).to receive(:create_blank_code).and_return(code)
+        allow_any_instance_of(Feature).to receive(:create_blank_code).and_return(code)
       end
 
       before do
@@ -152,17 +152,17 @@ module RgGen::Core::OutputBase
           main_code(:buzz) { "#{component.object_id}_#{'buzz' * (component.level + 1)}" }
         end
 
-        define_and_create_item(foo_component, :fizz, &fizz_body)
-        define_and_create_item(foo_component, :buzz, &buzz_body)
+        define_and_create_feature(foo_component, :fizz, &fizz_body)
+        define_and_create_feature(foo_component, :buzz, &buzz_body)
 
         bar_components.each do |bar_component|
-          define_and_create_item(bar_component, :fizz, &fizz_body)
-          define_and_create_item(bar_component, :buzz, &buzz_body)
+          define_and_create_feature(bar_component, :fizz, &fizz_body)
+          define_and_create_feature(bar_component, :buzz, &buzz_body)
         end
 
         baz_components.each do |baz_component|
-          define_and_create_item(baz_component, :fizz, &fizz_body)
-          define_and_create_item(baz_component, :buzz, &buzz_body)
+          define_and_create_feature(baz_component, :fizz, &fizz_body)
+          define_and_create_feature(baz_component, :buzz, &buzz_body)
         end
       end
 
@@ -234,7 +234,7 @@ module RgGen::Core::OutputBase
         expect(foo_component.generate_code(:fizz, :bottom_up, code)).to eq code
       end
 
-      context "Item.pre_codeで事前コード生成の登録がある場合" do
+      context "Feature.pre_codeで事前コード生成の登録がある場合" do
         before do
           pre_fizz_0_body = proc do
             pre_code(:fizz) { "#{component.object_id}_pre_#{'fizz' * (component.level + 1)}_0" }
@@ -243,16 +243,16 @@ module RgGen::Core::OutputBase
             pre_code(:fizz) { "#{component.object_id}_pre_#{'fizz' * (component.level + 1)}_1" }
           end
 
-          define_and_create_item(foo_component, :pre_fizz_0, &pre_fizz_0_body)
-          define_and_create_item(foo_component, :pre_fizz_1, &pre_fizz_1_body)
+          define_and_create_feature(foo_component, :pre_fizz_0, &pre_fizz_0_body)
+          define_and_create_feature(foo_component, :pre_fizz_1, &pre_fizz_1_body)
 
           bar_components.each do |bar_component|
-            define_and_create_item(bar_component, :pre_fizz_0, &pre_fizz_0_body)
-            define_and_create_item(bar_component, :pre_fizz_1, &pre_fizz_1_body)
+            define_and_create_feature(bar_component, :pre_fizz_0, &pre_fizz_0_body)
+            define_and_create_feature(bar_component, :pre_fizz_1, &pre_fizz_1_body)
           end
         end
 
-        it "Item.main_codeで登録された主コード生成前に、事前コードを生成する" do
+        it "Feature.main_codeで登録された主コード生成前に、事前コードを生成する" do
           [
             "#{foo_component.object_id}_pre_fizz_0",
             "#{foo_component.object_id}_pre_fizz_1",
@@ -293,7 +293,7 @@ module RgGen::Core::OutputBase
         end
       end
 
-      context "Item.post_codeで事後コード生成の登録がある場合" do
+      context "Feature.post_codeで事後コード生成の登録がある場合" do
         before do
           post_fizz_0_body = proc do
             post_code(:fizz) { "#{component.object_id}_post_#{'fizz' * (component.level + 1)}_0" }
@@ -302,16 +302,16 @@ module RgGen::Core::OutputBase
             post_code(:fizz) { "#{component.object_id}_post_#{'fizz' * (component.level + 1)}_1" }
           end
 
-          define_and_create_item(foo_component, :post_fizz_0, &post_fizz_0_body)
-          define_and_create_item(foo_component, :post_fizz_1, &post_fizz_1_body)
+          define_and_create_feature(foo_component, :post_fizz_0, &post_fizz_0_body)
+          define_and_create_feature(foo_component, :post_fizz_1, &post_fizz_1_body)
 
           bar_components.each do |bar_component|
-            define_and_create_item(bar_component, :post_fizz_0, &post_fizz_0_body)
-            define_and_create_item(bar_component, :post_fizz_1, &post_fizz_1_body)
+            define_and_create_feature(bar_component, :post_fizz_0, &post_fizz_0_body)
+            define_and_create_feature(bar_component, :post_fizz_1, &post_fizz_1_body)
           end
         end
 
-        it "Item.main_codeで登録された主コードの生成後に、事後コードを生成する" do
+        it "Feature.main_codeで登録された主コードの生成後に、事後コードを生成する" do
           [
             "#{foo_component.object_id}_fizz",
             "#{bar_components[0].object_id}_fizzfizz",
@@ -362,23 +362,23 @@ module RgGen::Core::OutputBase
         2.times.map { create_component(foo_component) }
       end
 
-      let(:item_base) do
-        Class.new(Item) do
+      let(:feature_base) do
+        Class.new(Feature) do
           def create_blank_file(_path); ''.dup; end
         end
       end
 
-      let(:foo_item) do
-        define_and_create_item(foo_component, :foo_item, item_base) do
+      let(:foo_feature) do
+        define_and_create_feature(foo_component, :foo_feature, feature_base) do
           write_file('<%= file_name %>') { |f| f << file_content }
           def file_name; "#{component.object_id}_foo.txt"; end
           def file_content; "#{component.object_id} foo !"; end
         end
       end
 
-      let(:bar_items) do
+      let(:bar_features) do
         bar_components.map.with_index do |bar_component, i|
-          define_and_create_item(bar_component, :bar_item, item_base) do
+          define_and_create_feature(bar_component, :bar_feature, feature_base) do
             write_file('<%= file_name %>') { |f| f << file_content }
             define_method(:file_name) { "#{component.object_id}_bar_#{i}.txt" }
             define_method(:file_content) { "#{component.object_id} bar #{i} !" }
@@ -386,16 +386,16 @@ module RgGen::Core::OutputBase
         end
       end
 
-      it "配下の全アイテムの#write_fileを呼び出して、ファイルの書き出しを行う" do
-        [foo_item, *bar_items].each do |item|
-          expect(item).to receive(:write_file).and_call_original
-          expect(File).to receive(:binwrite).with(match_string(item.file_name), item.file_content)
+      it "配下の全フィーチャーの#write_fileを呼び出して、ファイルの書き出しを行う" do
+        [foo_feature, *bar_features].each do |feature|
+          expect(feature).to receive(:write_file).and_call_original
+          expect(File).to receive(:binwrite).with(match_string(feature.file_name), feature.file_content)
         end
         foo_component.write_file
 
-        [foo_item, *bar_items].each do |item|
-          expect(item).to receive(:write_file).and_call_original
-          expect(File).to receive(:binwrite).with(match_string("foo/bar/#{item.file_name}"), item.file_content)
+        [foo_feature, *bar_features].each do |feature|
+          expect(feature).to receive(:write_file).and_call_original
+          expect(File).to receive(:binwrite).with(match_string("foo/bar/#{feature.file_name}"), feature.file_content)
         end
         foo_component.write_file(['foo', 'bar'])
       end

@@ -1,7 +1,7 @@
 module RgGen
   module Core
     module OutputBase
-      class Item < Base::Item
+      class Feature < Base::Feature
         class << self
           attr_reader :builders
 
@@ -65,8 +65,8 @@ module RgGen
           end
 
           def copy_code_generators(subclass)
-            return unless @code_generators
-            return if @code_generators.empty?
+            @code_generators || return
+            @code_generators.empty? && return
             copied_generators = @code_generators.flat_map do |phase, generator|
               [phase, generator.copy]
             end
@@ -86,17 +86,17 @@ module RgGen
 
         def build
           builders = self.class.builders
-          builders && builders.each { |body| instance_exec(&body) }
+          builders&.each { |body| instance_exec(&body) }
         end
 
         def generate_code(phase, kind, code = nil)
           generator = self.class.code_generators[phase]
-          (generator && generator.generate(self, kind, code)) || code
+          (generator&.generate(self, kind, code)) || code
         end
 
         def write_file(directory = nil)
           file_writer = self.class.file_writer
-          file_writer && file_writer.write_file(self, directory)
+          file_writer&.write_file(self, directory)
         end
 
         def exported_methods

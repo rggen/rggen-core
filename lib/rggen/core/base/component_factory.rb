@@ -8,7 +8,7 @@ module RgGen
         end
 
         attr_setter :target_component
-        attr_setter :item_factories
+        attr_setter :feature_factories
         attr_setter :child_factory
 
         def root_factory
@@ -34,14 +34,14 @@ module RgGen
         end
 
         def build_component(parent, component, sources)
-          create_items(component, *sources) if create_items?
-          parent.add_child(component) if child_factory?
-          create_children(component, *sources) if create_children?(component)
-          finalize(component) if root_factory?
+          create_features? && create_features(component, *sources)
+          child_factory? && parent.add_child(component)
+          create_children?(component) && create_children(component, *sources)
+          root_factory? && finalize(component)
         end
 
-        def create_items?
-          @item_factories
+        def create_features?
+          @feature_factories
         end
 
         def create_children?(component)
@@ -55,7 +55,7 @@ module RgGen
         def finalize(component)
         end
 
-        def create_item(component, factory, *args)
+        def create_feature(component, factory, *args)
           factory.create(component, *args)
         end
 

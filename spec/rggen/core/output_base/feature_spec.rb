@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 module RgGen::Core::OutputBase
-  describe Item do
+  describe Feature do
     let(:configuration) do
       RgGen::Core::Configuration::Component.new(nil)
     end
@@ -14,52 +14,52 @@ module RgGen::Core::OutputBase
       RgGen::Core::OutputBase::Component.new(nil, configuration, register_map)
     end
 
-    def define_item(super_class = nil, &block)
-      Class.new(super_class || Item, &block)
+    def define_feature(super_class = nil, &block)
+      Class.new(super_class || Feature, &block)
     end
 
-    def define_and_create_item(super_class = nil, &block)
-      define_item(super_class, &block).new(component, :item)
+    def define_and_create_feature(super_class = nil, &block)
+      define_feature(super_class, &block).new(component, :feature)
     end
 
     describe "#build" do
-      it ".buildで登録されたブロックを実行し、アイテムの組み立てを行う" do
-        item = define_and_create_item do
+      it ".buildで登録されたブロックを実行し、フィーチャーの組み立てを行う" do
+        feature = define_and_create_feature do
           build { @foo = component.foo }
           build { @bar = component.bar }
         end
 
         allow(component).to receive(:foo).and_return('foo')
         allow(component).to receive(:bar).and_return('bar')
-        item.build
+        feature.build
 
-        expect(item.instance_variable_get(:@foo)).to be component.foo
-        expect(item.instance_variable_get(:@bar)).to be component.bar
+        expect(feature.instance_variable_get(:@foo)).to be component.foo
+        expect(feature.instance_variable_get(:@bar)).to be component.bar
       end
 
       context "継承された場合" do
         specify "親クラスの組み立てブロックは継承される" do
-          parent_item = define_item do
+          parent_feature = define_feature do
             build { @foo = component.foo }
           end
-          item = define_and_create_item(parent_item) do
+          feature = define_and_create_feature(parent_feature) do
             build { @bar = component.bar }
           end
 
           allow(component).to receive(:foo).and_return('foo')
           allow(component).to receive(:bar).and_return('bar')
-          item.build
+          feature.build
 
-          expect(item.instance_variable_get(:@foo)).to be component.foo
-          expect(item.instance_variable_get(:@bar)).to be component.bar
+          expect(feature.instance_variable_get(:@foo)).to be component.foo
+          expect(feature.instance_variable_get(:@bar)).to be component.bar
         end
       end
 
       context "組み立てブロックが未登録の場合" do
         it "エラーなく実行できる" do
-          item = define_and_create_item
+          feature = define_and_create_feature
           expect {
-            item.build
+            feature.build
           }.to_not raise_error
         end
       end
@@ -87,51 +87,51 @@ module RgGen::Core::OutputBase
 
     shared_examples_for "code_generator" do |phase, api|
       it ".#{api}で登録されたブロックを実行し、コードの生成を行う" do
-        item  = define_and_create_item do
+        feature  = define_and_create_feature do
           send(api, :foo) { |c| c << 'foo' }
           send(api, :bar) { 'bar' }
         end
 
         expect(code).to receive(:<<).with('foo')
-        item.generate_code(phase, :foo, nil)
+        feature.generate_code(phase, :foo, nil)
 
         expect(code).to receive(:<<).with('bar')
-        item.generate_code(phase, :bar, code)
+        feature.generate_code(phase, :bar, code)
       end
 
       specify "最後に登録されたコード生成ブロックが優先される" do
-        item = define_and_create_item do
+        feature = define_and_create_feature do
           send(api, :foo) { 'foo_0' }
           send(api, :foo) { 'foo_1' }
         end
 
         expect(code).to receive(:<<).with('foo_1')
-        item.generate_code(phase, :foo, code)
+        feature.generate_code(phase, :foo, code)
       end
 
       context "未登録のコードの種類が指定された場合" do
         it "コードの生成は行わない" do
-          item = define_and_create_item do
+          feature = define_and_create_feature do
             send(api, :foo) { 'foo' }
           end
 
           expect(code).not_to receive(:<<)
-          item.generate_code(phase, :bar, nil)
-          item.generate_code(phase, :bar, code)
+          feature.generate_code(phase, :bar, nil)
+          feature.generate_code(phase, :bar, code)
         end
       end
 
       it "生成したコードオブジェクト、または、与えたコードオブジェクトを返す" do
         allow(code).to receive(:<<)
 
-        item = define_and_create_item do
+        feature = define_and_create_feature do
           send(api, :foo) { 'foo' }
         end
 
-        expect(item.generate_code(phase, :foo, nil )).to be code
-        expect(item.generate_code(phase, :foo, code)).to be code
-        expect(item.generate_code(phase, :bar, nil )).to be nil
-        expect(item.generate_code(phase, :bar, code)).to be code
+        expect(feature.generate_code(phase, :foo, nil )).to be code
+        expect(feature.generate_code(phase, :foo, code)).to be code
+        expect(feature.generate_code(phase, :bar, nil )).to be nil
+        expect(feature.generate_code(phase, :bar, code)).to be code
       end
 
       describe "from_template/template_path option" do
@@ -139,7 +139,7 @@ module RgGen::Core::OutputBase
 
         it "テンプレートを処理して、コードを生成する" do
           engine = template_engine
-          item = define_and_create_item do
+          feature = define_and_create_feature do
             template_engine engine
             send(api, :foo, from_template: true, template_path: 'foo.erb')
             send(api, :bar,                      template_path: 'bar.erb')
@@ -147,68 +147,68 @@ module RgGen::Core::OutputBase
           end
 
           allow(File).to receive(:binread).with('foo.erb').and_return(template)
-          expect(code).to receive(:<<).with("#{item.object_id}")
-          item.generate_code(phase, :foo, code)
+          expect(code).to receive(:<<).with("#{feature.object_id}")
+          feature.generate_code(phase, :foo, code)
 
           allow(File).to receive(:binread).with('bar.erb').and_return(template)
-          expect(code).to receive(:<<).with("#{item.object_id}")
-          item.generate_code(phase, :bar, code)
+          expect(code).to receive(:<<).with("#{feature.object_id}")
+          feature.generate_code(phase, :bar, code)
 
           allow(File).to receive(:binread).with(default_template_path).and_return(template)
-          expect(code).to receive(:<<).with("#{item.object_id}")
-          item.generate_code(phase, :baz, code)
+          expect(code).to receive(:<<).with("#{feature.object_id}")
+          feature.generate_code(phase, :baz, code)
         end
 
         context "from_templateにfalseが指定された場合" do
           it "template_pathが指定されていても、テンプレートからコードの生成を行わない" do
-            item = define_and_create_item do
+            feature = define_and_create_feature do
               send(api, :foo, from_template: false, template_path: 'foo.erb')
             end
 
             expect(File).not_to receive(:binread).with('foo.erb')
             expect(code).not_to receive(:<<)
-            item.generate_code(phase, :foo, code)
+            feature.generate_code(phase, :foo, code)
           end
         end
       end
 
       context "継承された場合" do
         specify "コード生成ブロックは継承される" do
-          parent_item = define_item do
+          parent_feature = define_feature do
             send(api, :foo) { 'foo' }
             send(api, :bar) { 'bar' }
           end
-          item = define_and_create_item(parent_item)
+          feature = define_and_create_feature(parent_feature)
 
           expect(code).to receive(:<<). with('foo')
-          item.generate_code(phase, :foo, code)
+          feature.generate_code(phase, :foo, code)
 
           expect(code).to receive(:<<). with('bar')
-          item.generate_code(phase, :bar, code)
+          feature.generate_code(phase, :bar, code)
         end
 
         specify "コード生成ブロックは上書き可能である"  do
-          parent_item = define_item do
+          parent_feature = define_feature do
             send(api, :foo) { 'foo_0' }
           end
-          item = define_and_create_item(parent_item) do
+          feature = define_and_create_feature(parent_feature) do
             send(api, :foo) { 'foo_1' }
           end
 
           expect(code).to receive(:<<).with('foo_1')
-          item.generate_code(phase, :foo, code)
+          feature.generate_code(phase, :foo, code)
         end
 
         specify "継承先での変更は、親クラスに影響しない" do
-          item = define_and_create_item do
+          feature = define_and_create_feature do
             send(api, :foo) { 'foo_0' }
           end
-          define_item(item.class) do
+          define_feature(feature.class) do
             send(api, :foo) { 'foo_1' }
           end
 
           expect(code).to receive(:<<).with('foo_0')
-          item.generate_code(phase, :foo, code)
+          feature.generate_code(phase, :foo, code)
         end
       end
     end
@@ -217,7 +217,7 @@ module RgGen::Core::OutputBase
       let(:code) { double('code') }
 
       before do
-        allow_any_instance_of(Item).to receive(:create_blank_code).and_return(code)
+        allow_any_instance_of(Feature).to receive(:create_blank_code).and_return(code)
       end
 
       context "生成フェーズが:preの場合" do
@@ -234,77 +234,77 @@ module RgGen::Core::OutputBase
     end
 
     describe "#write_file" do
-      let(:item_base) do
-        Class.new(Item) do
+      let(:feature_base) do
+        Class.new(Feature) do
           def create_blank_file(_path); ''.dup; end
         end
       end
 
       it ".write_fileで与えられたブロックの実行し、結果をファイルに書き出す" do
-        item = define_and_create_item(item_base) do
+        feature = define_and_create_feature(feature_base) do
           write_file 'foo.txt' do |f|
             f << file_content
           end
           def file_content; "#{object_id} foo"; end
         end
 
-        expect(File).to receive(:binwrite).with(any_args, item.file_content)
-        item.write_file
+        expect(File).to receive(:binwrite).with(any_args, feature.file_content)
+        feature.write_file
       end
 
       it ".write_fileで指定したパターンのファイル名でファイルを書き出す" do
-        item = define_and_create_item(item_base) do
+        feature = define_and_create_feature(feature_base) do
           write_file '<%= file_name %>' do
           end
           def file_name; "#{object_id}_foo.txt"; end
         end
 
-        expect(File).to receive(:binwrite).with(match_string(item.file_name), any_args)
-        item.write_file
+        expect(File).to receive(:binwrite).with(match_string(feature.file_name), any_args)
+        feature.write_file
       end
 
       context "出力ディレクトリが指定された場合" do
         it "指定されたディレクトリにファイルを書き出す" do
-          item = define_and_create_item(item_base) do
+          feature = define_and_create_feature(feature_base) do
             write_file 'baz.txt' do
             end
           end
 
           expect(File).to receive(:binwrite).with(match_string('bar/baz.txt'), any_args)
-          item.write_file('bar')
+          feature.write_file('bar')
 
           expect(File).to receive(:binwrite).with(match_string('foo/bar/baz.txt'), any_args)
-          item.write_file('foo/bar')
+          feature.write_file('foo/bar')
 
           expect(File).to receive(:binwrite).with(match_string('foo/bar/baz.txt'), any_args)
-          item.write_file(['foo', 'bar'])
+          feature.write_file(['foo', 'bar'])
         end
 
         context "継承された場合" do
           specify "ファイル名のパターンと内容を生成するブロックは継承される" do
-            parent_item = define_item(item_base) do
+            parent_feature = define_feature(feature_base) do
               write_file '<%= file_name %>' do |f|
                 f << file_content
               end
             end
-            item = define_and_create_item(parent_item) do
+            feature = define_and_create_feature(parent_feature) do
               def file_name; "#{object_id}_foo.txt"; end
               def file_content; "#{object_id} foo !"; end
             end
 
-            expect(File).to receive(:binwrite).with(match_string(item.file_name), item.file_content)
-            item.write_file
+            expect(File).to receive(:binwrite).with(match_string(feature.file_name), feature.file_content)
+            feature.write_file
           end
         end
 
         context "ファイル名のパターンと内容を生成するブロックが未登録の場合" do
           it "エラーなく実行できる" do
-            item = define_and_create_item do
+            feature = define_and_create_feature do
             end
 
             expect(File).not_to receive(:binwrite)
             expect {
-              item.write_file
+              feature.write_file
             }.to_not raise_error
           end
         end
@@ -313,30 +313,30 @@ module RgGen::Core::OutputBase
 
     describe "#exported_methods" do
       it ".exportで指定されたメソッド一覧を返す" do
-        item = define_and_create_item do
+        feature = define_and_create_feature do
           export :foo
           export :bar, :baz
           export :foo
         end
 
-        expect(item.exported_methods).to match [:foo, :bar, :baz]
+        expect(feature.exported_methods).to match [:foo, :bar, :baz]
       end
 
       context "継承された場合" do
         specify "メソッド一覧は継承される" do
-          foo_item = define_and_create_item do
+          foo_feature = define_and_create_feature do
             export :foo
           end
-          bar_item = define_and_create_item(foo_item.class) do
+          bar_feature = define_and_create_feature(foo_feature.class) do
             export :bar
           end
-          baz_item = define_and_create_item(bar_item.class) do
+          baz_feature = define_and_create_feature(bar_feature.class) do
             export :baz
           end
 
-          expect(foo_item.exported_methods).to match [:foo]
-          expect(bar_item.exported_methods).to match [:foo, :bar]
-          expect(baz_item.exported_methods).to match [:foo, :bar, :baz]
+          expect(foo_feature.exported_methods).to match [:foo]
+          expect(bar_feature.exported_methods).to match [:foo, :bar]
+          expect(baz_feature.exported_methods).to match [:foo, :bar, :baz]
         end
       end
     end
@@ -348,21 +348,21 @@ module RgGen::Core::OutputBase
 
       it "テンプレートエンジンでテンプレートを処理し、コードを生成する" do
         engine = template_engine
-        foo_item = define_and_create_item do
+        foo_feature = define_and_create_feature do
           template_engine engine
           main_code(:foo) { process_template }
         end
-        bar_item = define_and_create_item(foo_item.class) do
+        bar_feature = define_and_create_feature(foo_feature.class) do
           main_code(:bar) { process_template('bar.erb') }
         end
 
         allow(File).to receive(:binread).with(default_template_path).and_return(template)
-        expect(code).to receive(:<<).with("#{foo_item.object_id}")
-        foo_item.generate_code(:main, :foo, code)
+        expect(code).to receive(:<<).with("#{foo_feature.object_id}")
+        foo_feature.generate_code(:main, :foo, code)
 
         allow(File).to receive(:binread).with('bar.erb').and_return(template)
-        expect(code).to receive(:<<).with("#{bar_item.object_id}")
-        bar_item.generate_code(:main, :bar, code)
+        expect(code).to receive(:<<).with("#{bar_feature.object_id}")
+        bar_feature.generate_code(:main, :bar, code)
       end
     end
   end

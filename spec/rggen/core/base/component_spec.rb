@@ -69,28 +69,26 @@ module RgGen::Core::Base
       end
     end
 
-    describe "#add_item" do
+    describe "#add_feature" do
       let(:component) { Component.new }
 
-      let(:items) do
-        [:foo, :bar].each_with_object({}) do |item_name, hash|
-          hash[item_name] = Object.new.tap do |item|
-            allow(item).to receive(:item_name).and_return(item_name)
+      let(:features) do
+        [:foo, :bar].each_with_object({}) do |feature_name, hash|
+          hash[feature_name] = Object.new.tap do |feature|
+            allow(feature).to receive(:name).and_return(feature_name)
           end
         end
       end
 
-      before do
-        items.each_value { |item| component.add_item(item) }
+      it "フィーチャーをコンポーネントに追加する" do
+        features.each_value { |feature| component.add_feature(feature) }
+        expect(component.features).to match [equal(features[:foo]), equal(features[:bar])]
       end
 
-      it "アイテムコンポーネントを追加する" do
-        expect(component.items).to match [equal(items[:foo]), equal(items[:bar])]
-      end
-
-      specify "追加したアイテムは、アイテム名で参照できる" do
-        expect(component.item(:foo)).to equal items[:foo]
-        expect(component.item(:bar)).to equal items[:bar]
+      specify "追加したフィーチャーは、フィーチャー名で参照できる" do
+        features.each_value { |feature| component.add_feature(feature) }
+        expect(component.feature(:foo)).to equal features[:foo]
+        expect(component.feature(:bar)).to equal features[:bar]
       end
     end
   end

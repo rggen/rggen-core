@@ -1,8 +1,8 @@
 module RgGen
   module Core
     module InputBase
-      class Item < Base::Item
-        define_helpers do
+      class Feature < Base::Feature
+        class << self
           def field(field_name, options = {}, &body)
             define_method(field_name) do |*args, &block|
               field_method(field_name, options, body, args, block)
@@ -21,11 +21,11 @@ module RgGen
 
           attr_reader :builders
 
-          def active_item?
-            !passive_item?
+          def active_feature?
+            !passive_feature?
           end
 
-          def passive_item?
+          def passive_feature?
             builders.nil?
           end
 
@@ -46,59 +46,68 @@ module RgGen
           def match_automatically?
             @match_automatically
           end
-        end
 
-        def self.inherited(subclass)
-          super
-          export_instance_variable(:@fields, subclass, &:dup)
-          export_instance_variable(:@builders, subclass, &:dup)
-          export_instance_variable(:@validators, subclass, &:dup)
-          export_instance_variable(:@input_matcher, subclass)
-          export_instance_variable(:@match_automatically, subclass)
+          def inherited(subclass)
+            super
+            export_instance_variable(:@fields, subclass, &:dup)
+            export_instance_variable(:@builders, subclass, &:dup)
+            export_instance_variable(:@validators, subclass, &:dup)
+            export_instance_variable(:@input_matcher, subclass)
+            export_instance_variable(:@match_automatically, subclass)
+          end
         end
 
         def_class_delegator :fields
-        def_class_delegator :active_item?
-        def_class_delegator :passive_item?
+        def_class_delegator :active_feature?
+        def_class_delegator :passive_feature?
 
         def build(*args)
-          return unless self.class.builders
+          builders || return
           extracted_args = extract_last_arg(args)
-          pattern_match(extracted_args.last) if self.class.match_automatically?
-          self.class.builders.each { |b| instance_exec(*extracted_args, &b) }
+          match_automatically? && pattern_match(extracted_args.last)
+          builders.each { |builder| instance_exec(*extracted_args, &builder) }
         end
 
         def validate
-          return unless self.class.validators
-          return if @validated
-          self.class.validators.each { |b| instance_exec(&b) }
+          validators || return
+          @validated && return
+          validators.each { |validator| instance_exec(&validator) }
           @validated = true
         end
 
         private
+
+        def builders
+          self.class.builders
+        end
 
         def extract_last_arg(args)
           @position = args.last.position
           Array[*args.thru(0, -2), args.last.value].compact
         end
 
-        attr_reader :position
-        private :position
+        attr_private_reader :position
 
-        def pattern_match(rhs)
-          input_matcher = self.class.input_matcher
-          @match_data = input_matcher && input_matcher.match(rhs)
+        def match_automatically?
+          self.class.match_automatically?
         end
 
-        attr_reader :match_data
-        private :match_data
+        def input_matcher
+          self.class.input_matcher
+        end
+
+        def pattern_match(rhs)
+          @match_data = input_matcher&.match(rhs)
+        end
+
+        attr_private_reader :match_data
 
         def pattern_matched?
           !match_data.nil?
         end
 
         def field_method(field_name, options, body, args, block)
-          validate if options[:need_validation]
+          options[:need_validation] && validate
           if body
             instance_exec(*args, &body)
           elsif options[:forward_to_helper]
@@ -119,6 +128,10 @@ module RgGen
           else
             default
           end
+        end
+
+        def validators
+          self.class.validators
         end
       end
     end

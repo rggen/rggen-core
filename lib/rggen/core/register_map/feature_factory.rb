@@ -1,7 +1,7 @@
 module RgGen
   module Core
     module RegisterMap
-      class ItemFactory < InputBase::ItemFactory
+      class FeatureFactory < InputBase::FeatureFactory
         include RaiseError
       end
     end

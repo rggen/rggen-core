@@ -15,13 +15,13 @@ module RgGen
           define_field_accessors
         end
 
-        def add_item(item)
+        def add_feature(feature)
           super
-          define_item_method_accessor(item)
+          define_feature_method_accessor(feature)
         end
 
         def build
-          @items.each { |_, item| item.build }
+          @features.each_value(&:build)
           @children.each(&:build)
         end
 
@@ -32,7 +32,7 @@ module RgGen
         end
 
         def write_file(directory = nil)
-          @items.each { |_, item| item.write_file(directory) }
+          @features.each_value { |feature| feature.write_file(directory) }
           @children.each { |component| component.write_file(directory) }
         end
 
@@ -42,32 +42,32 @@ module RgGen
           def_delegators(:@source, *@source.fields)
         end
 
-        def define_item_method_accessor(item)
-          target = "@items[:#{item.item_name}]"
-          def_delegators(target, *item.exported_methods)
+        def define_feature_method_accessor(feature)
+          target = "@features[:#{feature.name}]"
+          def_delegators(target, *feature.exported_methods)
         end
 
         def code_generators(mode)
           [
-            item_code_generator(:pre),
+            feature_code_generator(:pre),
             *main_code_generators(mode),
-            item_code_generator(:post)
+            feature_code_generator(:post)
           ]
         end
 
         def main_code_generators(mode)
           case mode
           when :top_down
-            [item_code_generator(:main), child_component_code_generator]
+            [feature_code_generator(:main), child_component_code_generator]
           when :bottom_up
-            [child_component_code_generator, item_code_generator(:main)]
+            [child_component_code_generator, feature_code_generator(:main)]
           end
         end
 
-        def item_code_generator(phase)
+        def feature_code_generator(phase)
           lambda do |kind, _mode, code|
-            @items.inject(code) do |c, (_name, item)|
-              item.generate_code(phase, kind, c)
+            @features.each_value.inject(code) do |c, feature|
+              feature.generate_code(phase, kind, c)
             end
           end
         end

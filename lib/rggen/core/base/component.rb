@@ -9,7 +9,7 @@ module RgGen
           @children = []
           @need_children = true
           @level = (parent && parent.level + 1) || 0
-          @items = {}
+          @features = {}
           post_initialize(*args)
           block_given? && yield(self)
         end
@@ -30,16 +30,16 @@ module RgGen
           need_children? && (children << child)
         end
 
-        def add_item(item)
-          @items[item.item_name] = item
+        def add_feature(feature)
+          @features[feature.name] = feature
         end
 
-        def items
-          @items.values
+        def features
+          @features.values
         end
 
-        def item(key)
-          @items[key]
+        def feature(key)
+          @features[key]
         end
 
         private

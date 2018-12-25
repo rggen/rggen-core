@@ -1,7 +1,7 @@
 module RgGen
   module Core
     module Base
-      module HierarchicalItemAccessors
+      module HierarchicalFeatureAccessors
         module RegisterMap
           def hierarchy
             :register_map
@@ -72,7 +72,7 @@ module RgGen
           RegisterMap, RegisterBlock, Register, BitField
         ].freeze
 
-        def define_hierarchical_item_accessors
+        def define_hierarchical_accessors
           extend ACCESSOR_EXTENSIONS[@component.level]
         end
       end

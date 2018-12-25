@@ -1,7 +1,7 @@
 module RgGen
   module Core
     module Configuration
-      class Item < InputBase::Item
+      class Feature < InputBase::Feature
         include RaiseError
 
         alias_method :configuration, :component

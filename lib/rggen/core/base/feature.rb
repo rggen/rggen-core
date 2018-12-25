@@ -1,19 +1,19 @@
 module RgGen
   module Core
     module Base
-      class Item
+      class Feature
         include InternalStruct
         extend Forwardable
 
-        def initialize(component, item_name)
+        def initialize(component, name)
           @component = component
-          @item_name = item_name
+          @name = name
           post_initialize
           block_given? && yield(self)
         end
 
         attr_reader :component
-        attr_reader :item_name
+        attr_reader :name
 
         class << self
           private
