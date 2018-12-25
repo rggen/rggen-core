@@ -2,6 +2,8 @@ module RgGen
   module Core
     module OutputBase
       class Feature < Base::Feature
+        include Base::HierarchicalFeatureAccessors
+
         class << self
           attr_reader :builders
 
@@ -84,6 +86,10 @@ module RgGen
           end
         end
 
+        def post_initialize
+          define_hierarchical_accessors
+        end
+
         def build
           builders = self.class.builders
           builders&.each { |body| instance_exec(&body) }
@@ -104,6 +110,10 @@ module RgGen
         end
 
         private
+
+        def configuration
+          component.configuration
+        end
 
         def process_template(path = nil, caller_location = nil)
           caller_location ||= caller_locations(1, 1).first
