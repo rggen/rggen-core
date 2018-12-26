@@ -5,10 +5,11 @@ email:
   false
 
 cache:
-  ../bundler
+  bundler
 
 language:
   ruby
+
 rvm:
   - 2.3.1
   - 2.3.2
