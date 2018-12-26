@@ -2,6 +2,8 @@ module RgGen
   module Core
     module Base
       class FeatureFactory
+        include SharedContext
+
         def initialize(feature_name)
           @feature_name = feature_name
           block_given? && yield(self)

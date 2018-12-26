@@ -16,6 +16,7 @@ require_relative 'core/core_extensions/module'
 require_relative 'core/exceptions'
 
 require_relative 'core/base/internal_struct'
+require_relative 'core/base/shared_context'
 require_relative 'core/base/component'
 require_relative 'core/base/component_factory'
 require_relative 'core/base/feature'

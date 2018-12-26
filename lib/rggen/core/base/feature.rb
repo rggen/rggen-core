@@ -3,6 +3,7 @@ module RgGen
     module Base
       class Feature
         include InternalStruct
+        include SharedContext
         extend Forwardable
 
         def initialize(component, name)
