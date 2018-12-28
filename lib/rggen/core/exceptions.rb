@@ -3,6 +3,9 @@ module RgGen
     class RgGenError < StandardError
     end
 
+    class BuilderError < RgGenError
+    end
+
     class RuntimeError < RgGenError
     end
 

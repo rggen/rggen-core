@@ -1,4 +1,5 @@
 require 'facets/array/from'
+require 'facets/array/merge'
 require 'facets/file/ext'
 require 'facets/hash/symbolize_keys'
 require 'facets/module/attr_setter'
