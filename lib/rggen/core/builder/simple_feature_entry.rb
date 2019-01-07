@@ -8,7 +8,11 @@ module RgGen
           @feature = define_feature(base, context, body)
         end
 
-        def build_factory
+        def match_entry_type?(entry_type)
+          entry_type == :simple
+        end
+
+        def build_factory(_enabled_features)
           @factory.new(@name) { |f| f.target_feature(@feature) }
         end
 

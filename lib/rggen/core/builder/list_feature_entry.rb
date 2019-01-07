@@ -2,13 +2,17 @@ module RgGen
   module Core
     module Builder
       class ListFeatureEntry
-        def initialize(name, base_factory, base_feature, context)
+        def initialize(name, base_factory, base_feature, context, body)
           @name = name
           @factory = Class.new(base_factory)
           @base_feature = Class.new(base_feature)
           @features = {}
-          @eanbled_features = []
           context && set_shared_context(context)
+          body && Docile.dsl_eval(self, &body)
+        end
+
+        def match_entry_type?(entry_type)
+          entry_type == :list
         end
 
         def define_factory(&body)
@@ -17,9 +21,9 @@ module RgGen
 
         alias_method :factory, :define_factory
 
-        def build_factory
+        def build_factory(enabled_features)
           @factory.new(@name) do |f|
-            f.target_features(target_features)
+            f.target_features(target_features(enabled_features))
             f.target_feature(@default_feature)
           end
         end
@@ -51,10 +55,6 @@ module RgGen
 
         alias_method :default_feature, :define_default_feature
 
-        def enable(feature_or_features)
-          @eanbled_features.merge!(Array(feature_or_features))
-        end
-
         private
 
         def set_shared_context(context)
@@ -66,10 +66,10 @@ module RgGen
           end
         end
 
-        def target_features
-          @eanbled_features.each_with_object({}) do |feature_name, features|
-            @features.key?(feature_name) || next
-            features[feature_name] = @features[feature_name]
+        def target_features(enabled_features)
+          enabled_features.each_with_object({}) do |enabled_feature, features|
+            @features.key?(enabled_feature) || next
+            features[enabled_feature] = @features[enabled_feature]
           end
         end
       end

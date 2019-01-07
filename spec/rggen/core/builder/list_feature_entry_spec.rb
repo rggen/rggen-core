@@ -21,25 +21,24 @@ module RgGen::Core::Builder
     end
 
     def create_entry(context = nil, &body)
-      entry = ListFeatureEntry.new(feature_name, factory_base, feature_base, context)
-      block_given? && entry.instance_exec(&body)
-      entry
+      ListFeatureEntry.new(feature_name, factory_base, feature_base, context, body)
     end
 
     describe "ファクトリの定義" do
       specify "#build_factoryでエントリー生成時に指定したファクトリを生成する" do
         entry = create_entry
-        factory = entry.build_factory
+        factory = entry.build_factory([])
         expect(factory).to be_kind_of factory_base
         expect(factory).not_to be_instance_of factory_base
       end
 
       specify "#define_factory/#factoryでファクトリの定義を行える" do
-        entry = create_entry
-        entry.define_factory { def foo; 'foo!'; end }
-        entry.factory { def bar; 'bar!'; end }
+        entry = create_entry do
+          define_factory { def foo; 'foo!'; end }
+          factory { def bar; 'bar!'; end }
+        end
 
-        factory = entry.build_factory
+        factory = entry.build_factory([])
         expect(factory.foo).to eq 'foo!'
         expect(factory.bar).to eq 'bar!'
       end
@@ -47,20 +46,17 @@ module RgGen::Core::Builder
 
     describe "フィーチャーの定義" do
       specify "生成したファクトリで、#define_feature/#featureで定義したフィーチャーを生成できる" do
-        entry = create_entry
-        entry.define_factory(&default_factory_body)
+        entry = create_entry do
+          define_factory(&default_factory_body)
+          define_feature(:foo) { def fizz; 'foo fizz!'; end }
+          feature(:foo) { def buzz; 'foo buzz!'; end }
+          define_feature(:bar) { def fizz; 'bar fizz!'; end }
+          feature(:bar) { def buzz; 'bar buzz!'; end }
+          define_feature(:baz) { def fizz; 'baz fizz!'; end }
+          feature(:baz) { def buzz; 'baz buzz!'; end }
+        end
 
-        entry.define_feature(:foo) { def fizz; 'foo fizz!'; end }
-        entry.feature(:foo) { def buzz; 'foo buzz!'; end }
-        entry.define_feature(:bar) { def fizz; 'bar fizz!'; end }
-        entry.feature(:bar) { def buzz; 'bar buzz!'; end }
-        entry.define_feature(:baz) { def fizz; 'baz fizz!'; end }
-        entry.feature(:baz) { def buzz; 'baz buzz!'; end }
-
-        entry.enable(:foo)
-        entry.enable([:bar, :baz])
-
-        factory = entry.build_factory
+        factory = entry.build_factory([:foo, :bar, :baz])
         [:foo, :bar, :baz].each do |key|
           feature = factory.create(component, key)
           expect(feature.fizz).to eq "#{key} fizz!"
@@ -68,19 +64,19 @@ module RgGen::Core::Builder
         end
       end
 
-      specify "#enableで指定したフィーチャーが生成できる" do
+      specify "ファクトリ生成時に指定したフィーチャーが生成できる" do
         exception = Class.new(StandardError)
 
-        entry = create_entry
-        entry.define_factory do
-          define_method(:select_feature) { |key| @target_features[key] || (raise exception) }
+        entry = create_entry do
+          define_factory do
+            define_method(:select_feature) { |key| @target_features[key] || (raise exception) }
+          end
+          define_feature(:foo)
+          define_feature(:bar)
+          define_feature(:baz)
         end
-        entry.define_feature(:foo)
-        entry.define_feature(:bar)
-        entry.define_feature(:baz)
-        entry.enable([:foo, :bar])
 
-        factory = entry.build_factory
+        factory = entry.build_factory([:foo, :bar])
         expect {
           factory.create(component, :foo)
           factory.create(component, :bar)
@@ -93,12 +89,13 @@ module RgGen::Core::Builder
       describe "既定フィーチャーの定義" do
         context "#define_featureで定義したフィーチャーから対象フィーチャーを選択できなかった場合" do
           specify "#define_deault_feature/default_featureで定義した既定フィーチャーが生成される" do
-            entry = create_entry
-            entry.define_factory(&default_factory_body)
-            entry.define_default_feature { def fizz; 'fizz!'; end}
-            entry.default_feature { def buzz; 'buzz!'; end}
+            entry = create_entry do
+              define_factory(&default_factory_body)
+              define_default_feature { def fizz; 'fizz!'; end}
+              default_feature { def buzz; 'buzz!'; end}
+            end
 
-            feature = entry.build_factory.create(component, :foo)
+            feature = entry.build_factory([]).create(component, :foo)
             expect(feature.fizz).to eq 'fizz!'
             expect(feature.buzz).to eq 'buzz!'
           end
@@ -107,16 +104,16 @@ module RgGen::Core::Builder
 
       describe "親フィーチャーの定義" do
         specify "#define_base_feature/base_featureで各フィーチャーの親フィーチャーを定義できる" do
-          entry = create_entry
-          entry.define_factory(&default_factory_body)
-          entry.define_base_feature { def fizz; 'fizz!'; end }
-          entry.base_feature { def buzz; 'buzz!'; end }
-          entry.define_feature(:foo) {}
-          entry.define_feature(:bar) {}
-          entry.define_default_feature {}
-          entry.enable([:foo, :bar])
+          entry = create_entry do
+            define_factory(&default_factory_body)
+            define_base_feature { def fizz; 'fizz!'; end }
+            base_feature { def buzz; 'buzz!'; end }
+            define_feature(:foo) {}
+            define_feature(:bar) {}
+            define_default_feature {}
+          end
 
-          factory = entry.build_factory
+          factory = entry.build_factory([:foo, :bar])
           [:foo, :bar, :baz].map do |feature_name|
             entry = factory.create(component, feature_name)
             expect(entry.fizz).to eq 'fizz!'
@@ -126,13 +123,13 @@ module RgGen::Core::Builder
       end
 
       specify "エントリ生成時に指定した名称が、生成されるフィーチャーの名称になる" do
-        entry = create_entry
-        entry.define_factory(&default_factory_body)
-        entry.define_feature(:foo)
-        entry.define_default_feature
-        entry.enable(:foo)
+        entry = create_entry do
+          define_factory(&default_factory_body)
+          define_feature(:foo)
+          define_default_feature
+        end
 
-        factory = entry.build_factory
+        factory = entry.build_factory([:foo])
         [:foo, :bar].each do |key|
           feature = factory.create(component, key)
           expect(feature.name).to eq feature_name
@@ -145,13 +142,13 @@ module RgGen::Core::Builder
         specify "エントリー/親フィーチャー/ファクトリに共通コンテキストが設定される" do
           shared_context = Object.new
 
-          entry = create_entry(shared_context)
-          entry.define_factory(&default_factory_body)
-          entry.define_feature(:foo)
-          entry.define_default_feature
-          entry.enable(:foo)
+          entry = create_entry(shared_context) do
+            define_factory(&default_factory_body)
+            define_feature(:foo)
+            define_default_feature
+          end
 
-          factory = entry.build_factory
+          factory = entry.build_factory([:foo])
           features = [factory.create(component, :foo), factory.create(component, :bar)]
 
           expect(entry.send(:shared_context)).to be shared_context
@@ -165,13 +162,13 @@ module RgGen::Core::Builder
         specify "定義したフィーチャーに共通コンテキストが設定される" do
           shared_contexts = { foo: Object.new, bar: Object.new }
 
-          entry = create_entry
-          entry.define_factory(&default_factory_body)
-          entry.define_feature(:foo, shared_contexts[:foo])
-          entry.define_feature(:bar, shared_contexts[:bar])
-          entry.enable([:foo, :bar])
+          entry = create_entry do
+            define_factory(&default_factory_body)
+            define_feature(:foo, shared_contexts[:foo])
+            define_feature(:bar, shared_contexts[:bar])
+          end
 
-          factory = entry.build_factory
+          factory = entry.build_factory([:foo, :bar])
           features = {}
           features[:foo] = factory.create(component, :foo)
           features[:bar] = factory.create(component, :bar)
