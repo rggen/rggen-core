@@ -7,7 +7,7 @@ gem 'rake'
 gem 'rspec', '>= 3.3'
 
 group :test do
-  gem 'codecov', :require => false
+  gem 'codecov', require: false
 end
 
 group :develop do
