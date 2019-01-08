@@ -1,6 +1,9 @@
-if ENV['TRAVIS']
-  require 'coveralls'
-  Coveralls.wear!
+require 'simplecov'
+SimpleCov.start
+
+if ENV['CODECOV_TOKEN']
+  require 'codecov'
+  SimpleCov.formatter = SimpleCov::Formatter::Codecov
 end
 
 require 'bundler/setup'
