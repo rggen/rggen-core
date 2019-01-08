@@ -1,6 +1,6 @@
 if ENV['TRAVIS']
-  require 'simplecov'
-  SimpleCov.start
+  require 'coveralls'
+  Coveralls.wear!
 end
 
 require 'bundler/setup'

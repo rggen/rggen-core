@@ -7,7 +7,7 @@ gem 'rake'
 gem 'rspec', '>= 3.3'
 
 group :test do
-  gem 'simplecov'
+  gem 'coveralls', require: false
 end
 
 group :develop do

@@ -1,10 +1,6 @@
 sudo:
   false
 
-env:
-  global:
-    CC_TEST_REPORTER_ID=2f942f4a05296524cd98df81dff1ee549ddbbf39b1f0bd44e62212452affe5a1
-
 addons:
   code_climate:
     repo_token:
@@ -30,12 +26,6 @@ rvm:
 
 before_install:
   - gem install bundler
-  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-  - chmod +x ./cc-test-reporter
-  - ./cc-test-reporter before-build
 
 script:
   - bundle exec rake spec
-
-after_script:
-  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
