@@ -66,6 +66,7 @@ require_relative 'core/output_base/component_factory'
 require_relative 'core/output_base/feature'
 require_relative 'core/output_base/feature_factory'
 
+require_relative 'core/builder/component_entry'
 require_relative 'core/builder/simple_feature_entry'
 require_relative 'core/builder/list_feature_entry'
 require_relative 'core/builder/feature_registry'
