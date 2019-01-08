@@ -14,10 +14,6 @@ module RgGen
 
         private
 
-        def extract_template_path(caller_info)
-          File.ext(caller_info.path, file_extension.to_s)
-        end
-
         def templates
           @templates ||= Hash.new do |templates, path|
             templates[path] = parse_template(path)
