@@ -11,9 +11,11 @@ module RgGen::Core::OutputBase
     end
 
     after(:all) do
+      engine = ERBEngine.instance
       if @templates_original
-        engine = ERBEngine.instance
         engine.instance_variable_set(:@templates, @templates_original)
+      else
+        engine.remove_instance_variable(:@templates)
       end
     end
 
