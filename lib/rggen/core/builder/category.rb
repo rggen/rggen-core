@@ -14,7 +14,8 @@ module RgGen
           end
         end
 
-        def initialize
+        def initialize(name)
+          @name = name
           @feature_registries = {}
         end
 
@@ -31,9 +32,10 @@ module RgGen
 
         def define_simple_feature(feature_names, shared_context: false, &body)
           Array(feature_names).each do |feature_name|
-            define_feature(
-              :define_simple_feature, shared_context, nil, feature_name, body
+            context = create_context(
+              :define_simple_feature, shared_context, nil, feature_name
             )
+            do_feature_definition(context, body)
           end
         end
 
@@ -41,15 +43,17 @@ module RgGen
           if feature_nams
             list_name = list_names
             Array(feature_nams).each do |feature_name|
-              define_feature(
-                :define_list_feature, shared_context, list_name, feature_name, body
+              context = create_context(
+                :define_list_feature, shared_context, list_name, feature_name
               )
+              do_feature_definition(context, body)
             end
           else
             Array(list_names).each do |list_name|
-              define_feature(
-                :define_list_feature, shared_context, list_name, nil, body
+              context = create_context(
+                :define_list_feature, shared_context, list_name, nil
               )
+              do_feature_definition(context, body)
             end
           end
         end
@@ -68,11 +72,11 @@ module RgGen
           end
         end
 
-        def define_feature(method_name, shared_context, list_name, feature_name, body)
-          @context = create_context(
-            method_name, shared_context, list_name, feature_name
+        def do_feature_definition(context, body)
+          @context = context
+          Docile.dsl_eval(
+            self, *[context.list_name, context.feature_name].compact, &body
           )
-          Docile.dsl_eval(self, &body)
           remove_instance_variable(:@context)
         end
 

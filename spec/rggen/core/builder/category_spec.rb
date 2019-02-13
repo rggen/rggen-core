@@ -2,7 +2,7 @@ require 'spec_helper'
 
 module RgGen::Core::Builder
   describe Category do
-    let(:category) { Category.new }
+    let(:category) { Category.new(:a_category) }
 
     let(:fizz_feature_registry) do
       FeatureRegistry.new(

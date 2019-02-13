@@ -1,0 +1,467 @@
+require 'spec_helper'
+
+module RgGen::Core::Builder
+  describe Builder do
+    let(:builder) { Builder.new }
+
+    let(:categories) { {} }
+
+    let(:component_registries) { {} }
+
+    let(:feature_registries) { [] }
+
+    before do
+      allow(Category).to receive(:new).and_wrap_original do |m, *args|
+        m.call(*args).tap { |category| categories[args.first] = category }
+      end
+
+      allow(InputComponentRegistry).to receive(:new).and_wrap_original do |m, *args|
+        m.call(*args).tap { |registry| component_registries[args.first] = registry }
+      end
+
+      allow(OutputComponentRegistry).to receive(:new).and_wrap_original do |m, *args|
+        m.call(*args).tap { |registry| component_registries[args.first] = registry }
+      end
+
+      allow(FeatureRegistry).to receive(:new).and_wrap_original do |m, *args|
+        m.call(*args).tap { |registry| feature_registries << registry }
+      end
+
+      builder
+    end
+
+    describe "#input_component_registry" do
+      it "入力コンポーネントを登録する" do
+        expect {
+          builder.input_component_registry(:configuration) do
+            register_component do
+              component RgGen::Core::Configuration::Component
+              component_factory RgGen::Core::Configuration::ComponentFactory
+            end
+          end
+        }.to change { component_registries.size }.from(0).to(1)
+      end
+
+      specify "入力コンポーネントの登録の生成は一度のみ行われる" do
+        builder.input_component_registry(:register_map) do
+          register_component do
+            component RgGen::Core::RegisterMap::Component
+            component_factory RgGen::Core::RegisterMap::ComponentFactory
+          end
+        end
+
+        expect {
+          builder.input_component_registry(:register_map) do
+            register_component(:register_block) do
+              component RgGen::Core::RegisterMap::Component
+              component_factory RgGen::Core::RegisterMap::ComponentFactory
+            end
+          end
+        }.not_to change { component_registries.size }
+      end
+
+      context "フィーチャーの登録があり" do
+        context "カテゴリの指定がない場合" do
+          it "全カテゴリにフィーチャーの登録を追加する" do
+            categories.each_value do |category|
+              allow(category).to receive(:add_feature_registry).and_call_original
+            end
+
+            builder.input_component_registry(:configuration) do
+              register_component do
+                component RgGen::Core::Configuration::Component
+                component_factory RgGen::Core::Configuration::ComponentFactory
+                base_feature RgGen::Core::Configuration::Feature
+                feature_factory RgGen::Core::Configuration::FeatureFactory
+              end
+            end
+
+            categories.each_value do |category|
+              expect(category).to have_received(:add_feature_registry).with(:configuration, equal(feature_registries.first))
+            end
+          end
+        end
+
+        context "カテゴリの指定がある場合" do
+          it "指定されたカテゴリにフィーチャーの登録を追加する" do
+            categories.each do |name, category|
+              if [:register_block, :register, :bit_field].include?(name)
+                allow(category).to receive(:add_feature_registry).and_call_original
+              else
+                expect(category).not_to receive(:add_feature_registry)
+              end
+            end
+
+            builder.input_component_registry(:register_map) do
+              register_component(:register_block) do
+                component RgGen::Core::RegisterMap::Component
+                component_factory RgGen::Core::RegisterMap::ComponentFactory
+                base_feature RgGen::Core::RegisterMap::Feature
+                feature_factory RgGen::Core::RegisterMap::FeatureFactory
+              end
+
+              register_component([:register, :bit_field]) do
+                component RgGen::Core::RegisterMap::Component
+                component_factory RgGen::Core::RegisterMap::ComponentFactory
+                base_feature RgGen::Core::RegisterMap::Feature
+                feature_factory RgGen::Core::RegisterMap::FeatureFactory
+              end
+            end
+
+            [:register_block, :register, :bit_field].each_with_index do |category, i|
+              expect(categories[category]).to have_received(:add_feature_registry).with(:register_map, equal(feature_registries[i]))
+            end
+          end
+        end
+      end
+    end
+
+    describe "#output_component_registry" do
+      it "出力コンポーネントを登録する" do
+        expect {
+          builder.output_component_registry(:foo) do
+            register_component do
+              component RgGen::Core::OutputBase::Component
+              component_factory RgGen::Core::OutputBase::ComponentFactory
+            end
+          end
+        }.to change { component_registries.size }.from(0).to(1)
+      end
+
+      specify "出力コンポーネントの登録の生成は一度のみ行われる" do
+        builder.output_component_registry(:foo) do
+          register_component do
+            component RgGen::Core::OutputBase::Component
+            component_factory RgGen::Core::OutputBase::ComponentFactory
+          end
+        end
+
+        expect {
+          builder.output_component_registry(:foo) do
+            register_component(:register_block) do
+              component RgGen::Core::OutputBase::Component
+              component_factory RgGen::Core::OutputBase::ComponentFactory
+            end
+          end
+        }.not_to change { component_registries.size }
+      end
+
+      context "フィーチャーの登録があり" do
+        context "カテゴリの指定がない場合" do
+          it "全カテゴリにフィーチャーの登録を追加する" do
+            categories.each_value do |category|
+              allow(category).to receive(:add_feature_registry).and_call_original
+            end
+
+            builder.output_component_registry(:foo) do
+              register_component do
+                component RgGen::Core::OutputBase::Component
+                component_factory RgGen::Core::OutputBase::ComponentFactory
+                base_feature RgGen::Core::OutputBase::Feature
+                feature_factory RgGen::Core::OutputBase::FeatureFactory
+              end
+            end
+
+            categories.each_value do |category|
+              expect(category).to have_received(:add_feature_registry).with(:foo, equal(feature_registries.first))
+            end
+          end
+        end
+
+        context "カテゴリの指定がある場合" do
+          it "指定されたカテゴリにフィーチャーの登録を追加する" do
+            categories.each do |name, category|
+              if [:register_block, :register, :bit_field].include?(name)
+                allow(category).to receive(:add_feature_registry).and_call_original
+              else
+                expect(category).not_to receive(:add_feature_registry)
+              end
+            end
+
+            builder.output_component_registry(:foo) do
+              register_component(:register_block) do
+                component RgGen::Core::RegisterMap::Component
+                component_factory RgGen::Core::RegisterMap::ComponentFactory
+                base_feature RgGen::Core::RegisterMap::Feature
+                feature_factory RgGen::Core::RegisterMap::FeatureFactory
+              end
+
+              register_component([:register, :bit_field]) do
+                component RgGen::Core::RegisterMap::Component
+                component_factory RgGen::Core::RegisterMap::ComponentFactory
+                base_feature RgGen::Core::RegisterMap::Feature
+                feature_factory RgGen::Core::RegisterMap::FeatureFactory
+              end
+            end
+
+            [:register_block, :register, :bit_field].each_with_index do |category, i|
+              expect(categories[category]).to have_received(:add_feature_registry).with(:foo, equal(feature_registries[i]))
+            end
+          end
+        end
+      end
+    end
+
+    def default_component_registration
+      builder.input_component_registry(:configuration) do
+        register_component do
+          component RgGen::Core::Configuration::Component
+          component_factory RgGen::Core::Configuration::ComponentFactory
+          base_feature RgGen::Core::Configuration::Feature
+          feature_factory RgGen::Core::Configuration::FeatureFactory
+        end
+
+        base_loader RgGen::Core::Configuration::Loader
+      end
+
+      builder.input_component_registry(:register_map) do
+        register_component do
+          component RgGen::Core::RegisterMap::Component
+          component_factory RgGen::Core::RegisterMap::ComponentFactory
+        end
+        register_component([:register_block, :register, :bit_field]) do
+          component RgGen::Core::RegisterMap::Component
+          component_factory RgGen::Core::RegisterMap::ComponentFactory
+          base_feature RgGen::Core::RegisterMap::Feature
+          feature_factory RgGen::Core::RegisterMap::FeatureFactory
+        end
+        base_loader RgGen::Core::RegisterMap::Loader
+      end
+
+      [:foo, :bar, :baz].each do |component_name|
+        builder.output_component_registry(component_name) do
+          register_component do
+            component RgGen::Core::OutputBase::Component
+            component_factory RgGen::Core::OutputBase::ComponentFactory
+          end
+          register_component([:register_block, :register, :bit_field]) do
+            component RgGen::Core::OutputBase::Component
+            component_factory RgGen::Core::OutputBase::ComponentFactory
+            base_feature RgGen::Core::OutputBase::Feature
+            feature_factory RgGen::Core::OutputBase::FeatureFactory
+          end
+        end
+      end
+    end
+
+    def default_feature_definitions(category)
+      builder.define_simple_feature(category, [:fizz_0, :fizz_1, :fizz_2]) do |feature_name|
+        configuration { define_method(feature_name) { feature_name } }
+        if category != :global
+          register_map { define_method(feature_name) { feature_name } }
+          foo { define_method(feature_name) { feature_name } }
+          bar { define_method(feature_name) { feature_name } }
+          baz { define_method(feature_name) { feature_name } }
+        end
+      end
+
+      builder.define_list_feature(category, :buzz) do
+        configuration {}
+        if category != :global
+          register_map {}
+          foo {}
+          bar {}
+          baz {}
+        end
+      end
+
+      builder.define_list_feature(category, :buzz, [:buzz_0, :buzz_1, :buzz_2]) do |_, feature_name|
+        configuration { define_method(feature_name) { feature_name } }
+        if category != :global
+          register_map { define_method(feature_name) { feature_name } }
+          foo { define_method(feature_name) { feature_name } }
+          bar { define_method(feature_name) { feature_name } }
+          baz { define_method(feature_name) { feature_name } }
+        end
+      end
+    end
+
+    describe "#register_loader/#define_loader" do
+      before do
+        default_component_registration
+      end
+
+      let(:target_component) do
+        [:configuration, :register_map].sample
+      end
+
+      let(:component_registry) { component_registries[target_component] }
+
+      let(:loader) do
+        if target_component == :configuration
+          RgGen::Core::Configuration::YAMLLoader
+        else
+          RgGen::Core::RegisterMap::YAMLLoader
+        end
+      end
+
+      it "対象コンポーネントローダーの追加/定義を行う" do
+        allow(component_registry).to receive(:register_loader).and_call_original
+        allow(component_registry).to receive(:define_loader).and_call_original
+
+        builder.register_loader(target_component, loader)
+        builder.define_loader(target_component) { support_types [:txt] }
+
+        expect(component_registry).to have_received(:register_loader).with(equal(loader))
+        expect(component_registry).to have_received(:define_loader)
+      end
+
+      context "未登録のコンポーネントが指定された場合" do
+        it "BuilderErrorを起こす" do
+          expect {
+            builder.register_loader(:foo, RgGen::Core::Configuration::YAMLLoader)
+          }.to raise_error RgGen::Core::BuilderError, 'unknown component: foo'
+
+          expect {
+            builder.define_loader(:bar) { support_types [:txt] }
+          }.to raise_error RgGen::Core::BuilderError, 'unknown component: bar'
+        end
+      end
+    end
+
+    describe "#define_simple_feature/#define_list_feature" do
+      let(:target_category) do
+        [:global, :register_block, :register, :bit_field].sample
+      end
+
+      let(:category) { categories[target_category] }
+
+      before do
+        default_component_registration
+      end
+
+      it "指定したカテゴリの#define_simple_feature/#define_list_featureを呼び出して、フィーチャーの定義を行う" do
+        expect(category).to receive(:define_simple_feature).with(:foo).and_call_original
+        expect(category).to receive(:define_simple_feature).with(:bar, shared_context: true).and_call_original
+        expect(category).to receive(:define_list_feature).with(:baz).and_call_original
+        expect(category).to receive(:define_list_feature).with(:baz, :bar_0, shared_context: true).and_call_original
+        expect(category).to receive(:define_list_feature).with(:qux, shared_context: true).and_call_original
+        expect(category).to receive(:define_list_feature).with(:qux, :qux_0).and_call_original
+
+        builder.define_simple_feature(target_category, :foo) {}
+        builder.define_simple_feature(target_category, :bar, shared_context: true) {}
+        builder.define_list_feature(target_category, :baz) {}
+        builder.define_list_feature(target_category, :baz, :bar_0, shared_context: true) {}
+        builder.define_list_feature(target_category, :qux, shared_context: true) {}
+        builder.define_list_feature(target_category, :qux, :qux_0) {}
+      end
+
+      context "未定義のカテゴリが指定された場合" do
+        it "BuilderErrorを起こす" do
+          expect {
+            builder.define_simple_feature(:foo, :bar) {}
+          }.to raise_error RgGen::Core::BuilderError, 'unknown category: foo'
+
+          expect {
+            builder.define_list_feature(:bar, :baz) {}
+          }.to raise_error RgGen::Core::BuilderError, 'unknown category: bar'
+
+          expect {
+            builder.define_list_feature(:baz, :qux, :qux_0) {}
+          }.to raise_error RgGen::Core::BuilderError, 'unknown category: baz'
+        end
+      end
+    end
+
+    describe "#enable" do
+      let(:target_category) do
+        [:global, :register_block, :register, :bit_field].sample
+      end
+
+      let(:category) { categories[target_category] }
+
+      before do
+        default_component_registration
+        default_feature_definitions(target_category)
+      end
+
+      it "指定したカテゴリの#enableを呼び出して、定義したフィーチャーを有効にする" do
+        expect(category).to receive(:enable).with(:fizz_0).and_call_original
+        expect(category).to receive(:enable).with(match([:fizz_1, :fizz_2, :buzz])).and_call_original
+        expect(category).to receive(:enable).with(:buzz, :buzz_0).and_call_original
+        expect(category).to receive(:enable).with(:buzz, match([:buzz_1, :buzz_2])).and_call_original
+
+        builder.enable(target_category, :fizz_0)
+        builder.enable(target_category, [:fizz_1, :fizz_2, :buzz])
+        builder.enable(target_category, :buzz, :buzz_0)
+        builder.enable(target_category, :buzz, [:buzz_1, :buzz_2])
+      end
+
+      context "未定義のカテゴリを指定した場合" do
+        it "BuilderErrorを起こす" do
+          expect {
+            builder.enable(:foo, :bar)
+          }.to raise_error RgGen::Core::BuilderError, 'unknown category: foo'
+
+          expect {
+            builder.enable(:bar, :baz, :qux)
+          }.to raise_error RgGen::Core::BuilderError, 'unknown category: bar'
+        end
+      end
+    end
+
+    describe "#build_input_component_factory" do
+      before do
+        default_component_registration
+      end
+
+      it "指定した入力コンポーネントのファクトリを生成する" do
+        [:configuration, :register_map].shuffle.each do |component|
+          factory = nil
+          allow(component_registries[component]).to receive(:build_root_factory).and_wrap_original do |m|
+            m.call.tap { |f| factory = f }
+          end
+
+          expect(builder.build_input_component_factory(component)).to be factory
+        end
+      end
+
+      context "未定義のコンポーネントが指定された場合" do
+        it "BuilderErrorを起こす" do
+          expect {
+            builder.build_input_component_factory(:foo)
+          }.to raise_error RgGen::Core::BuilderError, 'unknown component: foo'
+        end
+      end
+    end
+
+    describe '#build_output_component_factories' do
+      before do
+        default_component_registration
+      end
+
+      it "出力コンポーネントのファクトリを生成する" do
+        factories = []
+        [:foo, :bar, :baz].each do |component|
+          allow(component_registries[component]).to receive(:build_root_factory).and_wrap_original do |m|
+            m.call.tap { |f| factories << f }
+          end
+        end
+
+        expect(builder.build_output_component_factories([])).to match(factories.map { |f| equal(f) })
+      end
+
+      context '除外指定がある場合' do
+        let(:exceptions) do
+          [:foo, :bar, :baz].sample([0, 1, 2, 3].sample)
+        end
+
+        it '配列で指定されたコンポーネントを除く、出力コンポーネントのファクトリを生成する' do
+          factories = []
+          [:foo, :bar, :baz].each do |component|
+            if exceptions.include?(component)
+              expect(component_registries[component]).not_to receive(:build_root_factory)
+            else
+              allow(component_registries[component]).to receive(:build_root_factory).and_wrap_original do |m|
+                m.call.tap { |f| factories << f }
+              end
+            end
+          end
+
+          expect(builder.build_output_component_factories([:qux, :fizzbuzz, *exceptions])).
+          to match(factories.map { |f| equal(f) })
+        end
+      end
+    end
+  end
+end
