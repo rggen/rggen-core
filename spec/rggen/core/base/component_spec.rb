@@ -75,7 +75,7 @@ module RgGen::Core::Base
       let(:features) do
         [:foo, :bar].each_with_object({}) do |feature_name, hash|
           hash[feature_name] = Object.new.tap do |feature|
-            allow(feature).to receive(:name).and_return(feature_name)
+            allow(feature).to receive(:feature_name).and_return(feature_name)
           end
         end
       end

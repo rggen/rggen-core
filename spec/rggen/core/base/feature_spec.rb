@@ -18,7 +18,7 @@ module RgGen::Core::Base
 
     describe "#name" do
       it "フィーチャー名を返す" do
-        expect(feature.name).to eq feature_name
+        expect(feature.feature_name).to eq feature_name
       end
     end
 

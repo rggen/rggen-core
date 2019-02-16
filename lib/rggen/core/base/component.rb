@@ -31,7 +31,7 @@ module RgGen
         end
 
         def add_feature(feature)
-          @features[feature.name] = feature
+          @features[feature.feature_name] = feature
         end
 
         def features
