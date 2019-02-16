@@ -43,7 +43,7 @@ module RgGen
         end
 
         def define_feature_method_accessor(feature)
-          target = "@features[:#{feature.name}]"
+          target = "@features[:#{feature.feature_name}]"
           def_delegators(target, *feature.exported_methods)
         end
 

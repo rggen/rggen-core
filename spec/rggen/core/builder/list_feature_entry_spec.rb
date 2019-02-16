@@ -132,7 +132,7 @@ module RgGen::Core::Builder
         factory = entry.build_factory([:foo])
         [:foo, :bar].each do |key|
           feature = factory.create(component, key)
-          expect(feature.name).to eq feature_name
+          expect(feature.feature_name).to eq feature_name
         end
       end
     end

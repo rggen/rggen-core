@@ -19,7 +19,7 @@ module RgGen
         private
 
         def define_property_methods(feature)
-          target = "@features[:#{feature.name}]"
+          target = "@features[:#{feature.feature_name}]"
           def_delegators(target, *feature.properties)
         end
       end

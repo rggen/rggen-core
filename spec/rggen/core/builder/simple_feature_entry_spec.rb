@@ -40,7 +40,7 @@ module RgGen::Core::Builder
     specify "生成されるフィーチャーは、エントリー生成時に指定されたフィーチャー名を持つ" do
       entry = create_entry(nil)
       feature = entry.build_factory([]).create(component)
-      expect(feature.name).to eq feature_name
+      expect(feature.feature_name).to eq feature_name
     end
 
     context "共有コンテキストが与えられた場合" do

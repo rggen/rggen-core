@@ -6,15 +6,15 @@ module RgGen
         include SharedContext
         extend Forwardable
 
-        def initialize(component, name)
+        def initialize(component, feature_name)
           @component = component
-          @name = name
+          @feature_name = feature_name
           post_initialize
           block_given? && yield(self)
         end
 
         attr_reader :component
-        attr_reader :name
+        attr_reader :feature_name
 
         class << self
           private
