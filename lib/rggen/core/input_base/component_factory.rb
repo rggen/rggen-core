@@ -61,18 +61,18 @@ module RgGen
 
         def active_feature_factories
           @active_feature_factories ||=
-            @feature_factories.select { |_, f| f.active_feature_factory? }
+            @feature_factories&.select { |_, f| f.active_feature_factory? }
         end
 
         def passive_feature_factories
           @passive_feature_factories ||=
-            @feature_factories.select { |_, f| f.passive_feature_factory? }
+            @feature_factories&.select { |_, f| f.passive_feature_factory? }
         end
 
         protected
 
         def valid_value_lists
-          list = [active_feature_factories.keys]
+          list = [Array(active_feature_factories&.keys)]
           child_factory && list.concat(child_factory.valid_value_lists)
           list
         end

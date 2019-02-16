@@ -30,6 +30,10 @@ module RgGen::Core::Builder
       builder
     end
 
+    specify "初期化時に global/register_map/register_block/register/bit_field のカテゴリが作られる" do
+      expect(categories.keys).to match([:global, :register_map, :register_block, :register, :bit_field])
+    end
+
     describe "#input_component_registry" do
       it "入力コンポーネントを登録する" do
         expect {
@@ -461,6 +465,130 @@ module RgGen::Core::Builder
           expect(builder.build_output_component_factories([:qux, :fizzbuzz, *exceptions])).
           to match(factories.map { |f| equal(f) })
         end
+      end
+    end
+
+    describe  "#register_input_components" do
+      let(:configuration_file_format) do
+        [:yaml, :json, :ruby].sample
+      end
+
+      let(:configuration_file) do
+        {
+          yaml: 'configuration.yaml', json: 'configuration.json', ruby: 'configuration.rb'
+        }[configuration_file_format]
+      end
+
+      let(:configuration_file_contents) do
+        {
+          yaml: 'prefix: foo',
+          json: '{"prefix": "foo"}',
+          ruby: 'prefix :foo'
+        }[configuration_file_format]
+      end
+
+      let(:register_map_file_format) do
+        [:yaml, :json, :ruby].sample
+      end
+
+      let(:register_map_file) do
+        {
+          yaml: 'register_map.yaml',
+          json: 'register_map.json',
+          ruby: 'register_map.rb'
+        }[register_map_file_format]
+      end
+
+      let(:register_map_file_yaml_contents) do
+        <<~REGISTER_MAP
+          register_blocks:
+          - name: register_block_0
+            registers:
+            - name: register_0
+              bit_fields:
+              - name: bit_field_0
+        REGISTER_MAP
+      end
+
+      let(:register_map_file_json_contents) do
+        <<~'REGISTER_MAP'
+          {
+            "register_blocks": [
+              {
+                "name": "register_block_0",
+                "registers": [
+                  {
+                    "name": "register_0",
+                    "bit_fields": [
+                      {
+                        "name": "bit_field_0"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        REGISTER_MAP
+      end
+
+      let(:register_map_file_ruby_contents) do
+        <<~REGISTER_MAP
+          register_block {
+            name :register_block_0
+            register {
+              name :register_0
+              bit_field {
+                name :bit_field_0
+              }
+            }
+          }
+        REGISTER_MAP
+      end
+
+      let(:register_map_file_contents) do
+        {
+          yaml: register_map_file_yaml_contents,
+          json: register_map_file_json_contents,
+          ruby: register_map_file_ruby_contents
+        }[register_map_file_format]
+      end
+
+      it "Configuration／RegisterMapコンポーネントが登録される" do
+        builder.register_input_components
+
+        builder.define_simple_feature(:global, :prefix) do
+          configuration do
+            property :prefix
+            build { |value| @prefix = value }
+          end
+        end
+        builder.enable(:global, :prefix)
+
+        [:register_block, :register, :bit_field].each do |category|
+          builder.define_simple_feature(category, :name) do
+            register_map do
+              property :name
+              build { |value| @name = "#{configuration.prefix}_#{value}" }
+            end
+          end
+          builder.enable(category, :name)
+        end
+
+        allow(File).to receive(:readable?).with(configuration_file).and_return(true)
+        allow(File).to receive(:binread).with(configuration_file).and_return(configuration_file_contents)
+        factory = builder.build_input_component_factory(:configuration)
+        configuration = factory.create([configuration_file])
+
+        allow(File).to receive(:readable?).with(register_map_file).and_return(true)
+        allow(File).to receive(:binread).with(register_map_file).and_return(register_map_file_contents)
+        factory = builder.build_input_component_factory(:register_map)
+        register_map = factory.create(configuration, [register_map_file])
+
+        expect(configuration.prefix).to match 'foo'
+        expect(register_map.register_blocks.first.name).to match 'foo_register_block_0'
+        expect(register_map.registers.first.name).to match 'foo_register_0'
+        expect(register_map.bit_fields.first.name).to match 'foo_bit_field_0'
       end
     end
   end

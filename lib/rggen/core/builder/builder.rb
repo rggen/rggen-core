@@ -63,10 +63,17 @@ module RgGen
             .map { |_, registry| registry.build_root_factory }
         end
 
+        def register_input_components
+          Configuration.setup(self)
+          RegisterMap.setup(self)
+        end
+
         private
 
         def initialize_categories
-          [:global, :register_block, :register, :bit_field].each do |category|
+          [
+            :global, :register_map, :register_block, :register, :bit_field
+          ].each do |category|
             @categories[category] = Category.new(category)
           end
         end
