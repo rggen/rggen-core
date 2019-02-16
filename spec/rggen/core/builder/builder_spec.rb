@@ -470,7 +470,7 @@ module RgGen::Core::Builder
 
     describe  "#register_input_components" do
       let(:configuration_file_format) do
-        [:yaml, :json, :ruby].sample
+       [:yaml, :json, :ruby].sample
       end
 
       let(:configuration_file) do
@@ -483,7 +483,7 @@ module RgGen::Core::Builder
         {
           yaml: 'prefix: foo',
           json: '{"prefix": "foo"}',
-          ruby: 'prefix :foo'
+          ruby: 'prefix \'foo\''
         }[configuration_file_format]
       end
 
@@ -535,11 +535,11 @@ module RgGen::Core::Builder
       let(:register_map_file_ruby_contents) do
         <<~REGISTER_MAP
           register_block {
-            name :register_block_0
+            name 'register_block_0'
             register {
-              name :register_0
+              name 'register_0'
               bit_field {
-                name :bit_field_0
+                name 'bit_field_0'
               }
             }
           }
@@ -585,10 +585,10 @@ module RgGen::Core::Builder
         factory = builder.build_input_component_factory(:register_map)
         register_map = factory.create(configuration, [register_map_file])
 
-        expect(configuration.prefix).to match 'foo'
-        expect(register_map.register_blocks.first.name).to match 'foo_register_block_0'
-        expect(register_map.registers.first.name).to match 'foo_register_0'
-        expect(register_map.bit_fields.first.name).to match 'foo_bit_field_0'
+        expect(configuration.prefix).to eq 'foo'
+        expect(register_map.register_blocks.first.name).to eq 'foo_register_block_0'
+        expect(register_map.registers.first.name).to eq 'foo_register_0'
+        expect(register_map.bit_fields.first.name).to eq 'foo_bit_field_0'
       end
     end
   end
