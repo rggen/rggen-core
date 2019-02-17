@@ -2,11 +2,8 @@ module RgGen
   module Core
     module Builder
       class ComponentEntry
-        %i[
-          component
-          component_factory
-          base_feature
-          feature_factory
+        [
+          :component, :component_factory, :base_feature, :feature_factory
         ].each do |class_name|
           define_method(class_name) do |base, &body|
             klass = (body && Class.new(base, &body)) || base
@@ -15,7 +12,7 @@ module RgGen
         end
 
         def feature_registry
-          (@base_feature && @feature_factory) || (return nil)
+          (@base_feature && @feature_factory) || return
           @feature_registry ||=
             FeatureRegistry.new(@base_feature, @feature_factory)
         end
