@@ -35,10 +35,10 @@ module RgGen
         end
 
         def build_factories
-          @feature_entries.each_with_object({}) do |(name, entry), factories|
-            @enabled_features.key?(name) || next
-            factories[name] = entry.build_factory(@enabled_features[name])
-          end
+          @enabled_features
+            .select { |n, _| @feature_entries.key?(n) }
+            .map { |n, f| [n, @feature_entries[n].build_factory(f)] }
+            .to_h
         end
 
         private

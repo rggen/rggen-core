@@ -67,10 +67,10 @@ module RgGen
         end
 
         def target_features(enabled_features)
-          enabled_features.each_with_object({}) do |enabled_feature, features|
-            @features.key?(enabled_feature) || next
-            features[enabled_feature] = @features[enabled_feature]
-          end
+          enabled_features
+            .select { |n| @features.key?(n) }
+            .map { |n| [n, @features[n]] }
+            .to_h
         end
       end
     end
