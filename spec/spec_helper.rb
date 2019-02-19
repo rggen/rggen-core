@@ -1,6 +1,9 @@
 if ENV['COVERAGE']
   require 'simplecov'
-  SimpleCov.start
+  SimpleCov.start do
+    add_filter 'lib/rggen/core/spec_helpers/'
+    add_filter 'spec/support/custom_matchers/'
+  end
 
   if ENV['CODECOV_TOKEN']
     require 'codecov'
