@@ -104,13 +104,11 @@ module RgGen
         if ENV.key?('RGGEN_DEFAULT_SETUP_FILE')
           ENV['RGGEN_DEFAULT_SETUP_FILE']
         else
-          begin
-            require 'lib/rggen/default_setup_file'
-            ::RgGen::DEFAULT_SETUP_FILE
-          rescue ::LoadError
-            nil
-          end
+          require 'lib/rggen/default_setup_file'
+          RgGen::DEFAULT_SETUP_FILE
         end
+      rescue ::LoadError
+        nil
       end
     end
 
