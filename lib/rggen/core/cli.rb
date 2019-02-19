@@ -5,14 +5,12 @@ module RgGen
         initialize_builder
       end
 
-      def run(args, internal: false)
-        error_handler(internal) do
-          parse_options(args)
-          load_setup
-          load_configuration
-          load_register_maps
-          write_files
-        end
+      def run(args)
+        parse_options(args)
+        load_setup
+        load_configuration
+        load_register_maps
+        write_files
       end
 
       private
@@ -26,13 +24,6 @@ module RgGen
         @builder = Builder::Builder.new
         builder.register_input_components
         ::RgGen.builder(builder)
-      end
-
-      def error_handler(internal)
-        yield
-      rescue OptionParser::ParseError, Core::RuntimeError => e
-        internal && raise
-        abort "[#{e.class.lastname}] #{e.message}"
       end
 
       def parse_options(args)

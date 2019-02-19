@@ -148,7 +148,7 @@ module RgGen::Core
 
         it "LoadErrorを起こす" do
           expect {
-            cli.run(['--setup', invalid_setup_file], internal: true)
+            cli.run(['--setup', invalid_setup_file])
           }.to raise_error RgGen::Core::LoadError, "cannot load such file -- #{invalid_setup_file}"
         end
       end
@@ -156,7 +156,7 @@ module RgGen::Core
       context "セットアップフィアルの指定がない場合" do
         it "LoadErrorを起こす" do
           expect {
-            cli.run([], internal: true)
+            cli.run([])
           }.to raise_error RgGen::Core::LoadError, 'no setup file is specified'
         end
       end
@@ -216,7 +216,7 @@ module RgGen::Core
       context "レジスタマップの指定がない場合" do
         it do
           expect {
-            cli.run(['--setup', setup_file], internal: true)
+            cli.run(['--setup', setup_file])
           }.to raise_error RgGen::Core::LoadError, 'no register map files are specified'
         end
       end
@@ -269,79 +269,6 @@ module RgGen::Core
         it "ファイルの書き出しは行わない" do
           expect(File).not_to receive(:binwrite)
           cli.run(['--setup', setup_file, '--load-only', register_map_files[0]])
-        end
-      end
-    end
-
-    describe "例外処理" do
-      context "OptionParser::ParseErrorが起こった場合" do
-        it "メッセージを出力し、終了する" do
-          expect {
-            cli.run(['--foo'])
-          }.to exit_with_code(1).and output("[InvalidOption] invalid option: --foo\n").to_stderr
-        end
-      end
-
-      context "LoadErrorが起こった場合" do
-        it "メッセージを出力し、終了する" do
-          expect {
-            cli.run([])
-          }.to exit_with_code(1).and output("[LoadError] no setup file is specified\n").to_stderr
-        end
-      end
-
-      context "ConfigurationErrorが起こった場合" do
-        before do
-          builder.define_simple_feature(:global, :raise_error) do
-            configuration do
-              validate do
-                error 'invalid configuration !'
-              end
-            end
-          end
-          builder.enable(:global, :raise_error)
-        end
-
-        it "メッセージを出力し、終了する" do
-          expect {
-            cli.run(['--setup', setup_file])
-          }.to exit_with_code(1).and output("[ConfigurationError] invalid configuration !\n").to_stderr
-        end
-      end
-
-      context "RegisterMapErrorが起こった場合" do
-        before do
-          builder.define_simple_feature(:register_block, :raise_error) do
-            register_map do
-              validate do
-                error 'invalid register block !'
-              end
-            end
-          end
-          builder.enable(:register_block, :raise_error)
-        end
-
-        it "メッセージを出力し、終了する" do
-          expect {
-            cli.run(['--setup', setup_file, register_map_files[0]])
-          }.to exit_with_code(1).and output("[RegisterMapError] invalid register block !\n").to_stderr
-        end
-      end
-
-      context "その他の例外の場合" do
-        before do
-          builder.define_simple_feature(:global, :raise_error) do
-            configuration do
-              validate { 1 / 0 }
-            end
-          end
-          builder.enable(:global, :raise_error)
-        end
-
-        it "そのまま例外を起こす" do
-          expect {
-            cli.run(['--setup', setup_file])
-          }.to raise_error ZeroDivisionError
         end
       end
     end
