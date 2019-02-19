@@ -73,10 +73,14 @@ module RgGen
         @options = {}
       end
 
+      attr_reader :original_args
+      attr_reader :register_map_files
+
       def_delegator :@options, :[]
 
-      def parse(argv)
-        option_parser.parse(argv)
+      def parse(args)
+        @original_arg = args
+        @register_map_files = option_parser.parse(args)
       end
 
       private

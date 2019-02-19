@@ -10,12 +10,13 @@ module RgGen::Core
       allow(ENV).to receive(:key?).with('RGGEN_DEFAULT_CONFIGURATION_FILE').and_return(false)
     end
 
-    describe "#parse" do
-      it "オプション引数をパースし、残りの引数を返す" do
+    describe "#register_map_files" do
+      it "パース後の残りの引数を返す" do
         original_args = [
           '-s', 'setup.rb', '-c', 'configuration.yaml', 'register_map_0.xlsx', 'register_map_1.xlsx'
         ]
-        expect(options.parse(original_args)).to match(['register_map_0.xlsx', 'register_map_1.xlsx'])
+        options.parse(original_args)
+        expect(options.register_map_files).to match(['register_map_0.xlsx', 'register_map_1.xlsx'])
       end
     end
 

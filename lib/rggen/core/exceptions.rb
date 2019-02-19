@@ -10,13 +10,14 @@ module RgGen
     end
 
     class LoadError < Core::RuntimeError
-      def initialize(message, path)
+      def initialize(message, path = nil)
         super(message)
         @path = path
       end
 
       def to_s
-        "#{super} -- #{@path}"
+        @path && (return "#{super} -- #{@path}")
+        super
       end
     end
   end
