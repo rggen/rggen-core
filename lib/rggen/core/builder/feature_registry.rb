@@ -44,7 +44,7 @@ module RgGen
         private
 
         def create_new_entry(type, name, context, body)
-          klass = { simple: SimpleFeatureEntry, list: ListFeatureEntry}[type]
+          klass = { simple: SimpleFeatureEntry, list: ListFeatureEntry }[type]
           entry = klass.new(name, @factory, @base_feature, context, body)
           @feature_entries[name] = entry
         end
@@ -56,8 +56,7 @@ module RgGen
         end
 
         def enable_list_features(list_name, features)
-          @enabled_features.key?(list_name) || return
-          @enabled_features[list_name].merge!(Array(features))
+          @enabled_features[list_name]&.merge!(Array(features))
         end
       end
     end
