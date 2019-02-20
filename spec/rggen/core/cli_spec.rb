@@ -23,13 +23,15 @@ module RgGen::Core
           end
         end
 
-        RgGen.define_simple_feature(:global, :prefix) do
-          configuration do
-            property :prefix, default: 'fizz'
-            build { |v| @prefix = v }
+        RgGen.build do |builder|
+          builder.define_simple_feature(:global, :prefix) do
+            configuration do
+              property :prefix, default: 'fizz'
+              build { |v| @prefix = v }
+            end
           end
+          builder.enable(:global, :prefix)
         end
-        RgGen.enable(:global, :prefix)
 
         [:register_block, :register, :bit_field].each do |category|
           RgGen.define_simple_feature(category, :name) do
@@ -53,19 +55,24 @@ module RgGen::Core
               +''
             end
           end
+        end
 
-          bar do
-            write_file 'bar_<%= register_block.name %>.txt' do |code|
-              code << [configuration.prefix, 'bar', register_block.name].join('_') << "\n"
-              code << [configuration.prefix, 'bar', register_map.registers.first.name].join('_') << "\n"
-              code << [configuration.prefix, 'bar', register_map.bit_fields.first.name].join('_') << "\n"
-            end
+        RgGen.setup do |builder|
+          builder.define_simple_feature(:register_block, :sample_writer) do
+            bar do
+              write_file 'bar_<%= register_block.name %>.txt' do |code|
+                code << [configuration.prefix, 'bar', register_block.name].join('_') << "\n"
+                code << [configuration.prefix, 'bar', register_map.registers.first.name].join('_') << "\n"
+                code << [configuration.prefix, 'bar', register_map.bit_fields.first.name].join('_') << "\n"
+              end
 
-            def create_blank_file(_)
-              +''
+              def create_blank_file(_)
+                +''
+              end
             end
           end
         end
+
         RgGen.enable(:register_block, :sample_writer)
       end
     end

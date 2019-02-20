@@ -16,6 +16,12 @@ module RgGen
       ].each do |method_name|
         def_delegator :'RgGen.builder', method_name
       end
+
+      def build(&_block)
+        yield(RgGen.builder)
+      end
+
+      alias_method :setup, :build
     end
   end
 
