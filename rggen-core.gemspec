@@ -1,7 +1,5 @@
-# coding: utf-8
-
-lib = File.expand_path('../lib', __FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+lib = File.expand_path('lib', __dir__)
+$LOAD_PATH.include?(lib) || $LOAD_PATH.unshift(lib)
 require 'rggen/core/version'
 
 Gem::Specification.new do |spec|
@@ -12,16 +10,10 @@ Gem::Specification.new do |spec|
   spec.license = 'MIT'
   spec.homepage = 'https://github.com/rggen/rggen-core'
 
-  spec.summary = 'Core components for RgGen tool'
-  spec.description = <<-EOS
-    RgGen is a code generator tool for SoC/IP/FPGA/RTL engineers.
-    It will automatically generate source code for control/status registers, e.g. RTL, UVM RAL model, C header file, from its register map document.
-    Also RgGen is customizable so you can build your specific generate tool.
-  EOS
+  spec.summary = "rggen-core-#{RgGen::Core::VERSION}"
+  spec.description = 'Core components for RgGen tool.'
 
-  spec.files = `git ls-files -z`.split("\x0").reject do |f|
-    f.match(%r{^(test|spec|features)/})
-  end
+  spec.files = `git ls-files exe lib LICENSE README.md`.split($RS)
   spec.bindir = 'exe'
   spec.executables = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
