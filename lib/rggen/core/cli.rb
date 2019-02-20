@@ -9,7 +9,7 @@ module RgGen
         parse_options(args)
         load_setup
         load_configuration
-        load_register_maps
+        load_register_map
         write_files
       end
 
@@ -32,43 +32,46 @@ module RgGen
       end
 
       def load_setup
-        file = options[:setup]
-        file || (
+        options[:setup] || (
           raise Core::LoadError.new('no setup file is specified')
         )
-        File.readable?(file) || (
-          raise Core::LoadError.new('cannot load such file', file)
+        File.readable?(options[:setup]) || (
+          raise Core::LoadError.new('cannot load such file', options[:setup])
         )
-        load(file)
+        load(options[:setup])
       end
 
       def load_configuration
-        file = options[:configuration]
-        factory = builder.build_input_component_factory(:configuration)
-        @configuration = factory.create(Array(file))
+        @configuration = create_input_component(
+          :configuration, Array(options[:configuration])
+        )
       end
 
-      def load_register_maps
-        files = options.register_map_files
-        files.empty? && (
+      def load_register_map
+        options.register_map_files.empty? && (
           raise Core::LoadError.new('no register map files are specified')
         )
-        factory = builder.build_input_component_factory(:register_map)
-        @register_map = factory.create(configuration, files)
+        @register_map = create_input_component(
+          :register_map, configuration, options.register_map_files
+        )
       end
 
       def write_files
-        options[:load_only] && return
-        exceptions = options[:exceptions]
-        output_directory = Array(options[:output])
-        builder.build_output_component_factories(exceptions).each do |factory|
-          write_file(factory, output_directory)
+        options[:load_only] || create_output_components do |component|
+          component.write_file(options[:output])
         end
       end
 
-      def write_file(factory, output_directory)
-        component = factory.create(configuration, register_map)
-        component.write_file(output_directory)
+      def create_input_component(component, *args)
+        builder
+          .build_input_component_factory(component)
+          .create(*args)
+      end
+
+      def create_output_components
+        builder
+          .build_output_component_factories(options[:exceptions])
+          .each { |f| yield(f.create(configuration, register_map)) }
       end
     end
   end
