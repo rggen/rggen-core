@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/rggen/rggen-core.svg?branch=master)](https://travis-ci.org/rggen/rggen-core)
+[![Maintainability](https://api.codeclimate.com/v1/badges/53c8e6654c2b5ecb9142/maintainability)](https://codeclimate.com/github/rggen/rggen-core/maintainability)
+[![codecov](https://codecov.io/gh/rggen/rggen-core/branch/master/graph/badge.svg)](https://codecov.io/gh/rggen/rggen-core)
+
 # Rggen::Core
 
 Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/rggen/core`. To experiment with that code, run `bin/console` for an interactive prompt.
