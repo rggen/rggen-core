@@ -43,9 +43,13 @@ module RgGen
 
         private
 
+        FEATURE_ENTRIES = {
+          simple: SimpleFeatureEntry, list: ListFeatureEntry
+        }.freeze
+
         def create_new_entry(type, name, context, body)
-          klass = { simple: SimpleFeatureEntry, list: ListFeatureEntry }[type]
-          entry = klass.new(name, @factory, @base_feature, context, body)
+          entry = FEATURE_ENTRIES[type].new(self, name)
+          entry.setup(@base_feature, @factory, context, body)
           @feature_entries[name] = entry
         end
 

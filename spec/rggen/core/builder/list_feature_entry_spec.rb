@@ -16,12 +16,16 @@ module RgGen::Core::Builder
 
     let(:component) { RgGen::Core::InputBase::Component.new(nil) }
 
+    let(:feature_registry) { double('feature_registry') }
+
     let(:default_factory_body) do
       proc { def select_feature(key); @target_features[key]; end }
     end
 
     def create_entry(context = nil, &body)
-      ListFeatureEntry.new(feature_name, factory_base, feature_base, context, body)
+      entry = ListFeatureEntry.new(feature_registry, feature_name)
+      entry.setup(feature_base, factory_base, context, body)
+      entry
     end
 
     describe "ファクトリの定義" do

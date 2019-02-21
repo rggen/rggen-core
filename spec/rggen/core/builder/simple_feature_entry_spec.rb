@@ -16,8 +16,12 @@ module RgGen::Core::Builder
 
     let(:component) { RgGen::Core::InputBase::Component.new(nil) }
 
+    let(:feature_registry) { double('feature_registry') }
+
     def create_entry(shared_context, &body)
-      SimpleFeatureEntry.new(feature_name, factory_class, feature_base_class, shared_context, body)
+      entry = SimpleFeatureEntry.new(feature_registry, feature_name)
+      entry.setup(feature_base_class, factory_class, shared_context, body)
+      entry
     end
 
     describe "#build_factory" do

@@ -2,12 +2,19 @@ module RgGen
   module Core
     module Builder
       class ListFeatureEntry
-        def initialize(name, base_factory, base_feature, context, body)
+        def initialize(registry, name)
+          @registry = registry
           @name = name
-          @factory = Class.new(base_factory)
-          @base_feature = Class.new(base_feature)
           @features = {}
-          context && set_shared_context(context)
+        end
+
+        attr_reader :registry
+        attr_reader :name
+
+        def setup(base_feature, base_factory, context, body)
+          @base_feature = Class.new(base_feature)
+          @factory = Class.new(base_factory)
+          context && apply_shared_context(context)
           body && Docile.dsl_eval(self, &body)
         end
 
@@ -57,7 +64,7 @@ module RgGen
 
         private
 
-        def set_shared_context(context)
+        def apply_shared_context(context)
           @factory.shared_context(context)
           @base_feature.shared_context(context)
           singleton_exec do
