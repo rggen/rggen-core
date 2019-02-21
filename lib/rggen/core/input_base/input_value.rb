@@ -7,7 +7,7 @@ module RgGen
           @position = position
         end
 
-        attr_reader :value
+        attr_accessor :value
         attr_reader :position
 
         def empty_value?
