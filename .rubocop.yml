@@ -6,6 +6,9 @@ AllCops:
 Style/Alias:
   EnforcedStyle: prefer_alias_method
 
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
+
 Style/EmptyMethod:
   EnforcedStyle: expanded
 
