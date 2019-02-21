@@ -223,5 +223,56 @@ module RgGen::Core::Builder
         }.to raise_error RgGen::Core::BuilderError, 'unknown list feature: bar'
       end
     end
+
+    describe "#defined_feature?" do
+      before do
+        registry.define_simple_feature(nil, :foo)
+        registry.define_list_feature(nil, :bar)
+        registry.define_list_feature(nil, :bar, :bar_0)
+      end
+
+      it "定義済みのフィーチャーかどうかを返す" do
+        expect(registry.defined_feature?(:foo)).to be true
+        expect(registry.defined_feature?(:bar)).to be true
+        expect(registry.defined_feature?(:bar, :bar_0)).to be true
+
+        expect(registry.defined_feature?(:baz)).to be false
+        expect(registry.defined_feature?(:bar, :bar_1)).to be false
+        expect(registry.defined_feature?(:foo, :foo_1)).to be false
+      end
+    end
+
+    describe "#available_feature?" do
+      before do
+        registry.define_simple_feature(nil, :foo_0)
+        registry.define_simple_feature(nil, :foo_1)
+        registry.define_list_feature(nil, :bar_0)
+        registry.define_list_feature(nil, :bar_0, :bar_0_0)
+        registry.define_list_feature(nil, :bar_0, :bar_0_1)
+        registry.define_list_feature(nil, :bar_1)
+        registry.define_list_feature(nil, :bar_1, :bar_1_0)
+
+        registry.enable([:foo_0, :bar_0, :baz_0])
+        registry.enable(:foo_0, :foo_0_0)
+        registry.enable(:bar_0, [:bar_0_0, :bar_0_2])
+      end
+
+      it "定義済み、かつ、有効になっているフィーチャーかどうかを返す" do
+        expect(registry.available_feature?(:foo_0)).to be true
+        expect(registry.available_feature?(:bar_0)).to be true
+        expect(registry.available_feature?(:bar_0, :bar_0_0)).to be true
+
+        expect(registry.available_feature?(:foo_0, :foo_0_0)).to be false
+        expect(registry.available_feature?(:foo_0, :foo_0_1)).to be false
+        expect(registry.available_feature?(:foo_1)).to be false
+        expect(registry.available_feature?(:bar_0, :bar_0_1)).to be false
+        expect(registry.available_feature?(:bar_0, :bar_0_2)).to be false
+        expect(registry.available_feature?(:bar_0, :bar_0_3)).to be false
+        expect(registry.available_feature?(:bar_1)).to be false
+        expect(registry.available_feature?(:bar_1, :bar_1_0)).to be false
+        expect(registry.available_feature?(:bar_1, :bar_1_1)).to be false
+        expect(registry.available_feature?(:baz_0)).to be false
+      end
+    end
   end
 end

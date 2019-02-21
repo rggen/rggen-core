@@ -62,6 +62,10 @@ module RgGen
 
         alias_method :default_feature, :define_default_feature
 
+        def defined_feature?(feature)
+          @features.key?(feature)
+        end
+
         private
 
         def apply_shared_context(context)

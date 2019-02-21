@@ -25,6 +25,14 @@ module RgGen
           end
         end
 
+        def defined_feature?(feature_or_list_name, feature_name = nil)
+          entry = @feature_entries[feature_or_list_name]
+          return false unless entry
+          return true unless feature_name
+          return false if entry.match_entry_type?(:simple)
+          entry.defined_feature?(feature_name)
+        end
+
         def enable(feature_or_list_names, feature_names = nil)
           if feature_names
             list_name = feature_or_list_names
@@ -32,6 +40,13 @@ module RgGen
           else
             enable_features(feature_or_list_names)
           end
+        end
+
+        def available_feature?(feature_or_list_name, feature_name = nil)
+          return false unless defined_feature?(feature_or_list_name, feature_name)
+          return false unless @enabled_features.key?(feature_or_list_name)
+          return true unless feature_name
+          @enabled_features[feature_or_list_name].include?(feature_name)
         end
 
         def build_factories
