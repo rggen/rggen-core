@@ -8,11 +8,17 @@ module RgGen::Core::Configuration
 
     describe ".support?" do
       let(:supported_file) { file }
-      let(:unsupoorted_file) { 'foo.txt' }
+
+      let(:unsupported_files) do
+        random_file_extensions(max_length: 3, exceptions: ['rb'])
+          .map { |extension| "foo.#{extension}" }
+      end
 
       it "rb形式のファイルに対応する" do
         expect(loader.support?(supported_file)).to be true
-        expect(loader.support?(unsupoorted_file)).to be false
+        unsupported_files.each do |file|
+          expect(loader.support?(file)).to be false
+        end
       end
     end
 

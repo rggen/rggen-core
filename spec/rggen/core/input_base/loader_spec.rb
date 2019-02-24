@@ -11,12 +11,22 @@ module RgGen::Core::InputBase
         define_loader { support_types [:csv, :txt] }
       end
 
+      let(:support_extensions) do
+        %w[csv txt]
+      end
+
       let(:support_files) do
-        %w(test.csv test.txt test.CSV test.TxT)
+        support_extensions
+          .map { |extention| "test.#{random_updown_case(extention)}" }
+      end
+
+      let(:unsupport_extensions) do
+        random_file_extensions(max_length: 4, exceptions: support_extensions)
       end
 
       let(:unsupport_files) do
-        %w(test.xls test.csvv test.ttxt)
+        unsupport_extensions
+          .map { |extention| "test.#{extention}" }
       end
 
       it "入力ファイルが、.support_typesで登録された、対応する拡張子を持つかどうかを返す" do

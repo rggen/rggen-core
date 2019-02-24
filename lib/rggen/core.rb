@@ -10,6 +10,7 @@ require 'yaml'
 require_relative 'core/version'
 
 require_relative 'core/facets'
+require_relative 'core/core_extensions/casecmp'
 require_relative 'core/core_extensions/object'
 require_relative 'core/core_extensions/forwardable'
 require_relative 'core/core_extensions/module'

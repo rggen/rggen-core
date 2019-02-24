@@ -4,14 +4,24 @@ module RgGen::Core::Configuration
   describe YAMLLoader do
     let(:loader) { YAMLLoader }
 
+    let(:files) { ['foo.yaml', 'foo.yml'] }
+
     describe ".support?" do
-      let(:supported_files) { ['foo.yaml', 'foo.yml'] }
-      let(:unsupported_file) { 'foo.txt' }
+      let(:supported_files) { files }
+
+      let(:unsupported_files) do
+        random_file_extensions(max_length: 5, exceptions: ['yaml', 'yml'])
+          .map { |extension| "foo.#{extension}" }
+      end
 
       it "yaml/yml形式のファイルに対応する" do
-        expect(loader.support?(supported_files[0])).to be true
-        expect(loader.support?(supported_files[1])).to be true
-        expect(loader.support?(unsupported_file)).to be false
+        supported_files.each do |file|
+          expect(loader.support?(file)).to be true
+        end
+
+        unsupported_files.each do |file|
+          expect(loader.support?(file)).to be false
+        end
       end
     end
 
@@ -20,7 +30,7 @@ module RgGen::Core::Configuration
 
       let(:input_data) { RgGen::Core::InputBase::InputData.new(valid_value_lists) }
 
-      let(:file) { 'foo.yaml' }
+      let(:file) { files.sample }
 
       let(:file_contents) do
         <<'YAML'

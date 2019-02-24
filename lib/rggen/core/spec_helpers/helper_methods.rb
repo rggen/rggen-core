@@ -1,0 +1,27 @@
+module RgGen
+  module Core
+    module SpecHelpers
+      module HelperMethods
+        require 'securerandom'
+
+        def random_updown_case(string)
+          string
+            .chars
+            .map { |char| [true, false].sample ? char.swapcase : char }
+            .join
+        end
+
+        def random_string(length, exceptions = nil)
+          loop do
+            string = SecureRandom.alphanumeric(length)
+            return string if exceptions&.none?(&string.method(:casecmp?))
+          end
+        end
+
+        def random_file_extensions(max_length: 3, exceptions: nil)
+          Array.new(max_length) { |i| random_string(i + 1, exceptions) }
+        end
+      end
+    end
+  end
+end
