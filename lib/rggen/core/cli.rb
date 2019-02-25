@@ -33,7 +33,7 @@ module RgGen
 
       def load_setup
         options[:setup] || (
-          raise Core::LoadError.new('no setup file is specified')
+          raise Core::LoadError.new('no setup file is given')
         )
         File.readable?(options[:setup]) || (
           raise Core::LoadError.new('cannot load such file', options[:setup])
@@ -49,7 +49,7 @@ module RgGen
 
       def load_register_map
         options.register_map_files.empty? && (
-          raise Core::LoadError.new('no register map files are specified')
+          raise Core::LoadError.new('no register map files are given')
         )
         @register_map = create_input_component(
           :register_map, configuration, options.register_map_files

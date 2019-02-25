@@ -164,7 +164,7 @@ module RgGen::Core
         it "LoadErrorを起こす" do
           expect {
             cli.run([])
-          }.to raise_error RgGen::Core::LoadError, 'no setup file is specified'
+          }.to raise_error RgGen::Core::LoadError, 'no setup file is given'
         end
       end
     end
@@ -224,7 +224,7 @@ module RgGen::Core
         it do
           expect {
             cli.run(['--setup', setup_file])
-          }.to raise_error RgGen::Core::LoadError, 'no register map files are specified'
+          }.to raise_error RgGen::Core::LoadError, 'no register map files are given'
         end
       end
     end
