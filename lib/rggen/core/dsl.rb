@@ -18,7 +18,7 @@ module RgGen
       end
 
       def build(&_block)
-        yield(RgGen.builder)
+        RgGen.builder && block_given? && yield(RgGen.builder)
       end
 
       alias_method :setup, :build
