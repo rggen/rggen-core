@@ -21,9 +21,8 @@ module RgGen
       attr_private_reader :register_map
 
       def initialize_builder
-        @builder = Builder::Builder.new
-        builder.register_input_components
-        ::RgGen.builder(builder)
+        @builder = Builder.create
+        RgGen.builder(builder)
       end
 
       def parse_options(args)
