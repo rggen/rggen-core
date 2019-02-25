@@ -9,7 +9,7 @@ module RgGen
 
           def support?(file)
             file_ext = File.ext(file).to_sym
-            @support_types.any? { |type| type.casecmp(file_ext).zero? }
+            @support_types.any? { |type| type.casecmp?(file_ext) }
           end
 
           def load_file(file, input_data, valid_value_list)
