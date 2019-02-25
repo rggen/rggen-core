@@ -13,8 +13,7 @@ module RgGen
 
         def create(component, *args)
           input_value = preprocess(args.last)
-          new_args = [*args.thru(-2), input_value]
-          create_feature(component, *new_args) do |feature|
+          create_feature(component, *args[0..-2], input_value) do |feature|
             build_feature(feature, input_value)
           end
         end

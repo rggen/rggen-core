@@ -8,7 +8,7 @@ module RgGen
 
         def preprocess(args)
           if root_factory?
-            [*args.thru(-2), load_files(args.last)]
+            [*args[0..-2], load_files(args.last)]
           else
             args
           end
@@ -51,7 +51,7 @@ module RgGen
 
         def create_children(component, *sources)
           sources.last.children.each do |child_data|
-            create_child(component, *sources.thru(-2), child_data)
+            create_child(component, *sources[0..-2], child_data)
           end
         end
 
@@ -73,7 +73,7 @@ module RgGen
 
         def valid_value_lists
           list = [Array(active_feature_factories&.keys)]
-          child_factory && list.concat(child_factory.valid_value_lists)
+          list.concat(Array(child_factory&.valid_value_lists))
           list
         end
       end

@@ -20,7 +20,7 @@ module RgGen
 
         def create_child_data(&block)
           InputData.new(
-            CHILD_HIERARCHY[hierarchy], @valid_value_lists.from(1), &block
+            CHILD_HIERARCHY[hierarchy], @valid_value_lists[1..-1], &block
           )
         end
 

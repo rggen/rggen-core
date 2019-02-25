@@ -85,7 +85,7 @@ module RgGen
 
         def extract_last_arg(args)
           @position = args.last.position
-          Array[*args.thru(0, -2), args.last.value].compact
+          Array[*args[0..-2], args.last.value].compact
         end
 
         attr_private_reader :position

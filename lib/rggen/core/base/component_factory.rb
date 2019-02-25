@@ -17,7 +17,7 @@ module RgGen
 
         def create(*args)
           parent = (child_factory? && args.first) || nil
-          sources = preprocess((child_factory? && args.from(1)) || args)
+          sources = preprocess((child_factory? && args[1..-1]) || args)
           create_component(parent, *sources) do |component|
             build_component(parent, component, sources)
           end
