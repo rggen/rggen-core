@@ -3,9 +3,7 @@ module RgGen
     module RegisterMap
       module HashLoader
         def format(read_data, file)
-          format_data(
-            :register_map, input_data, read_data, file
-          )
+          format_data(:register_map, register_map, read_data, file)
         rescue TypeError => e
           raise Core::LoadError.new(e.message, file)
         end
