@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 if RUBY_VERSION < '2.4'
   casecmp = Module.new do
     def casecmp?(other)

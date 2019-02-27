@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Object
   def export_instance_variable(variable, to)
     return unless instance_variable_defined?(variable)
