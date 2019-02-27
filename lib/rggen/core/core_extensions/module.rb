@@ -15,16 +15,13 @@ class Module
   # workaround for following issue
   # https://github.com/rubyworks/facets/issues/286
   def attr_setter(*args)
-    code, made = +'', []
-    args.each do |a|
-      code << %{
+    args.map do |a|
+      module_eval(<<~CODE, __FILE__, __LINE__ + 1)
         def #{a}(*args)
           args.size > 0 ? ( @#{a}=args[0] ; self ) : @#{a}
         end
-      }
-      made << "#{a}".to_sym
+      CODE
+      a.to_s.to_sym
     end
-    module_eval code
-    made
   end
 end
