@@ -9,4 +9,20 @@ class Module
     body ||= proc if block_given?
     define_method(name, body).tap { private(name) }
   end
+
+  # workaround for following issue
+  # https://github.com/rubyworks/facets/issues/286
+  def attr_setter(*args)
+    code, made = +'', []
+    args.each do |a|
+      code << %{
+        def #{a}(*args)
+          args.size > 0 ? ( @#{a}=args[0] ; self ) : @#{a}
+        end
+      }
+      made << "#{a}".to_sym
+    end
+    module_eval code
+    made
+  end
 end
