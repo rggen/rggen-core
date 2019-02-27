@@ -117,8 +117,8 @@ module RgGen::Core
 
     before do
       allow_any_instance_of(Options::Option).to receive(:require).with('lib/rggen/default_setup_file').and_raise(::LoadError)
-      allow(ENV).to receive(:key?).with('RGGEN_DEFAULT_SETUP_FILE').and_return(false)
-      allow(ENV).to receive(:key?).with('RGGEN_DEFAULT_CONFIGURATION_FILE').and_return(false)
+      allow(ENV).to receive(:[]).with('RGGEN_DEFAULT_SETUP_FILE').and_return(nil)
+      allow(ENV).to receive(:[]).with('RGGEN_DEFAULT_CONFIGURATION_FILE').and_return(nil)
     end
 
     before do

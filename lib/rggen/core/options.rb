@@ -79,7 +79,7 @@ module RgGen
       def_delegator :@options, :[]
 
       def parse(args)
-        @original_arg = args
+        @original_args = args
         @register_map_files = option_parser.parse(args)
       end
 
@@ -105,12 +105,12 @@ module RgGen
       option.description 'Specify a Ruby file to set up RgGen tool'
 
       def option.default_steup_file
-        if ENV.key?('RGGEN_DEFAULT_SETUP_FILE')
-          ENV['RGGEN_DEFAULT_SETUP_FILE']
-        else
-          require 'lib/rggen/default_setup_file'
-          RgGen::DEFAULT_SETUP_FILE
-        end
+        ENV['RGGEN_DEFAULT_SETUP_FILE'] || define_setup_file_from_const
+      end
+
+      def option.define_setup_file_from_const
+        require 'lib/rggen/default_setup_file'
+        RgGen::DEFAULT_SETUP_FILE
       rescue ::LoadError
         nil
       end
@@ -119,13 +119,8 @@ module RgGen
     Options.add_option(:configuration) do |option|
       option.short_option '-c'
       option.long_option '--configuration FILE'
-      option.default { default_configuration_file }
+      option.default { ENV['RGGEN_DEFAULT_CONFIGURATION_FILE'] }
       option.description 'Specify a configuration file'
-
-      def option.default_configuration_file
-        variable_name = 'RGGEN_DEFAULT_CONFIGURATION_FILE'
-        (ENV.key?(variable_name) && ENV[variable_name]) || nil
-      end
     end
 
     Options.add_option(:output) do |option|

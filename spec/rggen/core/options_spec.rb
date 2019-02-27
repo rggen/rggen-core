@@ -6,8 +6,8 @@ module RgGen::Core
 
     before do
       allow_any_instance_of(Options::Option).to receive(:require).with('lib/rggen/default_setup_file').and_raise(::LoadError)
-      allow(ENV).to receive(:key?).with('RGGEN_DEFAULT_SETUP_FILE').and_return(false)
-      allow(ENV).to receive(:key?).with('RGGEN_DEFAULT_CONFIGURATION_FILE').and_return(false)
+      allow(ENV).to receive(:[]).with('RGGEN_DEFAULT_SETUP_FILE').and_return(nil)
+      allow(ENV).to receive(:[]).with('RGGEN_DEFAULT_CONFIGURATION_FILE').and_return(nil)
     end
 
     describe "#register_map_files" do
@@ -33,7 +33,6 @@ module RgGen::Core
       context "--setupが未指定で" do
         context "環境変数RGGEN_DEFAULT_SETUP_FILEが定義されている場合" do
           before do
-            allow(ENV).to receive(:key?).with('RGGEN_DEFAULT_SETUP_FILE').and_return(true)
             allow(ENV).to receive(:[]).with('RGGEN_DEFAULT_SETUP_FILE').and_return(setup_file)
           end
 
@@ -90,7 +89,6 @@ module RgGen::Core
           let(:configuration_file) { configuration_files.sample }
 
           before do
-            allow(ENV).to receive(:key?).with('RGGEN_DEFAULT_CONFIGURATION_FILE').and_return(true)
             allow(ENV).to receive(:[]).with('RGGEN_DEFAULT_CONFIGURATION_FILE').and_return(configuration_file)
           end
 
