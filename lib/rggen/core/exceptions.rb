@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RgGen
   module Core
     class RgGenError < StandardError

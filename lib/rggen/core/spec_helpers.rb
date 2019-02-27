@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'spec_helpers/helper_methods'
 require_relative 'spec_helpers/have_value_matcher'
 require_relative 'spec_helpers/have_property_matcher'

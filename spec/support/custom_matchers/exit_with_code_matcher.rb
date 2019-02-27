@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec::Matchers.define(:exit_with_code) do |expected_code|
   supports_block_expectations
 
