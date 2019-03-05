@@ -7,10 +7,13 @@ module RgGen
         extend RSpec::Matchers::DSL
 
         matcher :match_string do |expected|
+          diffable
+
+          @actual = nil
+
           match do |actual|
-            return true if values_match?(expected, actual)
-            return true if values_match?(expected, actual.to_s)
-            false
+            @actual = actual.to_s
+            values_match?(expected, @actual)
           end
         end
       end
