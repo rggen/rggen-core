@@ -27,52 +27,52 @@ module RgGen::Core::Builder
 
     describe "フィーチャーの定義" do
       specify "#add_feature_registry呼び出し時に指定した登録名でフィーチャーを定義できる" do
-        expect(fizz_feature_registry).to receive(:define_simple_feature).with(nil, :foo).and_call_original
-        expect(buzz_feature_registry).to receive(:define_simple_feature).with(nil, :foo).and_call_original
+        expect(fizz_feature_registry).to receive(:define_simple_feature).with(:foo).and_call_original
+        expect(buzz_feature_registry).to receive(:define_simple_feature).with(:foo).and_call_original
         category.define_simple_feature(:foo) do
           fizz {}
           buzz {}
         end
 
-        expect(fizz_feature_registry).to receive(:define_list_feature).with(nil, :bar).and_call_original
-        expect(buzz_feature_registry).to receive(:define_list_feature).with(nil, :bar).and_call_original
+        expect(fizz_feature_registry).to receive(:define_list_feature).with(:bar).and_call_original
+        expect(buzz_feature_registry).to receive(:define_list_feature).with(:bar).and_call_original
         category.define_list_feature(:bar) do
           fizz {}
           buzz {}
         end
 
-        expect(fizz_feature_registry).to receive(:define_list_feature).with(nil, :bar, :bar_0).and_call_original
-        expect(buzz_feature_registry).to receive(:define_list_feature).with(nil, :bar, :bar_0).and_call_original
-        category.define_list_feature(:bar, :bar_0) do
+        expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:bar, :bar_0).and_call_original
+        expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:bar, :bar_0).and_call_original
+        category.define_list_item_feature(:bar, :bar_0) do
           fizz {}
           buzz {}
         end
       end
 
       specify "複数個のフィーチャーを同時に定義できる" do
-        expect(fizz_feature_registry).to receive(:define_simple_feature).with(nil, :foo_0).and_call_original
-        expect(buzz_feature_registry).to receive(:define_simple_feature).with(nil, :foo_0).and_call_original
-        expect(fizz_feature_registry).to receive(:define_simple_feature).with(nil, :foo_1).and_call_original
-        expect(buzz_feature_registry).to receive(:define_simple_feature).with(nil, :foo_1).and_call_original
+        expect(fizz_feature_registry).to receive(:define_simple_feature).with(:foo_0).and_call_original
+        expect(buzz_feature_registry).to receive(:define_simple_feature).with(:foo_0).and_call_original
+        expect(fizz_feature_registry).to receive(:define_simple_feature).with(:foo_1).and_call_original
+        expect(buzz_feature_registry).to receive(:define_simple_feature).with(:foo_1).and_call_original
         category.define_simple_feature([:foo_0, :foo_1]) do
           fizz {}
           buzz {}
         end
 
-        expect(fizz_feature_registry).to receive(:define_list_feature).with(nil, :bar_0).and_call_original
-        expect(buzz_feature_registry).to receive(:define_list_feature).with(nil, :bar_0).and_call_original
-        expect(fizz_feature_registry).to receive(:define_list_feature).with(nil, :bar_1).and_call_original
-        expect(buzz_feature_registry).to receive(:define_list_feature).with(nil, :bar_1).and_call_original
+        expect(fizz_feature_registry).to receive(:define_list_feature).with(:bar_0).and_call_original
+        expect(buzz_feature_registry).to receive(:define_list_feature).with(:bar_0).and_call_original
+        expect(fizz_feature_registry).to receive(:define_list_feature).with(:bar_1).and_call_original
+        expect(buzz_feature_registry).to receive(:define_list_feature).with(:bar_1).and_call_original
         category.define_list_feature([:bar_0, :bar_1]) do
           fizz {}
           buzz {}
         end
 
-        expect(fizz_feature_registry).to receive(:define_list_feature).with(nil, :bar_0, :bar_0_0).and_call_original
-        expect(buzz_feature_registry).to receive(:define_list_feature).with(nil, :bar_0, :bar_0_0).and_call_original
-        expect(fizz_feature_registry).to receive(:define_list_feature).with(nil, :bar_0, :bar_0_1).and_call_original
-        expect(buzz_feature_registry).to receive(:define_list_feature).with(nil, :bar_0, :bar_0_1).and_call_original
-        category.define_list_feature(:bar_0, [:bar_0_0, :bar_0_1]) do
+        expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:bar_0, :bar_0_0).and_call_original
+        expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:bar_0, :bar_0_0).and_call_original
+        expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:bar_0, :bar_0_1).and_call_original
+        expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:bar_0, :bar_0_1).and_call_original
+        category.define_list_item_feature(:bar_0, [:bar_0_0, :bar_0_1]) do
           fizz {}
           buzz {}
         end
@@ -89,8 +89,8 @@ module RgGen::Core::Builder
             buzz {}
             shared_context { contexts << self }
           end
-          expect(fizz_feature_registry).to have_received(:define_simple_feature).with(equal(contexts.last), :foo)
-          expect(buzz_feature_registry).to have_received(:define_simple_feature).with(equal(contexts.last), :foo)
+          expect(fizz_feature_registry).to have_received(:define_simple_feature).with(:foo, equal(contexts.last))
+          expect(buzz_feature_registry).to have_received(:define_simple_feature).with(:foo, equal(contexts.last))
 
           allow(fizz_feature_registry).to receive(:define_list_feature).and_call_original
           allow(buzz_feature_registry).to receive(:define_list_feature).and_call_original
@@ -99,22 +99,22 @@ module RgGen::Core::Builder
             buzz {}
             shared_context { contexts << self }
           end
-          expect(fizz_feature_registry).to have_received(:define_list_feature).with(equal(contexts.last), :bar)
-          expect(buzz_feature_registry).to have_received(:define_list_feature).with(equal(contexts.last), :bar)
+          expect(fizz_feature_registry).to have_received(:define_list_feature).with(:bar, equal(contexts.last))
+          expect(buzz_feature_registry).to have_received(:define_list_feature).with(:bar, equal(contexts.last))
 
           category.define_list_feature(:baz) do
             fizz {}
             buzz {}
           end
-          allow(fizz_feature_registry).to receive(:define_list_feature).and_call_original
-          allow(buzz_feature_registry).to receive(:define_list_feature).and_call_original
-          category.define_list_feature(:baz, :baz_0, shared_context: true) do
+          allow(fizz_feature_registry).to receive(:define_list_item_feature).and_call_original
+          allow(buzz_feature_registry).to receive(:define_list_item_feature).and_call_original
+          category.define_list_item_feature(:baz, :baz_0, shared_context: true) do
             fizz {}
             buzz {}
             shared_context { contexts << self }
           end
-          expect(fizz_feature_registry).to have_received(:define_list_feature).with(equal(contexts.last), :baz, :baz_0)
-          expect(buzz_feature_registry).to have_received(:define_list_feature).with(equal(contexts.last), :baz, :baz_0)
+          expect(fizz_feature_registry).to have_received(:define_list_item_feature).with(:baz, :baz_0, equal(contexts.last))
+          expect(buzz_feature_registry).to have_received(:define_list_item_feature).with(:baz, :baz_0, equal(contexts.last))
         end
 
         specify "各共有コンテキストは独立している" do
@@ -130,7 +130,7 @@ module RgGen::Core::Builder
             fizz {}
             buzz {}
           end
-          category.define_list_feature(:baz, [:baz_0, :baz_1], shared_context: true) do
+          category.define_list_item_feature(:baz, [:baz_0, :baz_1], shared_context: true) do
             shared_context { contexts << self }
           end
 
@@ -149,7 +149,7 @@ module RgGen::Core::Builder
           fizz {}
           buzz {}
         end
-        category.define_list_feature(:bar_0, [:bar_0_0, :bar_0_1, :bar_0_2, :bar_0_3]) do
+        category.define_list_item_feature(:bar_0, [:bar_0_0, :bar_0_1, :bar_0_2, :bar_0_3]) do
           fizz {}
           buzz {}
         end

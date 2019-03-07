@@ -113,10 +113,10 @@ module RgGen::Core::Builder
           e.feature_factory feature_factory
         end
         entry.feature_registry.tap do |registry|
-          registry.define_simple_feature(nil, :foo) do
+          registry.define_simple_feature(:foo) do
             property(:foo) { @v }
           end
-          registry.define_simple_feature(nil, :bar) do
+          registry.define_simple_feature(:bar) do
             property(:bar) { @v }
           end
           registry.enable([:foo, :bar])
@@ -142,10 +142,10 @@ module RgGen::Core::Builder
             end
           end
           entry.feature_registry.tap do |registry|
-            registry.define_simple_feature(nil, :foo) do
+            registry.define_simple_feature(:foo) do
               property(:foo, forward_to: :m)
             end
-            registry.define_simple_feature(nil, :bar) do
+            registry.define_simple_feature(:bar) do
               property(:bar, forward_to: :m)
             end
             registry.enable([:foo, :bar])

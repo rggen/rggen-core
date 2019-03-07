@@ -11,20 +11,19 @@ module RgGen
           @enabled_features = {}
         end
 
-        def define_simple_feature(context, name, &body)
+        def define_simple_feature(name, context = nil, &body)
           create_new_entry(:simple, name, context, body)
         end
 
-        def define_list_feature(context, list_name, feature_name = nil, &body)
-          if feature_name
-            entry = @feature_entries[list_name]
-            entry&.match_entry_type?(:list) || (
-              raise BuilderError.new("unknown list feature: #{list_name}")
-            )
-            entry.define_feature(feature_name, context, &body)
-          else
-            create_new_entry(:list, list_name, context, body)
-          end
+        def define_list_feature(list_name, context = nil, &body)
+          create_new_entry(:list, list_name, context, body)
+        end
+
+        def define_list_item_feature(list_name, feature_name, context = nil, &body)
+          entry = @feature_entries[list_name]
+          entry&.match_entry_type?(:list) ||
+            (raise BuilderError.new("unknown list feature: #{list_name}"))
+          entry.define_feature(feature_name, context, &body)
         end
 
         def defined_feature?(feature_or_list_name, feature_name = nil)

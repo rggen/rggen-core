@@ -35,7 +35,7 @@ module RgGen::Core::Builder
 
         registry.base_loader(RgGen::Core::Configuration::Loader)
 
-        builder.feature_registres[0].define_simple_feature(nil, :foo) do
+        builder.feature_registres[0].define_simple_feature(:foo) do
           property :foo
           build { |v| @foo = v.to_i }
         end

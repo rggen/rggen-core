@@ -43,12 +43,12 @@ module RgGen
           end
         end
 
-        def define_simple_feature(category, *args, &body)
-          @categories[category].define_simple_feature(*args, &body)
-        end
-
-        def define_list_feature(catetory, *args, &body)
-          @categories[catetory].define_list_feature(*args, &body)
+        [
+          :define_simple_feature, :define_list_feature, :define_list_item_feature
+        ].each do |method_name|
+          define_method(method_name) do |category, *args, &body|
+            @categories[category].__send__(__method__, *args, &body)
+          end
         end
 
         def enable(category, *args)

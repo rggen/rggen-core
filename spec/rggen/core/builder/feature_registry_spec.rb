@@ -23,25 +23,25 @@ module RgGen::Core::Builder
       RgGen::Core::InputBase::Component.new(nil)
     end
 
-    it "#define_simple_feature/#define_list_featureで定義されたフィーチャーを生成するファクトリーを生成する" do
-      registry.define_simple_feature(nil, :foo) do
+    it "#define_simple_feature/#define_list_feature/#define_list_item_featureで定義されたフィーチャーを生成するファクトリーを生成する" do
+      registry.define_simple_feature(:foo) do
         def m; 'foo!'; end
       end
-      registry.define_simple_feature(nil, :bar) do
+      registry.define_simple_feature(:bar) do
         def m; 'bar!'; end
       end
-      registry.define_list_feature(nil, :baz) do
+      registry.define_list_feature(:baz) do
         default_feature do
           def m; 'default baz!'; end
         end
       end
-      registry.define_list_feature(nil, :baz, :baz_0) do
+      registry.define_list_item_feature(:baz, :baz_0) do
         def m; 'baz 0!'; end
       end
-      registry.define_list_feature(nil, :baz, :baz_1) do
+      registry.define_list_item_feature(:baz, :baz_1) do
         def m; 'baz 1!'; end
       end
-      registry.define_list_feature(nil, :baz, :baz_2) do
+      registry.define_list_item_feature(:baz, :baz_2) do
         def m; 'baz 2!'; end
       end
 
@@ -71,34 +71,34 @@ module RgGen::Core::Builder
     end
 
     specify "#enableで指定したフィーチャーを生成できる" do
-      registry.define_simple_feature(nil, :foo_0) do
+      registry.define_simple_feature(:foo_0) do
         def m; 'foo_0'; end
       end
-      registry.define_simple_feature(nil, :foo_1) do
+      registry.define_simple_feature(:foo_1) do
         def m; 'foo_1'; end
       end
-      registry.define_list_feature(nil, :bar_0) do
+      registry.define_list_feature(:bar_0) do
         default_feature do
           def m; 'bar_0'; end
         end
       end
-      registry.define_list_feature(nil, :bar_1) do
+      registry.define_list_feature(:bar_1) do
         default_feature do
           def m; 'bar_1'; end
         end
       end
-      registry.define_list_feature(nil, :baz) do
+      registry.define_list_feature(:baz) do
         default_feature do
           def m; 'baz'; end
         end
       end
-      registry.define_list_feature(nil, :baz, :baz_0) do
+      registry.define_list_item_feature(:baz, :baz_0) do
         def m; 'baz_0'; end
       end
-      registry.define_list_feature(nil, :baz, :baz_1) do
+      registry.define_list_item_feature(:baz, :baz_1) do
         def m; 'baz_1'; end
       end
-      registry.define_list_feature(nil, :baz, :baz_2) do
+      registry.define_list_item_feature(:baz, :baz_2) do
         def m; 'baz_2'; end
       end
 
@@ -121,18 +121,18 @@ module RgGen::Core::Builder
 
     context "同名のフィーチャーが複数回定義された場合" do
       before do
-        registry.define_simple_feature(nil, :foo_0) do
+        registry.define_simple_feature(:foo_0) do
           def m; 'foo_0!'; end
         end
-        registry.define_simple_feature(nil, :foo_1) do
+        registry.define_simple_feature(:foo_1) do
           def m; 'foo_1!'; end
         end
-        registry.define_list_feature(nil, :bar_0) do
+        registry.define_list_feature(:bar_0) do
           default_feature do
             def m; 'bar_0!'; end
           end
         end
-        registry.define_list_feature(nil, :bar_1) do
+        registry.define_list_feature(:bar_1) do
           default_feature do
             def m; 'bar_1'; end
           end
@@ -140,20 +140,20 @@ module RgGen::Core::Builder
       end
 
       specify "後に定義されたフィーチャーが生成される" do
-        registry.define_simple_feature(nil, :foo_0) do
+        registry.define_simple_feature(:foo_0) do
           def m; 'foo_0!!'; end
         end
-        registry.define_list_feature(nil, :foo_1) do
+        registry.define_list_feature(:foo_1) do
           default_feature do
             def m; 'foo_1!!'; end
           end
         end
-        registry.define_list_feature(nil, :bar_0) do
+        registry.define_list_feature(:bar_0) do
           default_feature do
             def m; 'bar_0!!'; end
           end
         end
-        registry.define_simple_feature(nil, :bar_1) do
+        registry.define_simple_feature(:bar_1) do
           def m; 'bar_1!!'; end
         end
 
@@ -178,16 +178,16 @@ module RgGen::Core::Builder
       let(:context) { Object.new }
 
       specify "フィーチャー内で共通コンテキストを参照できる" do
-        registry.define_simple_feature(context, :foo) do
+        registry.define_simple_feature(:foo, context) do
         end
-        registry.define_list_feature(context, :bar) do
+        registry.define_list_feature(:bar, context) do
           default_feature {}
         end
-        registry.define_list_feature(nil, :bar, :bar_0) do
+        registry.define_list_item_feature(:bar, :bar_0) do
         end
-        registry.define_list_feature(nil, :baz) do
+        registry.define_list_feature(:baz) do
         end
-        registry.define_list_feature(context, :baz, :baz_0) do
+        registry.define_list_item_feature(:baz, :baz_0, context) do
         end
 
         registry.enable([:foo, :bar, :baz])
@@ -211,26 +211,26 @@ module RgGen::Core::Builder
 
     context "未定義のリストフィーチャーを定義しようとした場合" do
       before do
-        registry.define_simple_feature(nil, :foo) do
+        registry.define_simple_feature(:foo) do
         end
       end
 
       specify "BuilderErrorが発生する" do
         expect {
-          registry.define_list_feature(nil, :foo, :foo_0)
+          registry.define_list_item_feature(:foo, :foo_0)
         }.to raise_error RgGen::Core::BuilderError, 'unknown list feature: foo'
 
         expect {
-          registry.define_list_feature(nil, :bar, :bar_0)
+          registry.define_list_item_feature(:bar, :bar_0)
         }.to raise_error RgGen::Core::BuilderError, 'unknown list feature: bar'
       end
     end
 
     describe "#defined_feature?" do
       before do
-        registry.define_simple_feature(nil, :foo)
-        registry.define_list_feature(nil, :bar)
-        registry.define_list_feature(nil, :bar, :bar_0)
+        registry.define_simple_feature(:foo)
+        registry.define_list_feature(:bar)
+        registry.define_list_item_feature(:bar, :bar_0)
       end
 
       it "定義済みのフィーチャーかどうかを返す" do
@@ -246,13 +246,13 @@ module RgGen::Core::Builder
 
     describe "#available_feature?" do
       before do
-        registry.define_simple_feature(nil, :foo_0)
-        registry.define_simple_feature(nil, :foo_1)
-        registry.define_list_feature(nil, :bar_0)
-        registry.define_list_feature(nil, :bar_0, :bar_0_0)
-        registry.define_list_feature(nil, :bar_0, :bar_0_1)
-        registry.define_list_feature(nil, :bar_1)
-        registry.define_list_feature(nil, :bar_1, :bar_1_0)
+        registry.define_simple_feature(:foo_0)
+        registry.define_simple_feature( :foo_1)
+        registry.define_list_feature(:bar_0)
+        registry.define_list_item_feature(:bar_0, :bar_0_0)
+        registry.define_list_item_feature(:bar_0, :bar_0_1)
+        registry.define_list_feature(:bar_1)
+        registry.define_list_item_feature(:bar_1, :bar_1_0)
 
         registry.enable([:foo_0, :bar_0, :baz_0])
         registry.enable(:foo_0, :foo_0_0)

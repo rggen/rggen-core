@@ -271,7 +271,7 @@ module RgGen::Core::Builder
         end
       end
 
-      builder.define_list_feature(category, :buzz, [:buzz_0, :buzz_1, :buzz_2]) do |_, feature_name|
+      builder.define_list_item_feature(category, :buzz, [:buzz_0, :buzz_1, :buzz_2]) do |_, feature_name|
         configuration { define_method(feature_name) { feature_name } }
         if category != :global
           register_map { define_method(feature_name) { feature_name } }
@@ -340,16 +340,16 @@ module RgGen::Core::Builder
         expect(category).to receive(:define_simple_feature).with(:foo).and_call_original
         expect(category).to receive(:define_simple_feature).with(:bar, shared_context: true).and_call_original
         expect(category).to receive(:define_list_feature).with(:baz).and_call_original
-        expect(category).to receive(:define_list_feature).with(:baz, :bar_0, shared_context: true).and_call_original
+        expect(category).to receive(:define_list_item_feature).with(:baz, :bar_0, shared_context: true).and_call_original
         expect(category).to receive(:define_list_feature).with(:qux, shared_context: true).and_call_original
-        expect(category).to receive(:define_list_feature).with(:qux, :qux_0).and_call_original
+        expect(category).to receive(:define_list_item_feature).with(:qux, :qux_0).and_call_original
 
         builder.define_simple_feature(target_category, :foo) {}
         builder.define_simple_feature(target_category, :bar, shared_context: true) {}
         builder.define_list_feature(target_category, :baz) {}
-        builder.define_list_feature(target_category, :baz, :bar_0, shared_context: true) {}
+        builder.define_list_item_feature(target_category, :baz, :bar_0, shared_context: true) {}
         builder.define_list_feature(target_category, :qux, shared_context: true) {}
-        builder.define_list_feature(target_category, :qux, :qux_0) {}
+        builder.define_list_item_feature(target_category, :qux, :qux_0) {}
       end
 
       context "未定義のカテゴリが指定された場合" do
