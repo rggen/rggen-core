@@ -17,6 +17,11 @@ require_relative 'core/core_extensions/object'
 require_relative 'core/core_extensions/forwardable'
 require_relative 'core/core_extensions/module'
 
+require_relative 'core/utility/code_utility/line'
+require_relative 'core/utility/code_utility/code_block'
+require_relative 'core/utility/code_utility/source_file'
+require_relative 'core/utility/code_utility'
+
 require_relative 'core/exceptions'
 
 require_relative 'core/base/internal_struct'
