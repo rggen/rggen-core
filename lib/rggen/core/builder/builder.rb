@@ -92,12 +92,6 @@ module RgGen
           Docile.dsl_eval(registries[name], &body)
         end
       end
-
-      def self.create
-        builder = Builder.new
-        builder.register_input_components
-        builder
-      end
     end
   end
 end
