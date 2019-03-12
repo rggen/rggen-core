@@ -4,10 +4,17 @@ module RgGen
   module Core
     module InputBase
       class Feature < Base::Feature
+        PropertyContext = Struct.new(:name, :options, :body) do
+          def [](key)
+            options[key]
+          end
+        end
+
         class << self
           def property(name, options = {}, &body)
+            property_context = PropertyContext.new(name, options, body)
             define_method(name) do |*args, &block|
-              property_method(name, options, body, args, block)
+              property_method(property_context, args, block)
             end
             properties.include?(name) || properties << name
           end
@@ -110,27 +117,35 @@ module RgGen
           !match_data.nil?
         end
 
-        def property_method(name, options, body, args, block)
-          options[:need_validation] && validate
-          if body
-            instance_exec(*args, &body)
-          elsif options[:forward_to_helper]
-            self.class.__send__(name, *args, &block)
-          elsif options.key?(:forward_to)
-            __send__(options[:forward_to], *args, &block)
+        def property_method(context, args, block)
+          context[:need_validation] && validate
+          if context.body
+            instance_exec(*args, &context.body)
+          elsif context[:forward_to_helper] || context[:forward_to]
+            forwarded_property_method(context, args, block)
           else
-            default_property_method(name, options[:default])
+            default_property_method(context)
           end
         end
 
-        def default_property_method(name, default)
+        def forwarded_property_method(context, args, block)
+          receiver, method_name =
+            if context[:forward_to_helper]
+              [self.class, context.name]
+            else
+              [self, context[:forward_to]]
+            end
+          receiver.__send__(method_name, *args, &block)
+        end
+
+        def default_property_method(context)
           variable_name = (
-            (name[-1] == '?' && name[0..-2]) || name
+            (context.name[-1] == '?' && context.name[0..-2]) || context.name
           ).variablize
           if instance_variable_defined?(variable_name)
             instance_variable_get(variable_name)
           else
-            default
+            context[:default]
           end
         end
 
