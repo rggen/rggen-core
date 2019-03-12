@@ -17,32 +17,6 @@ module RgGen::Core::InputBase
     end
 
     describe ".property" do
-      matcher :have_property do |name, *value|
-        match do |feature|
-          case feature
-          when Class
-            @property_defined = feature.method_defined?(name)
-            @match_value = true
-          when Feature
-            @property_defined = feature.public_methods(false).include?(name)
-            @match_value = value.empty? || (@property_defined && values_match?(value[0], actual_property_value))
-          end
-          @property_defined && @match_value
-        end
-
-        failure_message do
-          if !@property_defined
-            "no such property defined: #{property_name}"
-          elsif !@match_value
-            "expected #{value[0].inspect} as property value but got #{actual_property_value.inspect}"
-          end
-        end
-
-        define_method(:actual_property_value) do
-          @actual_property_value ||= feature.__send__(name)
-        end
-      end
-
       it "プロパティを定義する" do
         expect(define_feature { property :foo }).to have_property :foo
       end
