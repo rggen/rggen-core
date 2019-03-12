@@ -34,7 +34,7 @@ module RgGen::Core::InputBase
           if !@property_defined
             "no such property defined: #{property_name}"
           elsif !@match_value
-            "expected #{property_value[0].inspect} as property value but got #{actual_property_value.inspect}"
+            "expected #{value[0].inspect} as property value but got #{actual_property_value.inspect}"
           end
         end
 
