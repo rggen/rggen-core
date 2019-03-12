@@ -37,7 +37,9 @@ module RgGen
             word.empty?
           end
 
-          attr_protected_reader :words
+          protected
+
+          attr_reader :words
         end
       end
     end

@@ -17,10 +17,10 @@ module RgGen
 
       private
 
-      attr_private_reader :builder
-      attr_private_reader :options
-      attr_private_reader :configuration
-      attr_private_reader :register_map
+      attr_reader :builder
+      attr_reader :options
+      attr_reader :configuration
+      attr_reader :register_map
 
       def initialize_builder
         @builder = Builder.create

@@ -36,8 +36,8 @@ module RgGen
         def format(_read_data, _file)
         end
 
-        attr_private_reader :input_data
-        attr_private_reader :valid_value_lists
+        attr_reader :input_data
+        attr_reader :valid_value_lists
       end
     end
   end

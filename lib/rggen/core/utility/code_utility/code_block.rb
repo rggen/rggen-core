@@ -82,7 +82,9 @@ module RgGen
             "\n"
           end
 
-          attr_protected_reader :lines
+          protected
+
+          attr_reader :lines
         end
       end
     end

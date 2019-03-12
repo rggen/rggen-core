@@ -97,7 +97,7 @@ module RgGen
           Array[*args[0..-2], args.last.value].compact
         end
 
-        attr_private_reader :position
+        attr_reader :position
 
         def match_automatically?
           self.class.match_automatically?
@@ -111,7 +111,7 @@ module RgGen
           @match_data = input_matcher&.match(rhs)
         end
 
-        attr_private_reader :match_data
+        attr_reader :match_data
 
         def pattern_matched?
           !match_data.nil?
