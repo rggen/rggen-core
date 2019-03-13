@@ -15,18 +15,9 @@ module Forwardable
   alias_method :class_delegators, :def_class_delegators
 end
 
-module SingleForwardable
-  def def_object_delegator(target, method, ali = method)
-    define_singleton_method(ali) do |*args, &block|
-      target.__send__(method, *args, &block)
-    end
-  end
-
-  def def_object_delegators(target, *methods)
-    methods.each { |m| def_object_delegator(target, m) }
-  end
-
-  if ['2.3.1', '2.3.2', '2.3.3'].include?(RUBY_VERSION)
+# :nocov:
+if ['2.3.1', '2.3.2', '2.3.3'].include?(RUBY_VERSION)
+  module SingleForwardable
     # https://bugs.ruby-lang.org/issues/12478
     def def_single_delegator(accessor, method, ali = method)
       accessor = accessor.to_s
@@ -48,7 +39,5 @@ module SingleForwardable
       instance_eval(str, __FILE__, line_no)
     end
   end
-
-  alias_method :object_delegator, :def_object_delegator
-  alias_method :object_delegators, :def_object_delegators
 end
+# :nocov:
