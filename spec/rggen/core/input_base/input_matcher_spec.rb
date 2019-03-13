@@ -99,36 +99,39 @@ module RgGen::Core::InputBase
 
       describe "ignore_blanksオプション" do
         let(:inputs) do
-          ['foo-bar', " foo -\tbar\t", " foo -\nbar\t"]
+          ['foo-bar baz', 'foo-bar  baz', " foo -\tbar baz\t", " foo -\nbar baz\t"]
         end
 
         context "trueが設定された場合" do
-          let(:matcher) { create_matcher(/foo-bar/, ignore_blanks: true) }
+          let(:matcher) { create_matcher(/foo-bar baz/, ignore_blanks: true) }
 
-          it "改行を除く空白を無視して、一致比較を行う" do
+          it "単語間の空白を圧縮し、改行を除く空白を無視して、一致比較を行う" do
             expect(matcher.match(inputs[0])).to be_truthy
             expect(matcher.match(inputs[1])).to be_truthy
-            expect(matcher.match(inputs[2])).to be_falsey
+            expect(matcher.match(inputs[2])).to be_truthy
+            expect(matcher.match(inputs[3])).to be_falsey
           end
         end
 
         context "falseが設定された場合" do
-          let(:matcher) { create_matcher(/foo-bar/, ignore_blanks: false) }
+          let(:matcher) { create_matcher(/foo-bar baz/, ignore_blanks: false) }
 
-          it "改行を除く空白を無視して、一致比較を行う" do
+          it "空白の無視はせず、一致比較を行う" do
             expect(matcher.match(inputs[0])).to be_truthy
             expect(matcher.match(inputs[1])).to be_falsey
             expect(matcher.match(inputs[2])).to be_falsey
+            expect(matcher.match(inputs[3])).to be_falsey
           end
         end
 
         context "無指定の場合" do
-          let(:matcher) { create_matcher(/foo-bar/) }
+          let(:matcher) { create_matcher(/foo-bar baz/) }
 
           it "trueが設定された場合と同じマッチングを行う" do
             expect(matcher.match(inputs[0])).to be_truthy
             expect(matcher.match(inputs[1])).to be_truthy
-            expect(matcher.match(inputs[2])).to be_falsey
+            expect(matcher.match(inputs[2])).to be_truthy
+            expect(matcher.match(inputs[3])).to be_falsey
           end
         end
       end

@@ -33,10 +33,22 @@ module RgGen
           end
         end
 
+        DELETE_BLANK_PATTERN =
+          Regexp.union(
+            /(?<=\w)[[:blank:]]+(?=[[:punct:]])/,
+            /(?<=[[:punct:]])[[:blank:]]+(?=\w)/
+          ).freeze
+
+        COMPRESS_BLANK_PATTERN = /([[:blank:]])[[:blank:]]*/.freeze
+
         def delete_blanks(rhs)
           return rhs unless @options.fetch(:ignore_blanks, true)
+          return rhs unless rhs.respond_to?(:strip)
           return rhs unless rhs.respond_to?(:gsub)
-          rhs.gsub(/[[:blank:]]+/, '')
+          rhs
+            .strip
+            .gsub(DELETE_BLANK_PATTERN, '')
+            .gsub(COMPRESS_BLANK_PATTERN) { Regexp.last_match[1] }
         end
       end
     end
