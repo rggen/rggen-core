@@ -22,9 +22,9 @@ matrix:
     - rvm: 2.3.8
     - rvm: 2.4.5
       env: RUBYOPT=--enable-frozen-string-literal USE_FIXED_GEMS=yes USE_GITHUB_REPOSITORY=yes
-    - rvm: 2.5.3
+    - rvm: 2.5.5
       env: RUBYOPT=--enable-frozen-string-literal USE_FIXED_GEMS=yes USE_GITHUB_REPOSITORY=yes
-    - rvm: 2.6.1
+    - rvm: 2.6.2
       env: RUBYOPT=--enable-frozen-string-literal USE_FIXED_GEMS=yes USE_GITHUB_REPOSITORY=yes
 
 before_install:
