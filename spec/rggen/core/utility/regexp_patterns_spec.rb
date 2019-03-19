@@ -23,8 +23,8 @@ module RgGen::Core::Utility
         [
           /\d\w+/,
           /\s+\d\w+/,
-          /[a-z_]\w*[[:punct:]]+\w*/i,
-          /\s+[a-z_]\w*[[:punct:]]+\w*\s+/i
+          /[a-z_]\w*[[:punct:]&&[^_]]+\w*/i,
+          /\s+[a-z_]\w*[[:punct:]&&[^_]]+\w*\s+/i
         ].each do |pattern|
           string = random_string(pattern)
           expect(string).not_to match(utility.send(:variable_name))
