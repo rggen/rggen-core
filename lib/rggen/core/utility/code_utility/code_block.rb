@@ -39,6 +39,11 @@ module RgGen
             @lines.map(&:to_s).each(&:rstrip!).join(newline)
           end
 
+          def eval_block(&block)
+            return unless block_given?
+            block.arity.zero? ? self << yield : yield(self)
+          end
+
           private
 
           def add_line(additional_indent = 0)

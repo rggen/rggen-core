@@ -90,6 +90,26 @@ module RgGen::Core::Utility::CodeUtility
       end
     end
 
+    describe '#eval_block' do
+      context 'ブロック引数がない場合' do
+        it 'ブロックの実行結果を自身に追加する' do
+          code_block.eval_block { "foo\nbar\nbaz\n" }
+          expect(code_block.to_s).to eq "foo\nbar\nbaz\n"
+        end
+      end
+
+      context 'ブロック引数がある場合' do
+        it '自身をブロック引数として、ブロックを実行する' do
+          code_block.eval_block do |code|
+            code << "foo\n"
+            code << "bar\n"
+            code << "baz\n"
+          end
+          expect(code_block.to_s).to eq "foo\nbar\nbaz\n"
+        end
+      end
+    end
+
     describe '#to_s' do
       it '行末の空白文字を取り除く' do
         code_block << 'foo  ' << "\n"
