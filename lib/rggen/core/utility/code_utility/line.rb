@@ -10,7 +10,11 @@ module RgGen
             @words = []
           end
 
-          attr_accessor :indent
+          attr_reader :indent
+
+          def indent=(indent)
+            empty? && (@indent = indent)
+          end
 
           def <<(word)
             @words << word

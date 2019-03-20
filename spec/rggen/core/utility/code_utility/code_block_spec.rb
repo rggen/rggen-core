@@ -71,13 +71,13 @@ module RgGen::Core::Utility::CodeUtility
       it '連続で追加できる' do
         other_block = CodeBlock.new
         other_block << 'bar'
-        code_block << 'foo' << other_block<< 'baz'
+        code_block << 'foo' << other_block << 'baz'
         expect(code_block.to_s).to eq 'foobarbaz'
       end
     end
 
     describe '#indent=' do
-      specify '末尾の行から、指定されたインデントが有効になる' do
+      specify '末尾の空行から、指定されたインデントが有効になる' do
         code_block << 'foo' << "\n"
         code_block << 'bar'
         code_block.indent += 2
@@ -86,7 +86,7 @@ module RgGen::Core::Utility::CodeUtility
         code_block << "\n"
         code_block.indent -= 4
         code_block << 'foobar'
-        expect(code_block.to_s).to eq "foo\n  bar\n    baz\nfoobar"
+        expect(code_block.to_s).to eq "foo\nbar\n  baz\nfoobar"
       end
     end
 

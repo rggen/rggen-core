@@ -46,31 +46,28 @@ module RgGen
 
           private
 
-          def add_line(additional_indent = 0)
-            line = Line.new(@indent + additional_indent)
+          def add_line
+            line = Line.new(@indent)
             @lines << line
           end
 
           def add_string(rhs)
             lines =
               if rhs.include?(newline)
-                (rhs + ((rhs.end_with?(newline) && newline) || '')).lines
+                (rhs.end_with?(newline) ? rhs + newline : rhs).lines
               else
                 [rhs]
               end
             lines.each_with_index do |line, i|
-              i.zero? || add_line
+              i.positive? && add_line
               add_word(line.chomp)
             end
           end
 
           def merge_code_block(rhs)
             rhs.lines.each_with_index do |line, i|
-              if i.zero?
-                last_line_empty? && (last_line.indent += line.indent)
-              else
-                add_line((line.empty? && 0) || line.indent)
-              end
+              i.positive? && add_line
+              line.empty? || (last_line.indent += line.indent)
               last_line.concat(line)
             end
           end

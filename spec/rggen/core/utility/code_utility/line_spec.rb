@@ -45,8 +45,15 @@ module RgGen::Core::Utility::CodeUtility
         let(:indent_size) { [2, 4, 8].sample }
 
         it '行頭に指定された幅の空白を追加して、文字列を出力する' do
-          line << 'foo'
           line.indent = indent_size
+          line << 'foo'
+          expect(line.to_s).to eq "#{' ' * indent_size}foo"
+        end
+
+        specify 'インデント幅は空行のときに設定できる' do
+          line.indent = indent_size
+          line << 'foo'
+          line.indent += indent_size
           expect(line.to_s).to eq "#{' ' * indent_size}foo"
         end
       end
