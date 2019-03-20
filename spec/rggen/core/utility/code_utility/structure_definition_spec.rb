@@ -38,8 +38,8 @@ module RgGen::Core::Utility::CodeUtility
 
     it '構造の定義を行うコードを生成する' do
       expect(
-        structure_definition do |s|
-          s.body { :foo_body }
+        structure_definition do
+          body { :foo_body }
         end
       ).to match_string(<<~'STRUCTURE')
         foo_header
@@ -48,8 +48,8 @@ module RgGen::Core::Utility::CodeUtility
       STRUCTURE
 
       expect(
-        structure_definition do |s|
-          s.body { "foo_body\n" }
+        structure_definition do
+          body { "foo_body\n" }
         end
       ).to match_string(<<~'STRUCTURE')
         foo_header
@@ -58,8 +58,8 @@ module RgGen::Core::Utility::CodeUtility
       STRUCTURE
 
       expect(
-        structure_definition do |s|
-          s.body { |code| code << :foo_body }
+        structure_definition do
+          body { |code| code << :foo_body }
         end
       ).to match_string(<<~'STRUCTURE')
         foo_header
@@ -68,8 +68,8 @@ module RgGen::Core::Utility::CodeUtility
       STRUCTURE
 
       expect(
-        structure_definition do |s|
-          s.body { |code| code << :foo_body << nl }
+        structure_definition do
+          body { |code| code << :foo_body << nl }
         end
       ).to match_string(<<~'STRUCTURE')
         foo_header
@@ -78,9 +78,9 @@ module RgGen::Core::Utility::CodeUtility
       STRUCTURE
 
       expect(
-        structure_definition do |s|
-          s.body { "foo_body_0\nfoo_body_1" }
-          s.body { |code| code << :foo_body_2 << nl }
+        structure_definition do
+          body { "foo_body_0\nfoo_body_1" }
+          body { |code| code << :foo_body_2 << nl }
         end
       ).to match_string(<<~'STRUCTURE')
         foo_header
@@ -91,9 +91,9 @@ module RgGen::Core::Utility::CodeUtility
       STRUCTURE
 
       expect(
-        structure_definition_with_pre_post do |s|
-          s.body { :foo_body_0 }
-          s.body { :foo_body_1 }
+        structure_definition_with_pre_post do
+          body { :foo_body_0 }
+          body { :foo_body_1 }
         end
       ).to match_string(<<~'STRUCTURE')
         foo_header

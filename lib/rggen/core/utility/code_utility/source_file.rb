@@ -14,9 +14,9 @@ module RgGen
             attr_setter :include_keyword
           end
 
-          def initialize(file_path)
+          def initialize(file_path, &block)
             @file_path = file_path
-            block_given? && yield(self)
+            block_given? && Docile.dsl_eval(self, &block)
           end
 
           attr_reader :file_path

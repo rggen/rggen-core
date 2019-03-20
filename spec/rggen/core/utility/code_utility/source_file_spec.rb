@@ -21,8 +21,8 @@ module RgGen::Core::Utility::CodeUtility
     describe '#file_header' do
       it '#file_headerを挿入する' do
         expect(
-          source_file do |f|
-            f.file_header { "// #{file_path}" }
+          source_file do
+            file_header { "// #{file_path}" }
           end
         ).to match_string "// foo/bar.sv\n"
       end
@@ -31,8 +31,8 @@ module RgGen::Core::Utility::CodeUtility
     describe '#include_guard' do
       it 'インクルードガードを挿入する' do
         expect(
-          source_file do |f|
-            f.include_guard
+          source_file do
+            include_guard
           end
         ).to match_string <<~'CODE'
         `ifndef BAR_SV
@@ -44,8 +44,8 @@ module RgGen::Core::Utility::CodeUtility
       context 'ブロックが与えら得れた場合' do
         specify 'ブロックの評価結果がガードマクロの識別子になる' do
           expect(
-            source_file do |f|
-              f.include_guard { "__#{default_guard_macro}__" }
+            source_file do
+              include_guard { "__#{default_guard_macro}__" }
             end
           ).to match_string <<~'CODE'
           `ifndef __BAR_SV__
@@ -59,9 +59,9 @@ module RgGen::Core::Utility::CodeUtility
     describe '#include_file' do
       it '指定したファイルをインクルードファイルとして挿入する' do
         expect(
-          source_file do |f|
-            f.include_file 'fizz.svh'
-            f.include_file 'buzz.svh'
+          source_file do
+            include_file 'fizz.svh'
+            include_file 'buzz.svh'
           end
         ).to match_string <<~'CODE'
         `include "fizz.svh"
@@ -77,10 +77,10 @@ module RgGen::Core::Utility::CodeUtility
 
       it '本体のコードを挿入する' do
         expect(
-          source_file do |f|
-            f.body { "logic #{identifiers[0]};" }
-            f.body { |c| c << "logic #{identifiers[1]};" << nl }
-            f.body { |c| c << "logic #{identifiers[2]};" << nl }
+          source_file do
+            body { "logic #{identifiers[0]};" }
+            body { |c| c << "logic #{identifiers[1]};" << nl }
+            body { |c| c << "logic #{identifiers[2]};" << nl }
           end
         ).to match_string <<~'CODE'
         logic foo;
@@ -92,11 +92,11 @@ module RgGen::Core::Utility::CodeUtility
 
     it 'ファイルヘッダー、インクルードガード、インクルードファイル、本体の順でコードを挿入する' do
       expect(
-        source_file do |f|
-          f.file_header { "// #{file_path}" }
-          f.include_guard
-          f.include_file 'fizz.svh'
-          f.body { 'logic foo;' }
+        source_file do
+          file_header { "// #{file_path}" }
+          include_guard
+          include_file 'fizz.svh'
+          body { 'logic foo;' }
         end
       ).to match_string <<~'CODE'
       // foo/bar.sv
