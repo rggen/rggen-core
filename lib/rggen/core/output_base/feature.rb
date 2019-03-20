@@ -23,7 +23,7 @@ module RgGen
             main: :main_code,
             post: :post_code
           }.each do |phase, method_name|
-            define_method(method_name) do |kind, options = {}, &body|
+            define_method(method_name) do |kind, **options, &body|
               code_generators[phase] ||= CodeGenerator.new
               block =
                 if from_template?(options)

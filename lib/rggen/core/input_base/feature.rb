@@ -11,7 +11,7 @@ module RgGen
         end
 
         class << self
-          def property(name, options = {}, &body)
+          def property(name, **options, &body)
             property_context = PropertyContext.new(name, options, body)
             define_method(name) do |*args, &block|
               property_method(property_context, args, block)
@@ -47,7 +47,7 @@ module RgGen
 
           attr_reader :validators
 
-          def input_pattern(pattern, options = {}, &converter)
+          def input_pattern(pattern, **options, &converter)
             @match_automatically = options[:match_automatically]
             @input_matcher = InputMatcher.new(pattern, options, &converter)
           end
