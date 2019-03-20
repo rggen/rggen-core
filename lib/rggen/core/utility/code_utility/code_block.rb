@@ -52,13 +52,8 @@ module RgGen
           end
 
           def add_string(rhs)
-            lines =
-              if rhs.include?(newline)
-                (rhs.end_with?(newline) ? rhs + newline : rhs).lines
-              else
-                [rhs]
-              end
-            lines.each_with_index do |line, i|
+            rhs += newline if rhs.end_with?(newline)
+            rhs.each_line.with_index do |line, i|
               i.positive? && add_line
               add_word(line.chomp)
             end
