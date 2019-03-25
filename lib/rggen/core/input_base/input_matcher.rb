@@ -16,21 +16,15 @@ module RgGen
         end
 
         def match(rhs)
-          match_data = do_match(rhs)
-          return unless match_data
-          return match_data unless @converter
-          @converter.call(match_data)
+          rhs = rhs.to_s
+          rhs = delete_blanks(rhs) if ignore_blanks?
+          @pattern.match(rhs, &@converter)
         end
 
         private
 
-        def do_match(rhs)
-          rhs = rhs.to_s if @options[:convert_to_string]
-          rhs = delete_blanks(rhs)
-          case rhs
-          when @pattern
-            Regexp.last_match
-          end
+        def ignore_blanks?
+          @options.fetch(:ignore_blanks, true)
         end
 
         DELETE_BLANK_PATTERN =
@@ -42,9 +36,6 @@ module RgGen
         COMPRESS_BLANK_PATTERN = /([[:blank:]])[[:blank:]]*/.freeze
 
         def delete_blanks(rhs)
-          return rhs unless @options.fetch(:ignore_blanks, true)
-          return rhs unless rhs.respond_to?(:strip)
-          return rhs unless rhs.respond_to?(:gsub)
           rhs
             .strip
             .gsub(DELETE_BLANK_PATTERN, '')

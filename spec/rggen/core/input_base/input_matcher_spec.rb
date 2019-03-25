@@ -13,12 +13,14 @@ module RgGen::Core::InputBase
         expect(create_matcher(/foo/).match('foo')).to be_truthy
         expect(create_matcher(/foo/).match(:foo )).to be_truthy
         expect(create_matcher(/foo/).match('bar')).to be_falsey
-        expect(create_matcher(/1/  ).match(1    )).to be_falsey
+        expect(create_matcher(/1/  ).match(1    )).to be_truthy
       end
 
       context "入力がマッチした場合" do
         it "MatchDataを返す" do
-          expect(create_matcher(/foo/).match('foo')).to be_instance_of(MatchData)
+          match_data = create_matcher(/(foo)/).match('foo')
+          expect(match_data).to be_instance_of(MatchData)
+          expect(match_data.captures).to match(['foo'])
         end
       end
 
@@ -64,35 +66,6 @@ module RgGen::Core::InputBase
             expect(matcher.match('foo'   )).to be_truthy
             expect(matcher.match('foobar')).to be_falsey
             expect(matcher.match('bazfoo')).to be_falsey
-          end
-        end
-      end
-
-      describe "convert_to_stringオプション" do
-        context "trueが設定された場合" do
-          let(:matcher) { create_matcher(/1/, convert_to_string: true) }
-
-           it "入力を文字列に変換した上で、マッチングを行う" do
-            expect(matcher.match('1')).to be_truthy
-            expect(matcher.match( 1 )).to be_truthy
-          end
-        end
-
-        context "trueが設定された場合" do
-          let(:matcher) { create_matcher(/1/, convert_to_string: false) }
-
-          it "入力を文字列に変換せず、そのままマッチングを行う" do
-            expect(matcher.match('1')).to be_truthy
-            expect(matcher.match( 1 )).to be_falsey
-          end
-        end
-
-        context "未指定の場合" do
-          let(:matcher) { create_matcher(/1/, convert_to_string: false) }
-
-          it "falseが設定された場合と同じマッチングを行う" do
-            expect(matcher.match('1')).to be_truthy
-            expect(matcher.match( 1 )).to be_falsey
           end
         end
       end
