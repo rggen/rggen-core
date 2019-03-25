@@ -97,6 +97,16 @@ module RgGen
           builders&.each { |body| instance_exec(&body) }
         end
 
+        def export(*methods)
+          exported_methods.concat(
+            methods.reject(&exported_methods.method(:include?))
+          )
+        end
+
+        def exported_methods
+          @exported_methods ||= Array.new(self.class.exported_methods)
+        end
+
         def generate_code(phase, kind, code = nil)
           generator = self.class.code_generators[phase]
           (generator&.generate(self, kind, code)) || code
@@ -105,10 +115,6 @@ module RgGen
         def write_file(directory = nil)
           file_writer = self.class.file_writer
           file_writer&.write_file(self, directory)
-        end
-
-        def exported_methods
-          self.class.exported_methods
         end
 
         private

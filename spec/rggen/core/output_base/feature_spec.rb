@@ -314,18 +314,24 @@ module RgGen::Core::OutputBase
     end
 
     describe "#exported_methods" do
-      it ".exportで指定されたメソッド一覧を返す" do
+      it ".export/#exportで指定されたメソッド一覧を返す" do
         feature = define_and_create_feature do
           export :foo
           export :bar, :baz
           export :foo
+          build do
+            export :fizz
+            export :buzz, :fizzbuzz
+            export :fizz, :foo
+          end
         end
+        feature.build
 
-        expect(feature.exported_methods).to match [:foo, :bar, :baz]
+        expect(feature.exported_methods).to match [:foo, :bar, :baz, :fizz, :buzz, :fizzbuzz]
       end
 
       context "継承された場合" do
-        specify "メソッド一覧は継承される" do
+        specify ".exportで指定されたメソッド一覧は継承される" do
           foo_feature = define_and_create_feature do
             export :foo
           end

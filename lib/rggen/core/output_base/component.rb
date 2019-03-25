@@ -17,13 +17,8 @@ module RgGen
           define_property_accessors
         end
 
-        def add_feature(feature)
-          super
-          define_feature_method_accessor(feature)
-        end
-
         def build
-          @features.each_value(&:build)
+          @features.each_value(&method(:build_feature))
           @children.each(&:build)
         end
 
@@ -44,9 +39,10 @@ module RgGen
           def_delegators(:@source, *@source.properties)
         end
 
-        def define_feature_method_accessor(feature)
-          target = "@features[:#{feature.feature_name}]"
-          def_delegators(target, *feature.exported_methods)
+        def build_feature(feature)
+          feature.build
+          receiver = "@features[:#{feature.feature_name}]"
+          def_delegators(receiver, *feature.exported_methods)
         end
 
         def code_generators(mode)
