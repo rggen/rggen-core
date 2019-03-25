@@ -15,6 +15,8 @@ module RgGen
             end
         end
 
+        attr_reader :options
+
         def match(rhs)
           rhs = rhs.to_s
           rhs = delete_blanks(rhs) if ignore_blanks?

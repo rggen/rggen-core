@@ -357,24 +357,24 @@ module RgGen::Core::InputBase
       end
     end
 
-    describe "#pattern_match" do
+    describe "#match_pattern" do
       it ".input_patternで登録されたパターンで、一致比較を行う" do
         feature = create_feature { input_pattern %r{foo} }
-        expect(feature.send(:pattern_match, 'foo')).to be_instance_of(MatchData)
-        expect(feature.send(:pattern_match, 'bar')).to be_falsey
+        expect(feature.send(:match_pattern, 'foo')).to be_instance_of(MatchData)
+        expect(feature.send(:match_pattern, 'bar')).to be_falsey
       end
 
-      it "InputMatcher::matchを用いて、一致比較を行う" do
+      it "InputMatcher#matchを用いて、一致比較を行う" do
         feature = create_feature { input_pattern %r{foo} }
         expect_any_instance_of(InputMatcher).to receive(:match)
-        feature.send(:pattern_match, 'foo')
+        feature.send(:match_pattern, 'foo')
       end
 
       specify "パターン登録時に、InputMatcherに対して、オプションやブロックを渡すことができる" do
         feature = create_feature do
-          input_pattern(/(foo)(bar)/, convert_string: true) { |m| m.captures.map(&:upcase) }
+          input_pattern(/(foo)(bar)/, match_wholly: false) { |m| m.captures.map(&:upcase) }
         end
-        expect(feature.send(:pattern_match, :foobar)).to match ['FOO', 'BAR']
+        expect(feature.send(:match_pattern, ' foobar ')).to match ['FOO', 'BAR']
       end
 
       describe "#match_data" do
@@ -382,13 +382,13 @@ module RgGen::Core::InputBase
         let(:bar_feature) { create_feature { input_pattern(%r{bar}) { |m| m[0].upcase } }}
 
         it "直近の比較結果を返す" do
-          foo_feature.send(:pattern_match, 'foo')
-          bar_feature.send(:pattern_match, 'bar')
+          foo_feature.send(:match_pattern, 'foo')
+          bar_feature.send(:match_pattern, 'bar')
           expect(foo_feature.send(:match_data)[0]).to eq 'foo'
           expect(bar_feature.send(:match_data)).to eq 'BAR'
 
-          foo_feature.send(:pattern_match, 'baz')
-          bar_feature.send(:pattern_match, 'baz')
+          foo_feature.send(:match_pattern, 'baz')
+          bar_feature.send(:match_pattern, 'baz')
           expect(foo_feature.send(:match_data)).to be_nil
           expect(bar_feature.send(:match_data)).to be_nil
         end
@@ -398,9 +398,9 @@ module RgGen::Core::InputBase
         let(:feature) { create_feature { input_pattern %r{foo} } }
 
         it "直近の比較が成功したかどうかを返す" do
-          feature.send(:pattern_match, 'foo')
+          feature.send(:match_pattern, 'foo')
           expect(feature.send(:pattern_matched?)).to be true
-          feature.send(:pattern_match, 'bar')
+          feature.send(:match_pattern, 'bar')
           expect(feature.send(:pattern_matched?)).to be false
         end
       end
@@ -417,7 +417,7 @@ module RgGen::Core::InputBase
           end
 
           it "#build実行時に、自動で末尾の引数に対して一致比較を行う" do
-            expect(feature).to receive(:pattern_match).with(:bar)
+            expect(feature).to receive(:match_pattern).with(:bar)
             feature.build(*input_values)
           end
         end
@@ -431,7 +431,7 @@ module RgGen::Core::InputBase
           end
 
           it "#build実行時に、自動で一致比較を行わない" do
-            expect(feature).not_to receive(:pattern_match)
+            expect(feature).not_to receive(:match_pattern)
             feature.build(*input_values)
           end
         end
@@ -445,7 +445,7 @@ module RgGen::Core::InputBase
           end
 
           it "#build実行時に、自動で一致比較を行わない" do
-            expect(feature).not_to receive(:pattern_match)
+            expect(feature).not_to receive(:match_pattern)
             feature.build(*input_values)
           end
         end

@@ -54,10 +54,6 @@ module RgGen
 
           attr_reader :input_matcher
 
-          def match_automatically?
-            @match_automatically
-          end
-
           def inherited(subclass)
             super
             export_instance_variable(:@properties, subclass, &:dup)
@@ -73,23 +69,24 @@ module RgGen
         def_class_delegator :passive_feature?
 
         def build(*args)
-          builders || return
+          return unless self.class.builders
           extracted_args = extract_last_arg(args)
-          match_automatically? && pattern_match(extracted_args.last)
-          builders.each { |builder| instance_exec(*extracted_args, &builder) }
+          match_pattern(extracted_args.last) if match_automatically?
+          execute_blocks(*extracted_args, self.class.builders)
         end
 
         def validate
-          validators || return
-          @validated && return
-          validators.each { |validator| instance_exec(&validator) }
-          @validated = true
+          return if @validated
+          @validated = execute_blocks(self.class.validators)
         end
 
         private
 
-        def builders
-          self.class.builders
+        def execute_blocks(*args, blocks)
+          return unless blocks
+          return if blocks.empty?
+          blocks.each { |b| instance_exec(*args, &b) }
+          true
         end
 
         def extract_last_arg(args)
@@ -100,15 +97,14 @@ module RgGen
         attr_reader :position
 
         def match_automatically?
-          self.class.match_automatically?
+          matcher = self.class.input_matcher
+          return false unless matcher
+          matcher.options[:match_automatically]
         end
 
-        def input_matcher
-          self.class.input_matcher
-        end
-
-        def pattern_match(rhs)
-          @match_data = input_matcher&.match(rhs)
+        def match_pattern(rhs)
+          matcher = self.class.input_matcher
+          @match_data = matcher&.match(rhs)
         end
 
         attr_reader :match_data
@@ -147,10 +143,6 @@ module RgGen
           else
             context[:default]
           end
-        end
-
-        def validators
-          self.class.validators
         end
       end
     end
