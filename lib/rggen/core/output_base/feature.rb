@@ -9,32 +9,8 @@ module RgGen
         class << self
           attr_reader :builders
 
-          def build(&body)
-            @builders ||= []
-            @builders << body
-          end
-
           def code_generators
             @code_generators ||= {}
-          end
-
-          {
-            pre: :pre_code,
-            main: :main_code,
-            post: :post_code
-          }.each do |phase, method_name|
-            define_method(method_name) do |kind, **options, &body|
-              code_generators[phase] ||= CodeGenerator.new
-              block =
-                if from_template?(options)
-                  caller_location = caller_locations(1, 1).first
-                  template_path = options[:template_path]
-                  -> { process_template(template_path, caller_location) }
-                else
-                  body
-                end
-              code_generators[phase].register(kind, block)
-            end
           end
 
           def template_engine(engine = nil)
@@ -44,12 +20,52 @@ module RgGen
 
           attr_reader :file_writer
 
-          def write_file(file_name_pattern, &body)
-            @file_writer = FileWriter.new(file_name_pattern, body)
-          end
-
           def exported_methods
             @exported_methods ||= []
+          end
+
+          private
+
+          def build(&body)
+            @builders ||= []
+            @builders << body
+          end
+
+          def register_code_generation(kind, **options, &body)
+            block =
+              if options[:from_template]
+                caller_location = caller_locations(1, 1).first
+                template_path = extract_template_path(options)
+                -> { process_template(template_path, caller_location) }
+              else
+                body
+              end
+            code_generator(__callee__).register(kind, block)
+          end
+
+          alias_method :pre_code, :register_code_generation
+          alias_method :main_code, :register_code_generation
+          alias_method :post_code, :register_code_generation
+
+          undef_method :register_code_generation
+
+          def extract_template_path(options)
+            path = options[:from_template]
+            path.equal?(true) ? nil : path
+          end
+
+          CODE_PHASE = {
+            pre_code: :pre, main_code: :main, post_code: :post
+          }.freeze
+
+          def code_generator(method_name)
+            phase = CODE_PHASE[method_name]
+            code_generators[phase] ||= CodeGenerator.new
+            code_generators[phase]
+          end
+
+          def write_file(file_name_pattern, &body)
+            @file_writer = FileWriter.new(file_name_pattern, body)
           end
 
           def export(*methods)
@@ -57,9 +73,9 @@ module RgGen
               methods.reject(&exported_methods.method(:include?))
             )
           end
+        end
 
-          private
-
+        class << self
           def inherited(subclass)
             export_instance_variable(:@builders, subclass, &:dup)
             export_instance_variable(:@template_engine, subclass)
@@ -69,21 +85,8 @@ module RgGen
           end
 
           def copy_code_generators(subclass)
-            @code_generators || return
-            @code_generators.empty? && return
-            copied_generators = @code_generators.flat_map do |phase, generator|
-              [phase, generator.copy]
-            end
-            subclass.instance_variable_set(
-              :@code_generators, Hash[*copied_generators]
-            )
-          end
-
-          def from_template?(options)
-            if options.key?(:from_template)
-              options[:from_template]
-            else
-              options.key?(:template_path)
+            @code_generators&.each do |phase, generator|
+              subclass.code_generators[phase] = generator.copy
             end
           end
         end

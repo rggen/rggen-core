@@ -136,38 +136,33 @@ module RgGen::Core::OutputBase
         expect(feature.generate_code(phase, :bar, code)).to be code
       end
 
-      describe "from_template/template_path option" do
+      describe "from_template option" do
         include_context 'template engine'
 
         it "テンプレートを処理して、コードを生成する" do
           engine = template_engine
           feature = define_and_create_feature do
             template_engine engine
-            send(api, :foo, from_template: true, template_path: 'foo.erb')
-            send(api, :bar,                      template_path: 'bar.erb')
-            send(api, :baz, from_template: true)
+            send(api, :foo, from_template: 'foo.erb')
+            send(api, :bar, from_template: true)
           end
 
           allow(File).to receive(:binread).with('foo.erb').and_return(template)
           expect(code).to receive(:<<).with("#{feature.object_id}")
           feature.generate_code(phase, :foo, code)
 
-          allow(File).to receive(:binread).with('bar.erb').and_return(template)
-          expect(code).to receive(:<<).with("#{feature.object_id}")
-          feature.generate_code(phase, :bar, code)
-
           allow(File).to receive(:binread).with(default_template_path).and_return(template)
           expect(code).to receive(:<<).with("#{feature.object_id}")
-          feature.generate_code(phase, :baz, code)
+          feature.generate_code(phase, :bar, code)
         end
 
         context "from_templateにfalseが指定された場合" do
-          it "template_pathが指定されていても、テンプレートからコードの生成を行わない" do
+          it "テンプレートからコードの生成を行わない" do
             feature = define_and_create_feature do
-              send(api, :foo, from_template: false, template_path: 'foo.erb')
+              send(api, :foo, from_template: false)
             end
 
-            expect(File).not_to receive(:binread).with('foo.erb')
+            expect(File).not_to receive(:binread)
             expect(code).not_to receive(:<<)
             feature.generate_code(phase, :foo, code)
           end
