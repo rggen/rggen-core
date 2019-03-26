@@ -7,7 +7,7 @@ module RgGen
         include SingleForwardable
 
         def initialize(*args)
-          @parent = ((args.size > 0) && args.first) || nil
+          @parent = args.first
           @children = []
           @need_children = true
           @level = (parent && parent.level + 1) || 0
