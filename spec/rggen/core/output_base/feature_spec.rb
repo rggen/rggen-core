@@ -87,11 +87,11 @@ module RgGen::Core::OutputBase
       let(:template) { '<%= object_id %>' }
     end
 
-    shared_examples_for "code_generator" do |phase, api|
-      it ".#{api}で登録されたブロックを実行し、コードの生成を行う" do
+    shared_examples_for "code_generator" do |phase|
+      it ".#{phase}で登録されたブロックを実行し、コードの生成を行う" do
         feature  = define_and_create_feature do
-          send(api, :foo) { |c| c << 'foo' }
-          send(api, :bar) { 'bar' }
+          send(phase, :foo) { |c| c << 'foo' }
+          send(phase, :bar) { 'bar' }
         end
 
         expect(code).to receive(:<<).with('foo')
@@ -103,8 +103,8 @@ module RgGen::Core::OutputBase
 
       specify "最後に登録されたコード生成ブロックが優先される" do
         feature = define_and_create_feature do
-          send(api, :foo) { 'foo_0' }
-          send(api, :foo) { 'foo_1' }
+          send(phase, :foo) { 'foo_0' }
+          send(phase, :foo) { 'foo_1' }
         end
 
         expect(code).to receive(:<<).with('foo_1')
@@ -114,7 +114,7 @@ module RgGen::Core::OutputBase
       context "未登録のコードの種類が指定された場合" do
         it "コードの生成は行わない" do
           feature = define_and_create_feature do
-            send(api, :foo) { 'foo' }
+            send(phase, :foo) { 'foo' }
           end
 
           expect(code).not_to receive(:<<)
@@ -127,7 +127,7 @@ module RgGen::Core::OutputBase
         allow(code).to receive(:<<)
 
         feature = define_and_create_feature do
-          send(api, :foo) { 'foo' }
+          send(phase, :foo) { 'foo' }
         end
 
         expect(feature.generate_code(phase, :foo, nil )).to be code
@@ -143,8 +143,8 @@ module RgGen::Core::OutputBase
           engine = template_engine
           feature = define_and_create_feature do
             template_engine engine
-            send(api, :foo, from_template: 'foo.erb')
-            send(api, :bar, from_template: true)
+            send(phase, :foo, from_template: 'foo.erb')
+            send(phase, :bar, from_template: true)
           end
 
           allow(File).to receive(:binread).with('foo.erb').and_return(template)
@@ -159,7 +159,7 @@ module RgGen::Core::OutputBase
         context "from_templateにfalseが指定された場合" do
           it "テンプレートからコードの生成を行わない" do
             feature = define_and_create_feature do
-              send(api, :foo, from_template: false)
+              send(phase, :foo, from_template: false)
             end
 
             expect(File).not_to receive(:binread)
@@ -172,8 +172,8 @@ module RgGen::Core::OutputBase
       context "継承された場合" do
         specify "コード生成ブロックは継承される" do
           parent_feature = define_feature do
-            send(api, :foo) { 'foo' }
-            send(api, :bar) { 'bar' }
+            send(phase, :foo) { 'foo' }
+            send(phase, :bar) { 'bar' }
           end
           feature = define_and_create_feature(parent_feature)
 
@@ -186,10 +186,10 @@ module RgGen::Core::OutputBase
 
         specify "コード生成ブロックは上書き可能である"  do
           parent_feature = define_feature do
-            send(api, :foo) { 'foo_0' }
+            send(phase, :foo) { 'foo_0' }
           end
           feature = define_and_create_feature(parent_feature) do
-            send(api, :foo) { 'foo_1' }
+            send(phase, :foo) { 'foo_1' }
           end
 
           expect(code).to receive(:<<).with('foo_1')
@@ -198,10 +198,10 @@ module RgGen::Core::OutputBase
 
         specify "継承先での変更は、親クラスに影響しない" do
           feature = define_and_create_feature do
-            send(api, :foo) { 'foo_0' }
+            send(phase, :foo) { 'foo_0' }
           end
           define_feature(feature.class) do
-            send(api, :foo) { 'foo_1' }
+            send(phase, :foo) { 'foo_1' }
           end
 
           expect(code).to receive(:<<).with('foo_0')
@@ -217,16 +217,16 @@ module RgGen::Core::OutputBase
         allow_any_instance_of(Feature).to receive(:create_blank_code).and_return(code)
       end
 
-      context "生成フェーズが:preの場合" do
-        it_behaves_like "code_generator", :pre, :pre_code
+      context "生成フェーズが:pre_codeの場合" do
+        it_behaves_like "code_generator", :pre_code
       end
 
-      context "生成フェーズが:mainの場合" do
-        it_behaves_like "code_generator", :main, :main_code
+      context "生成フェーズが:main_codeの場合" do
+        it_behaves_like "code_generator", :main_code
       end
 
-      context "生成フェーズが:postの場合" do
-        it_behaves_like "code_generator", :post, :post_code
+      context "生成フェーズが:post_codeの場合" do
+        it_behaves_like "code_generator", :post_code
       end
     end
 
@@ -361,11 +361,11 @@ module RgGen::Core::OutputBase
 
         allow(File).to receive(:binread).with(default_template_path).and_return(template)
         expect(code).to receive(:<<).with("#{foo_feature.object_id}")
-        foo_feature.generate_code(:main, :foo, code)
+        foo_feature.generate_code(:main_code, :foo, code)
 
         allow(File).to receive(:binread).with('bar.erb').and_return(template)
         expect(code).to receive(:<<).with("#{bar_feature.object_id}")
-        bar_feature.generate_code(:main, :bar, code)
+        bar_feature.generate_code(:main_code, :bar, code)
       end
     end
   end

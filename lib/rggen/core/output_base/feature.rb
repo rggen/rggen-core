@@ -40,7 +40,8 @@ module RgGen
               else
                 body
               end
-            code_generator(__callee__).register(kind, block)
+            code_generators[__callee__] ||= CodeGenerator.new
+            code_generators[__callee__].register(kind, block)
           end
 
           alias_method :pre_code, :register_code_generation
@@ -52,16 +53,6 @@ module RgGen
           def extract_template_path(options)
             path = options[:from_template]
             path.equal?(true) ? nil : path
-          end
-
-          CODE_PHASE = {
-            pre_code: :pre, main_code: :main, post_code: :post
-          }.freeze
-
-          def code_generator(method_name)
-            phase = CODE_PHASE[method_name]
-            code_generators[phase] ||= CodeGenerator.new
-            code_generators[phase]
           end
 
           def write_file(file_name_pattern, &body)

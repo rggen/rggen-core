@@ -23,9 +23,7 @@ module RgGen
         end
 
         def generate_code(kind, mode, code = nil)
-          code_generators(mode).inject(code) do |c, g|
-            g.call(kind, mode, c)
-          end
+          code_generators(kind, mode).inject(code) { |c, g| g[c] }
         end
 
         def write_file(directory = nil)
@@ -45,37 +43,25 @@ module RgGen
           def_delegators(receiver, *feature.exported_methods)
         end
 
-        def code_generators(mode)
+        def code_generators(kind, mode)
           [
-            feature_code_generator(:pre),
-            *main_code_generators(mode),
-            feature_code_generator(:post)
+            [@features.each_value, [:pre_code, kind]],
+            *main_code_contexts(kind, mode),
+            [@features.each_value, [:post_code, kind]]
+          ].map do |receivers, args|
+            lambda do |code|
+              receivers.inject(code) { |c, r| r.generate_code(*args, c) }
+            end
+          end
+        end
+
+        def main_code_contexts(kind, mode)
+          contexts = [
+            [@features.each_value, [:main_code, kind]],
+            [@children, [kind, mode]]
           ]
-        end
-
-        def main_code_generators(mode)
-          case mode
-          when :top_down
-            [feature_code_generator(:main), child_component_code_generator]
-          when :bottom_up
-            [child_component_code_generator, feature_code_generator(:main)]
-          end
-        end
-
-        def feature_code_generator(phase)
-          lambda do |kind, _mode, code|
-            @features.each_value.inject(code) do |c, feature|
-              feature.generate_code(phase, kind, c)
-            end
-          end
-        end
-
-        def child_component_code_generator
-          lambda do |kind, mode, code|
-            @children.inject(code) do |c, component|
-              component.generate_code(kind, mode, c)
-            end
-          end
+          contexts.reverse! if mode == :bottom_up
+          contexts
         end
       end
     end
