@@ -48,8 +48,9 @@ module RgGen
         end
 
         def load_file(file)
-          contents = File.binread(file)
-          build_by_block(binding.eval("proc { #{contents} }", file))
+          build_by_block(
+            instance_eval("-> { #{File.binread(file)} }", file, 1)
+          )
         end
 
         private
