@@ -9,11 +9,17 @@ Layout/EmptyLineAfterGuardClause:
 Layout/EndOfLine:
   EnforcedStyle: lf
 
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented_relative_to_receiver
+
 Style/Alias:
   EnforcedStyle: prefer_alias_method
 
 Style/EmptyMethod:
   EnforcedStyle: expanded
+
+Style/FormatStringToken:
+  EnforcedStyle: unannotated
 
 Style/OptionalArguments:
   Exclude:
