@@ -6,15 +6,12 @@ module RgGen
       def self.setup(builder)
         builder.input_component_registry(:register_map) do
           register_component :register_map do
-            component Component
-            component_factory ComponentFactory
+            component Component, ComponentFactory
           end
 
           register_component [:register_block, :register, :bit_field] do
-            component Component
-            component_factory ComponentFactory
-            base_feature Feature
-            feature_factory FeatureFactory
+            component Component, ComponentFactory
+            feature Feature, FeatureFactory
           end
 
           base_loader Loader

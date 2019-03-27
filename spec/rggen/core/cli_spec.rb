@@ -13,14 +13,20 @@ module RgGen::Core
         [:foo, :bar].each do |component|
           RgGen.output_component_registry(component) do
             register_component :register_map do
-              component RgGen::Core::OutputBase::Component
-              component_factory RgGen::Core::OutputBase::ComponentFactory
+              component(
+                RgGen::Core::OutputBase::Component,
+                RgGen::Core::OutputBase::ComponentFactory
+              )
             end
             register_component [:register_block, :register, :bit_field] do
-              component RgGen::Core::OutputBase::Component
-              component_factory RgGen::Core::OutputBase::ComponentFactory
-              base_feature RgGen::Core::OutputBase::Feature
-              feature_factory RgGen::Core::OutputBase::FeatureFactory
+              component(
+                RgGen::Core::OutputBase::Component,
+                RgGen::Core::OutputBase::ComponentFactory
+              )
+              feature(
+                RgGen::Core::OutputBase::Feature,
+                RgGen::Core::OutputBase::FeatureFactory
+              )
             end
           end
         end

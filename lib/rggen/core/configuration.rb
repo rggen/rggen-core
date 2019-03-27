@@ -6,10 +6,8 @@ module RgGen
       def self.setup(builder)
         builder.input_component_registry(:configuration) do
           register_component do
-            component Component
-            component_factory ComponentFactory
-            base_feature Feature
-            feature_factory FeatureFactory
+            component Component, ComponentFactory
+            feature Feature, FeatureFactory
           end
 
           base_loader Loader

@@ -4,24 +4,24 @@ module RgGen
   module Core
     module Builder
       class ComponentEntry
-        [
-          :component, :component_factory, :base_feature, :feature_factory
-        ].each do |class_name|
-          define_method(class_name) do |base, &body|
-            klass = (body && Class.new(base, &body)) || base
-            instance_variable_set(class_name.variablize, klass)
+        Entry = Struct.new(:target, :factory)
+
+        [:component, :feature].each do |entry_name|
+          define_method(entry_name) do |target, factory|
+            instance_variable_set(
+              __method__.variablize, Entry.new(target, factory)
+            )
           end
         end
 
         def feature_registry
-          (@base_feature && @feature_factory) || return
-          @feature_registry ||=
-            FeatureRegistry.new(@base_feature, @feature_factory)
+          return unless @feature
+          @feature_registry ||= FeatureRegistry.new(*@feature.values)
         end
 
         def build_factory
-          @component_factory.new do |f|
-            f.target_component(@component)
+          @component.factory.new do |f|
+            f.target_component(@component.target)
             f.feature_factories(feature_registry&.build_factories)
           end
         end

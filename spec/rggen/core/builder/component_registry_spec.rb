@@ -35,24 +35,31 @@ module RgGen::Core::Builder
       end
 
       specify "#register_componentで登録されたコンポーネントは、生成したファクトリで生成できる" do
+        class_body = lambda do |message|
+          proc do
+            @m = message
+            def m; self.class.instance_variable_get(:@m); end
+          end
+        end
+
         registry = create_registry do |r|
           r.register_component do
-            component(base_component) do
-              def m; :foo_0; end
-            end
-            component_factory(base_factory)
+            component(
+              Class.new(base_component, &class_body[:foo_0]),
+              base_factory
+            )
           end
           r.register_component(:foo_1) do |category|
-            component(base_component) do
-              define_method(:m) { category }
-            end
-            component_factory(base_factory)
+            component(
+              Class.new(base_component, &class_body[category]),
+              base_factory
+            )
           end
           r.register_component([:foo_2, :foo_3]) do |category|
-            component(base_component) do
-              define_method(:m) { category }
-            end
-            component_factory(base_factory)
+            component(
+              Class.new(base_component, &class_body[category]),
+              base_factory
+            )
           end
         end
 
@@ -76,24 +83,36 @@ module RgGen::Core::Builder
 
           create_registry do |r|
             r.register_component do
-              component(RgGen::Core::Base::Component)
-              component_factory(RgGen::Core::Base::ComponentFactory)
-              base_feature(RgGen::Core::Base::Feature)
-              feature_factory(RgGen::Core::Base::FeatureFactory)
+              component(
+                RgGen::Core::Base::Component,
+                RgGen::Core::Base::ComponentFactory
+              )
+              feature(
+                RgGen::Core::Base::Feature,
+                RgGen::Core::Base::FeatureFactory
+              )
               feature_registries << feature_registry
             end
             r.register_component(:foo) do
-              component(RgGen::Core::Base::Component)
-              component_factory(RgGen::Core::Base::ComponentFactory)
-              base_feature(RgGen::Core::Base::Feature)
-              feature_factory(RgGen::Core::Base::FeatureFactory)
+              component(
+                RgGen::Core::Base::Component,
+                RgGen::Core::Base::ComponentFactory
+              )
+              feature(
+                RgGen::Core::Base::Feature,
+                RgGen::Core::Base::FeatureFactory
+              )
               feature_registries << feature_registry
             end
             r.register_component([:bar, :baz]) do
-              component(RgGen::Core::Base::Component)
-              component_factory(RgGen::Core::Base::ComponentFactory)
-              base_feature(RgGen::Core::Base::Feature)
-              feature_factory(RgGen::Core::Base::FeatureFactory)
+              component(
+                RgGen::Core::Base::Component,
+                RgGen::Core::Base::ComponentFactory
+              )
+              feature(
+                RgGen::Core::Base::Feature,
+                RgGen::Core::Base::FeatureFactory
+              )
               feature_registries << feature_registry
             end
           end

@@ -27,10 +27,14 @@ module RgGen::Core::Builder
 
       before do
         registry.register_component do
-          component(RgGen::Core::Configuration::Component)
-          component_factory(RgGen::Core::Configuration::ComponentFactory)
-          base_feature(RgGen::Core::Configuration::Feature)
-          feature_factory(RgGen::Core::Configuration::FeatureFactory)
+          component(
+            RgGen::Core::Configuration::Component,
+            RgGen::Core::Configuration::ComponentFactory
+          )
+          feature(
+            RgGen::Core::Configuration::Feature,
+            RgGen::Core::Configuration::FeatureFactory
+          )
         end
 
         registry.base_loader(RgGen::Core::Configuration::Loader)

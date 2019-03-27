@@ -41,8 +41,10 @@ module RgGen::Core::Builder
         expect {
           builder.input_component_registry(:configuration) do
             register_component do
-              component RgGen::Core::Configuration::Component
-              component_factory RgGen::Core::Configuration::ComponentFactory
+              component(
+                RgGen::Core::Configuration::Component,
+                RgGen::Core::Configuration::ComponentFactory
+              )
             end
           end
         }.to change { component_registries.size }.from(0).to(1)
@@ -51,16 +53,20 @@ module RgGen::Core::Builder
       specify "入力コンポーネントの登録の生成は一度のみ行われる" do
         builder.input_component_registry(:register_map) do
           register_component do
-            component RgGen::Core::RegisterMap::Component
-            component_factory RgGen::Core::RegisterMap::ComponentFactory
+            component(
+              RgGen::Core::RegisterMap::Component,
+              RgGen::Core::RegisterMap::ComponentFactory
+            )
           end
         end
 
         expect {
           builder.input_component_registry(:register_map) do
             register_component(:register_block) do
-              component RgGen::Core::RegisterMap::Component
-              component_factory RgGen::Core::RegisterMap::ComponentFactory
+              component(
+                RgGen::Core::RegisterMap::Component,
+                RgGen::Core::RegisterMap::ComponentFactory
+              )
             end
           end
         }.not_to change { component_registries.size }
@@ -75,10 +81,14 @@ module RgGen::Core::Builder
 
             builder.input_component_registry(:configuration) do
               register_component do
-                component RgGen::Core::Configuration::Component
-                component_factory RgGen::Core::Configuration::ComponentFactory
-                base_feature RgGen::Core::Configuration::Feature
-                feature_factory RgGen::Core::Configuration::FeatureFactory
+                component(
+                  RgGen::Core::Configuration::Component,
+                  RgGen::Core::Configuration::ComponentFactory
+                )
+                feature(
+                  RgGen::Core::Configuration::Feature,
+                  RgGen::Core::Configuration::FeatureFactory
+                )
               end
             end
 
@@ -100,17 +110,25 @@ module RgGen::Core::Builder
 
             builder.input_component_registry(:register_map) do
               register_component(:register_block) do
-                component RgGen::Core::RegisterMap::Component
-                component_factory RgGen::Core::RegisterMap::ComponentFactory
-                base_feature RgGen::Core::RegisterMap::Feature
-                feature_factory RgGen::Core::RegisterMap::FeatureFactory
+                component(
+                  RgGen::Core::RegisterMap::Component,
+                  RgGen::Core::RegisterMap::ComponentFactory
+                )
+                feature(
+                  RgGen::Core::RegisterMap::Feature,
+                  RgGen::Core::RegisterMap::FeatureFactory
+                )
               end
 
               register_component([:register, :bit_field]) do
-                component RgGen::Core::RegisterMap::Component
-                component_factory RgGen::Core::RegisterMap::ComponentFactory
-                base_feature RgGen::Core::RegisterMap::Feature
-                feature_factory RgGen::Core::RegisterMap::FeatureFactory
+                component(
+                  RgGen::Core::RegisterMap::Component,
+                  RgGen::Core::RegisterMap::ComponentFactory
+                )
+                feature(
+                  RgGen::Core::RegisterMap::Feature,
+                  RgGen::Core::RegisterMap::FeatureFactory
+                )
               end
             end
 
@@ -127,8 +145,10 @@ module RgGen::Core::Builder
         expect {
           builder.output_component_registry(:foo) do
             register_component do
-              component RgGen::Core::OutputBase::Component
-              component_factory RgGen::Core::OutputBase::ComponentFactory
+              component(
+                RgGen::Core::OutputBase::Component,
+                RgGen::Core::OutputBase::ComponentFactory
+              )
             end
           end
         }.to change { component_registries.size }.from(0).to(1)
@@ -137,16 +157,20 @@ module RgGen::Core::Builder
       specify "出力コンポーネントの登録の生成は一度のみ行われる" do
         builder.output_component_registry(:foo) do
           register_component do
-            component RgGen::Core::OutputBase::Component
-            component_factory RgGen::Core::OutputBase::ComponentFactory
+            component(
+              RgGen::Core::OutputBase::Component,
+              RgGen::Core::OutputBase::ComponentFactory
+            )
           end
         end
 
         expect {
           builder.output_component_registry(:foo) do
             register_component(:register_block) do
-              component RgGen::Core::OutputBase::Component
-              component_factory RgGen::Core::OutputBase::ComponentFactory
+              component(
+                RgGen::Core::OutputBase::Component,
+                RgGen::Core::OutputBase::ComponentFactory
+              )
             end
           end
         }.not_to change { component_registries.size }
@@ -161,10 +185,14 @@ module RgGen::Core::Builder
 
             builder.output_component_registry(:foo) do
               register_component do
-                component RgGen::Core::OutputBase::Component
-                component_factory RgGen::Core::OutputBase::ComponentFactory
-                base_feature RgGen::Core::OutputBase::Feature
-                feature_factory RgGen::Core::OutputBase::FeatureFactory
+                component(
+                  RgGen::Core::OutputBase::Component,
+                  RgGen::Core::OutputBase::ComponentFactory
+                )
+                feature(
+                  RgGen::Core::OutputBase::Feature,
+                  RgGen::Core::OutputBase::FeatureFactory
+                )
               end
             end
 
@@ -186,17 +214,25 @@ module RgGen::Core::Builder
 
             builder.output_component_registry(:foo) do
               register_component(:register_block) do
-                component RgGen::Core::RegisterMap::Component
-                component_factory RgGen::Core::RegisterMap::ComponentFactory
-                base_feature RgGen::Core::RegisterMap::Feature
-                feature_factory RgGen::Core::RegisterMap::FeatureFactory
+                component(
+                  RgGen::Core::RegisterMap::Component,
+                  RgGen::Core::RegisterMap::ComponentFactory
+                )
+                feature(
+                  RgGen::Core::RegisterMap::Feature,
+                  RgGen::Core::RegisterMap::FeatureFactory
+                )
               end
 
               register_component([:register, :bit_field]) do
-                component RgGen::Core::RegisterMap::Component
-                component_factory RgGen::Core::RegisterMap::ComponentFactory
-                base_feature RgGen::Core::RegisterMap::Feature
-                feature_factory RgGen::Core::RegisterMap::FeatureFactory
+                component(
+                  RgGen::Core::RegisterMap::Component,
+                  RgGen::Core::RegisterMap::ComponentFactory
+                )
+                feature(
+                  RgGen::Core::RegisterMap::Feature,
+                  RgGen::Core::RegisterMap::FeatureFactory
+                )
               end
             end
 
@@ -211,10 +247,14 @@ module RgGen::Core::Builder
     def default_component_registration
       builder.input_component_registry(:configuration) do
         register_component do
-          component RgGen::Core::Configuration::Component
-          component_factory RgGen::Core::Configuration::ComponentFactory
-          base_feature RgGen::Core::Configuration::Feature
-          feature_factory RgGen::Core::Configuration::FeatureFactory
+          component(
+            RgGen::Core::Configuration::Component,
+            RgGen::Core::Configuration::ComponentFactory
+          )
+          feature(
+            RgGen::Core::Configuration::Feature,
+            RgGen::Core::Configuration::FeatureFactory
+          )
         end
 
         base_loader RgGen::Core::Configuration::Loader
@@ -222,14 +262,20 @@ module RgGen::Core::Builder
 
       builder.input_component_registry(:register_map) do
         register_component do
-          component RgGen::Core::RegisterMap::Component
-          component_factory RgGen::Core::RegisterMap::ComponentFactory
+          component(
+            RgGen::Core::RegisterMap::Component,
+            RgGen::Core::RegisterMap::ComponentFactory
+          )
         end
         register_component([:register_block, :register, :bit_field]) do
-          component RgGen::Core::RegisterMap::Component
-          component_factory RgGen::Core::RegisterMap::ComponentFactory
-          base_feature RgGen::Core::RegisterMap::Feature
-          feature_factory RgGen::Core::RegisterMap::FeatureFactory
+          component(
+            RgGen::Core::RegisterMap::Component,
+            RgGen::Core::RegisterMap::ComponentFactory
+          )
+          feature(
+            RgGen::Core::RegisterMap::Feature,
+            RgGen::Core::RegisterMap::FeatureFactory
+          )
         end
         base_loader RgGen::Core::RegisterMap::Loader
       end
@@ -237,14 +283,20 @@ module RgGen::Core::Builder
       [:foo, :bar, :baz].each do |component_name|
         builder.output_component_registry(component_name) do
           register_component do
-            component RgGen::Core::OutputBase::Component
-            component_factory RgGen::Core::OutputBase::ComponentFactory
+            component(
+              RgGen::Core::OutputBase::Component,
+              RgGen::Core::OutputBase::ComponentFactory
+            )
           end
           register_component([:register_block, :register, :bit_field]) do
-            component RgGen::Core::OutputBase::Component
-            component_factory RgGen::Core::OutputBase::ComponentFactory
-            base_feature RgGen::Core::OutputBase::Feature
-            feature_factory RgGen::Core::OutputBase::FeatureFactory
+            component(
+              RgGen::Core::OutputBase::Component,
+              RgGen::Core::OutputBase::ComponentFactory
+            )
+            feature(
+              RgGen::Core::OutputBase::Feature,
+              RgGen::Core::OutputBase::FeatureFactory
+            )
           end
         end
       end
