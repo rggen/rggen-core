@@ -31,24 +31,20 @@ module RgGen
             @builders << body
           end
 
-          def register_code_generation(kind, **options, &body)
-            block =
-              if options[:from_template]
-                caller_location = caller_locations(1, 1).first
-                template_path = extract_template_path(options)
-                -> { process_template(template_path, caller_location) }
-              else
-                body
-              end
-            code_generators[__callee__] ||= CodeGenerator.new
-            code_generators[__callee__].register(kind, block)
+          [:pre_code, :main_code, :post_code].each do |phase|
+            define_method(phase) do |kind, **options, &body|
+              block =
+                if options[:from_template]
+                  caller_location = caller_locations(1, 1).first
+                  template_path = extract_template_path(options)
+                  -> { process_template(template_path, caller_location) }
+                else
+                  body
+                end
+              code_generators[__method__] ||= CodeGenerator.new
+              code_generators[__method__].register(kind, block)
+            end
           end
-
-          alias_method :pre_code, :register_code_generation
-          alias_method :main_code, :register_code_generation
-          alias_method :post_code, :register_code_generation
-
-          undef_method :register_code_generation
 
           def extract_template_path(options)
             path = options[:from_template]
