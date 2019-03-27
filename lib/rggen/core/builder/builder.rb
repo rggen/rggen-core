@@ -27,6 +27,10 @@ module RgGen
           @input_component_registries[component].register_loader(loader)
         end
 
+        def register_loaders(component, loaders)
+          @input_component_registries[component].register_loaders(loaders)
+        end
+
         def define_loader(component, &body)
           @input_component_registries[component].define_loader(&body)
         end
@@ -44,7 +48,9 @@ module RgGen
         end
 
         [
-          :define_simple_feature, :define_list_feature, :define_list_item_feature
+          :define_simple_feature,
+          :define_list_feature,
+          :define_list_item_feature
         ].each do |method_name|
           define_method(method_name) do |category, *args, &body|
             @categories[category].__send__(__method__, *args, &body)

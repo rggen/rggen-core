@@ -15,6 +15,10 @@ module RgGen
           @loaders << loader
         end
 
+        def register_loaders(loaders)
+          @loaders.concat(Array(loaders))
+        end
+
         def define_loader(&body)
           loader = Class.new(@base_loader, &body)
           register_loader(loader)

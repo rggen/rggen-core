@@ -334,7 +334,7 @@ module RgGen::Core::Builder
       end
     end
 
-    describe "#register_loader/#define_loader" do
+    describe "#register_loader/#register_loaders/#define_loader" do
       before do
         default_component_registration
       end
@@ -345,22 +345,33 @@ module RgGen::Core::Builder
 
       let(:component_registry) { component_registries[target_component] }
 
-      let(:loader) do
+      let(:loaders) do
         if target_component == :configuration
-          RgGen::Core::Configuration::YAMLLoader
+          [
+            RgGen::Core::Configuration::RubyLoader,
+            RgGen::Core::Configuration::YAMLLoader,
+            RgGen::Core::Configuration::JSONLoader
+          ]
         else
-          RgGen::Core::RegisterMap::YAMLLoader
+          [
+            RgGen::Core::RegisterMap::RubyLoader,
+            RgGen::Core::RegisterMap::YAMLLoader,
+            RgGen::Core::RegisterMap::JSONLoader
+          ]
         end
       end
 
       it "対象コンポーネントローダーの追加/定義を行う" do
         allow(component_registry).to receive(:register_loader).and_call_original
+        allow(component_registry).to receive(:register_loaders).and_call_original
         allow(component_registry).to receive(:define_loader).and_call_original
 
-        builder.register_loader(target_component, loader)
+        builder.register_loader(target_component, loaders[0])
+        builder.register_loaders(target_component, [loaders[1], loaders[2]])
         builder.define_loader(target_component) { support_types [:txt] }
 
-        expect(component_registry).to have_received(:register_loader).with(equal(loader))
+        expect(component_registry).to have_received(:register_loader).with(equal(loaders[0]))
+        expect(component_registry).to have_received(:register_loaders).with(match([equal(loaders[1]), equal(loaders[2])]))
         expect(component_registry).to have_received(:define_loader)
       end
 
@@ -368,6 +379,12 @@ module RgGen::Core::Builder
         it "BuilderErrorを起こす" do
           expect {
             builder.register_loader(:foo, RgGen::Core::Configuration::YAMLLoader)
+          }.to raise_error RgGen::Core::BuilderError, 'unknown component: foo'
+
+          expect {
+            builder.register_loaders(
+              :foo, [RgGen::Core::Configuration::YAMLLoader, RgGen::Core::Configuration::JSONLoader]
+            )
           }.to raise_error RgGen::Core::BuilderError, 'unknown component: foo'
 
           expect {

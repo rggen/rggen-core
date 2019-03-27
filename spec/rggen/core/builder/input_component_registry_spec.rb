@@ -47,9 +47,12 @@ module RgGen::Core::Builder
         builder.feature_registres[0].enable(:foo)
       end
 
-      specify "#register_loaderで登録したローダー、#define_loaderで定義したローダーを使うことができる" do
-        registry.register_loader(RgGen::Core::Configuration::YAMLLoader)
-        registry.register_loader(RgGen::Core::Configuration::JSONLoader)
+      specify "#register_loader/#register_loadersで登録したローダー、#define_loaderで定義したローダーを使うことができる" do
+        registry.register_loader(RgGen::Core::Configuration::RubyLoader)
+        registry.register_loaders([
+          RgGen::Core::Configuration::YAMLLoader,
+          RgGen::Core::Configuration::JSONLoader
+        ])
         registry.define_loader do
           include RgGen::Core::Configuration::HashLoader
           support_types [:txt]
@@ -57,6 +60,11 @@ module RgGen::Core::Builder
             Marshal.load(File.binread(file))
           end
         end
+
+        value = rand(99)
+        setup_file_access('test.rb', "foo #{value}")
+        component = registry.build_root_factory.create(['test.rb'])
+        expect(component.foo).to eq value
 
         value = rand(99)
         setup_file_access('test.yaml', "foo: #{value}")
