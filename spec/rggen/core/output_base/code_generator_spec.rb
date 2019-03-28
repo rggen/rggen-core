@@ -18,42 +18,57 @@ module RgGen::Core::OutputBase
       klass.new
     end
 
-    let(:code) { double('code') }
+    let(:code) do
+      c = double('code')
+      allow(c).to receive(:<<)
+      c
+    end
 
     describe '#generate' do
-      context "#register で登録されたコード生成ブロックが指定された場合" do
-        let(:generator) do
-          create_generator do |g|
-            g.register(:foo, (proc { |c| c << foo }))
-            g.register(:bar, (proc { bar }))
-          end
+      it '#registerで登録されたブロックをコンテキスト上で実行して、コードの生成を行う' do
+        generator = create_generator do |g|
+          g.register(:foo, ->(c) { c << foo })
+          g.register(:bar, -> { bar })
         end
 
-        it '与えられたコンテキスト上でコード生成ブロックを実行し、コードの生成を行う' do
-          expect(code).to receive(:<<).with('foo')
-          generator.generate(context, :foo, code)
+        expect(context).to receive(:foo).and_call_original
+        expect(code).to receive(:<<).with('foo')
+        generator.generate(context, :foo, code)
 
-          expect(code).to receive(:<<).with('bar')
-          generator.generate(context, :bar, code)
+        expect(context).to receive(:bar).and_call_original
+        expect(code).to receive(:<<).with('bar')
+        generator.generate(context, :bar, code)
+      end
+
+      specify '同名のコード生成ブロックを複数個登録できる' do
+        generator = create_generator do |g|
+          g.register(:foo, -> { foo * 1 })
+          g.register(:foo, -> { foo * 2 })
+          g.register(:foo, -> { foo * 3 })
         end
 
-        it '使用されたコードオブジェクトを返す' do
-          allow(code).to receive(:<<)
-          expect(generator.generate(context, :foo, code)).to be code
-          expect(generator.generate(context, :bar, code)).to be code
+        expect(code).to receive(:<<).with('foo')
+        expect(code).to receive(:<<).with('foofoo')
+        expect(code).to receive(:<<).with('foofoofoo')
+        generator.generate(context, :foo, code)
+      end
+
+      it '与えられたコードオブジェクトを返す' do
+        generator = create_generator do |g|
+          g.register(:foo, ->(c) { c << foo })
+          g.register(:foo, -> { bar })
         end
+
+        expect(generator.generate(context, :foo, code)).to equal(code)
+        expect(generator.generate(context, :bar, code)).to equal(code)
       end
 
       context "与えらた code が nil の場合" do
         let(:generator) do
           create_generator do |g|
-            g.register(:foo, proc { |c| c << foo })
-            g.register(:bar, proc { |c| bar })
+            g.register(:foo, ->(c) {  c << foo })
+            g.register(:bar, -> { bar })
           end
-        end
-
-        before do
-          allow(code).to receive(:<<)
         end
 
         it "context の #create_blank_code を呼び出して、コードオブジェクトを生成する" do
@@ -71,7 +86,7 @@ module RgGen::Core::OutputBase
       context "登録されたコード生成ブロックが指定されなかった場合" do
         let(:generator) do
           create_generator do |g|
-            g.register(:foo, proc { foo })
+            g.register(:foo, -> { foo })
           end
         end
 
@@ -132,8 +147,8 @@ module RgGen::Core::OutputBase
     context "#copy" do
       let(:foo_generator) do
         create_generator do |g|
-          g.register(:foo, proc { foo })
-          g.register(:bar, proc { bar })
+          g.register(:foo, -> { foo })
+          g.register(:bar, -> { bar })
         end
       end
 
@@ -151,10 +166,12 @@ module RgGen::Core::OutputBase
         bar_generator = foo_generator.copy
         bar_generator.register(:foo, proc { foo * 2 })
 
+        expect(code).to receive(:<<).with('foo')
         expect(code).to receive(:<<).with('foofoo')
         bar_generator.generate(context, :foo, code)
 
         expect(code).to receive(:<<).with('foo')
+        expect(code).not_to receive(:<<).with('foofoo')
         foo_generator.generate(context, :foo, code)
       end
     end

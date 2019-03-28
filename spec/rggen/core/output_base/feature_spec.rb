@@ -89,7 +89,7 @@ module RgGen::Core::OutputBase
 
     shared_examples_for "code_generator" do |phase|
       it ".#{phase}で登録されたブロックを実行し、コードの生成を行う" do
-        feature  = define_and_create_feature do
+        feature = define_and_create_feature do
           send(phase, :foo) { |c| c << 'foo' }
           send(phase, :bar) { 'bar' }
         end
@@ -101,12 +101,13 @@ module RgGen::Core::OutputBase
         feature.generate_code(phase, :bar, code)
       end
 
-      specify "最後に登録されたコード生成ブロックが優先される" do
+      specify "同名のコード生成ブロックを複数個登録できる" do
         feature = define_and_create_feature do
           send(phase, :foo) { 'foo_0' }
           send(phase, :foo) { 'foo_1' }
         end
 
+        expect(code).to receive(:<<).with('foo_0')
         expect(code).to receive(:<<).with('foo_1')
         feature.generate_code(phase, :foo, code)
       end
@@ -184,28 +185,22 @@ module RgGen::Core::OutputBase
           feature.generate_code(phase, :bar, code)
         end
 
-        specify "コード生成ブロックは上書き可能である"  do
-          parent_feature = define_feature do
-            send(phase, :foo) { 'foo_0' }
-          end
-          feature = define_and_create_feature(parent_feature) do
-            send(phase, :foo) { 'foo_1' }
-          end
-
-          expect(code).to receive(:<<).with('foo_1')
-          feature.generate_code(phase, :foo, code)
-        end
-
         specify "継承先での変更は、親クラスに影響しない" do
-          feature = define_and_create_feature do
+          parent_feature = define_and_create_feature do
             send(phase, :foo) { 'foo_0' }
           end
-          define_feature(feature.class) do
+          feature = define_and_create_feature(parent_feature.class) do
             send(phase, :foo) { 'foo_1' }
           end
 
           expect(code).to receive(:<<).with('foo_0')
+          expect(code).to receive(:<<).with('foo_1')
           feature.generate_code(phase, :foo, code)
+
+
+          expect(code).to receive(:<<).with('foo_0')
+          expect(code).not_to receive(:<<).with('foo_1')
+          parent_feature.generate_code(phase, :foo, code)
         end
       end
     end
