@@ -26,14 +26,6 @@ module RgGen
           entry.define_feature(feature_name, context, &body)
         end
 
-        def defined_feature?(feature_or_list_name, feature_name = nil)
-          entry = @feature_entries[feature_or_list_name]
-          return false unless entry
-          return true unless feature_name
-          return false if entry.match_entry_type?(:simple)
-          entry.defined_feature?(feature_name)
-        end
-
         def enable(feature_or_list_names, feature_names = nil)
           if feature_names
             list_name = feature_or_list_names
@@ -43,11 +35,23 @@ module RgGen
           end
         end
 
-        def available_feature?(feature_or_list_name, feature_name = nil)
-          return false unless defined_feature?(feature_or_list_name, feature_name)
-          return false unless @enabled_features.key?(feature_or_list_name)
+        def simple_feature?(feature_name)
+          enabled_feature?(feature_name, :simple)
+        end
+
+        def list_feature?(list_name, feature_name = nil)
+          return false unless enabled_feature?(list_name, :list)
           return true unless feature_name
-          @enabled_features[feature_or_list_name].include?(feature_name)
+          enabled_list_item_feature?(list_name, feature_name)
+        end
+
+        def feature?(feature_or_list_name, feature_name = nil)
+          if feature_name
+            list_feature?(feature_or_list_name, feature_name)
+          else
+            simple_feature?(feature_or_list_name) ||
+              list_feature?(feature_or_list_name)
+          end
         end
 
         def build_factories
@@ -77,6 +81,18 @@ module RgGen
 
         def enable_list_features(list_name, features)
           @enabled_features[list_name]&.merge!(Array(features))
+        end
+
+        def enabled_feature?(name, entry_type)
+          return false unless @feature_entries[name]
+                                &.match_entry_type?(entry_type)
+          @enabled_features.key?(name)
+        end
+
+        def enabled_list_item_feature?(list_name, feature_name)
+          return false unless @feature_entries[list_name]
+                                .feature?(feature_name)
+          @enabled_features[list_name].include?(feature_name)
         end
       end
     end

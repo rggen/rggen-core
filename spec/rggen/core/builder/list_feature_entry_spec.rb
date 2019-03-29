@@ -201,7 +201,7 @@ module RgGen::Core::Builder
       end
     end
 
-    describe "#defined_feature?" do
+    describe "#feature?" do
       let(:entry) do
         create_entry do
           define_feature(:foo)
@@ -210,9 +210,9 @@ module RgGen::Core::Builder
       end
 
       it "定義済みのフィーチャーかどうかを返す" do
-        expect(entry.defined_feature?(:foo)).to be true
-        expect(entry.defined_feature?(:bar)).to be true
-        expect(entry.defined_feature?(:baz)).to be false
+        expect(entry.feature?(:foo)).to be true
+        expect(entry.feature?(:bar)).to be true
+        expect(entry.feature?(:baz)).to be false
       end
     end
   end

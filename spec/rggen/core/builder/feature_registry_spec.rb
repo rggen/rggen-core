@@ -226,25 +226,7 @@ module RgGen::Core::Builder
       end
     end
 
-    describe "#defined_feature?" do
-      before do
-        registry.define_simple_feature(:foo)
-        registry.define_list_feature(:bar)
-        registry.define_list_item_feature(:bar, :bar_0)
-      end
-
-      it "定義済みのフィーチャーかどうかを返す" do
-        expect(registry.defined_feature?(:foo)).to be true
-        expect(registry.defined_feature?(:bar)).to be true
-        expect(registry.defined_feature?(:bar, :bar_0)).to be true
-
-        expect(registry.defined_feature?(:baz)).to be false
-        expect(registry.defined_feature?(:bar, :bar_1)).to be false
-        expect(registry.defined_feature?(:foo, :foo_1)).to be false
-      end
-    end
-
-    describe "#available_feature?" do
+    describe "#feature?" do
       before do
         registry.define_simple_feature(:foo_0)
         registry.define_simple_feature( :foo_1)
@@ -260,20 +242,20 @@ module RgGen::Core::Builder
       end
 
       it "定義済み、かつ、有効になっているフィーチャーかどうかを返す" do
-        expect(registry.available_feature?(:foo_0)).to be true
-        expect(registry.available_feature?(:bar_0)).to be true
-        expect(registry.available_feature?(:bar_0, :bar_0_0)).to be true
+        expect(registry.feature?(:foo_0)).to be true
+        expect(registry.feature?(:bar_0)).to be true
+        expect(registry.feature?(:bar_0, :bar_0_0)).to be true
 
-        expect(registry.available_feature?(:foo_0, :foo_0_0)).to be false
-        expect(registry.available_feature?(:foo_0, :foo_0_1)).to be false
-        expect(registry.available_feature?(:foo_1)).to be false
-        expect(registry.available_feature?(:bar_0, :bar_0_1)).to be false
-        expect(registry.available_feature?(:bar_0, :bar_0_2)).to be false
-        expect(registry.available_feature?(:bar_0, :bar_0_3)).to be false
-        expect(registry.available_feature?(:bar_1)).to be false
-        expect(registry.available_feature?(:bar_1, :bar_1_0)).to be false
-        expect(registry.available_feature?(:bar_1, :bar_1_1)).to be false
-        expect(registry.available_feature?(:baz_0)).to be false
+        expect(registry.feature?(:foo_0, :foo_0_0)).to be false
+        expect(registry.feature?(:foo_0, :foo_0_1)).to be false
+        expect(registry.feature?(:foo_1)).to be false
+        expect(registry.feature?(:bar_0, :bar_0_1)).to be false
+        expect(registry.feature?(:bar_0, :bar_0_2)).to be false
+        expect(registry.feature?(:bar_0, :bar_0_3)).to be false
+        expect(registry.feature?(:bar_1)).to be false
+        expect(registry.feature?(:bar_1, :bar_1_0)).to be false
+        expect(registry.feature?(:bar_1, :bar_1_1)).to be false
+        expect(registry.feature?(:baz_0)).to be false
       end
     end
   end
