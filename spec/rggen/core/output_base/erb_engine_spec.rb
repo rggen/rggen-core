@@ -4,26 +4,11 @@ require 'spec_helper'
 
 module RgGen::Core::OutputBase
   describe ERBEngine do
-    before(:all) do
-      engine = ERBEngine.instance
-      if engine.instance_variable_defined?(:@templates)
-        @templates_original = engine.instance_variable_get(:@templates)
-        engine.remove_instance_variable(:@templates)
-      end
-    end
-
-    after(:all) do
-      engine = ERBEngine.instance
-      if @templates_original
-        engine.instance_variable_set(:@templates, @templates_original)
-      else
-        engine.remove_instance_variable(:@templates)
-      end
-    end
-
-    let(:engine) { ERBEngine.instance }
-
     describe "#process_template" do
+      let(:engine) do
+        Class.new(ERBEngine).instance
+      end
+
       let(:context) do
         Object.new.tap do |c|
           def c.foo; 'foo'; end

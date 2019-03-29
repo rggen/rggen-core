@@ -6,13 +6,8 @@ module RgGen::Core::Base
   describe InternalStruct do
     matcher :have_struct do |struct_name, members|
       match do |o|
-        struct  = o.send(struct_name)
-        case struct.new
-        when Struct
-          values_match?(struct.members, members)
-        else
-          false
-        end
+        s = o.send(struct_name)
+        s < Struct && values_match?(s.members, members)
       end
     end
 
