@@ -64,9 +64,9 @@ module RgGen
           end
         end
 
-        def_class_delegator :properties
-        def_class_delegator :active_feature?
-        def_class_delegator :passive_feature?
+        delegate_to_class [
+          :properties, :active_feature?, :passive_feature?
+        ]
 
         def build(*args)
           return unless self.class.builders

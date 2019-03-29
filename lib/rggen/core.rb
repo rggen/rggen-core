@@ -3,6 +3,7 @@
 require 'docile'
 require 'erubi'
 require 'fileutils'
+require 'forwardable'
 require 'json'
 require 'optparse'
 require 'pathname'

@@ -1,18 +1,10 @@
 # frozen_string_literal: true
 
-require 'forwardable'
-
 module Forwardable
-  def def_class_delegator(method, ali = method)
-    def_instance_delegator(:'self.class', method, ali)
+  def delegate_to_class(method_or_methods)
+    Array(method_or_methods)
+      .each { |m| def_instance_delegator(:'self.class', m) }
   end
-
-  def def_class_delegators(*methods)
-    def_instance_delegators(:'self.class', *methods)
-  end
-
-  alias_method :class_delegator, :def_class_delegator
-  alias_method :class_delegators, :def_class_delegators
 end
 
 # :nocov:
