@@ -10,7 +10,7 @@ module RgGen
 
         private
 
-        def post_initialize(parent, configuration)
+        def post_initialize(_parent, configuration)
           @configuration = configuration
           define_hierarchical_accessors
         end
