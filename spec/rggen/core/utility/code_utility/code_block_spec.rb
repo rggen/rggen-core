@@ -68,11 +68,28 @@ module RgGen::Core::Utility::CodeUtility
         end
       end
 
+      context '#to_codeが実装されているオブジェクトを追加する場合' do
+        let(:object) { double('object') }
+
+        specify '#to_codeの実行結果を追加する' do
+          expect(object).to receive(:to_code).and_return("foo\nbar\n")
+          code_block << object
+
+          other_block = CodeBlock.new
+          other_block << "baz\nqux"
+          expect(object).to receive(:to_code).and_return(other_block)
+          code_block << object
+
+          expect(code_block.to_s).to eq "foo\nbar\nbaz\nqux"
+        end
+      end
+
       it '連続で追加できる' do
         other_block = CodeBlock.new
         other_block << 'bar'
-        code_block << 'foo' << other_block << 'baz'
-        expect(code_block.to_s).to eq 'foobarbaz'
+        object = double('object', to_code: 'baz')
+        code_block << 'foo' << other_block << object << 'qux'
+        expect(code_block.to_s).to eq 'foobarbazqux'
       end
     end
 
