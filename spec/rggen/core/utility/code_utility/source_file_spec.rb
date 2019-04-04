@@ -35,9 +35,9 @@ module RgGen::Core::Utility::CodeUtility
             include_guard
           end
         ).to match_string <<~'CODE'
-        `ifndef BAR_SV
-        `define BAR_SV
-        `endif
+          `ifndef BAR_SV
+          `define BAR_SV
+          `endif
         CODE
       end
 
@@ -48,24 +48,25 @@ module RgGen::Core::Utility::CodeUtility
               include_guard { "__#{default_guard_macro}__" }
             end
           ).to match_string <<~'CODE'
-          `ifndef __BAR_SV__
-          `define __BAR_SV__
-          `endif
+            `ifndef __BAR_SV__
+            `define __BAR_SV__
+            `endif
           CODE
         end
       end
     end
 
-    describe '#include_file' do
+    describe '#include_files/#include_file' do
       it '指定したファイルをインクルードファイルとして挿入する' do
         expect(
           source_file do
-            include_file 'fizz.svh'
-            include_file 'buzz.svh'
+            include_files ['fizz.svh', 'buzz.svh']
+            include_file 'fizzbuzz.svh'
           end
         ).to match_string <<~'CODE'
-        `include "fizz.svh"
-        `include "buzz.svh"
+          `include "fizz.svh"
+          `include "buzz.svh"
+          `include "fizzbuzz.svh"
         CODE
       end
     end
@@ -83,9 +84,9 @@ module RgGen::Core::Utility::CodeUtility
             body { |c| c << "logic #{identifiers[2]};" << nl }
           end
         ).to match_string <<~'CODE'
-        logic foo;
-        logic bar;
-        logic baz;
+          logic foo;
+          logic bar;
+          logic baz;
         CODE
       end
     end
@@ -99,12 +100,12 @@ module RgGen::Core::Utility::CodeUtility
           body { 'logic foo;' }
         end
       ).to match_string <<~'CODE'
-      // foo/bar.sv
-      `ifndef BAR_SV
-      `define BAR_SV
-      `include "fizz.svh"
-      logic foo;
-      `endif
+        // foo/bar.sv
+        `ifndef BAR_SV
+        `define BAR_SV
+        `include "fizz.svh"
+        logic foo;
+        `endif
       CODE
     end
   end

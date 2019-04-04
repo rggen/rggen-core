@@ -35,9 +35,13 @@ module RgGen
             File.basename(file_path).upcase.gsub(/\W/, '_')
           end
 
-          def include_file(file)
+          def include_files(files)
             @include_files ||= []
-            @include_files << file
+            @include_files.concat(Array(files))
+          end
+
+          def include_file(file)
+            include_files([file])
           end
 
           def body(&block)
