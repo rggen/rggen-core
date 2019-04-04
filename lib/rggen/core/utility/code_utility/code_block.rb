@@ -17,6 +17,7 @@ module RgGen
           def <<(rhs)
             return push_string(rhs) if rhs.is_a?(String)
             return push_code_block(rhs) if rhs.is_a?(CodeBlock)
+            return rhs.inject(self, :<<) if rhs.is_a?(Array)
             return self << rhs.to_code if rhs.respond_to?(:to_code)
             push_word(rhs)
           end

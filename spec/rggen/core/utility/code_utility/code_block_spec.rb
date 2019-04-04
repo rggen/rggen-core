@@ -84,6 +84,17 @@ module RgGen::Core::Utility::CodeUtility
         end
       end
 
+      context '配列を追加する場合' do
+        specify '配列中の各要素を追加する' do
+          object = double('object', to_code: 'foo')
+          other_block = CodeBlock.new
+          other_block << 'bar'
+
+          code_block << [object, "\n", other_block, "\nbaz"]
+          expect(code_block.to_s).to eq "foo\nbar\nbaz"
+        end
+      end
+
       it '連続で追加できる' do
         other_block = CodeBlock.new
         other_block << 'bar'

@@ -56,10 +56,10 @@ module RgGen
           def code_blocks
             [
               @file_header,
-              @guard_macro && include_guard_header,
-              @include_files && include_file_block,
+              include_guard_header,
+              include_file_block,
               *Array(@bodies),
-              @guard_macro && include_guard_footer
+              include_guard_footer
             ].compact
           end
 
@@ -77,26 +77,22 @@ module RgGen
           end
 
           def include_guard_header
-            ifndef_keyword = self.class.ifndef_keyword
-            define_keyword = self.class.define_keyword
-            lambda do |code|
-              code << ifndef_keyword << space << @guard_macro << nl
-              code << define_keyword << space << @guard_macro << nl
+            @guard_macro && lambda do
+              [self.class.ifndef_keyword, self.class.define_keyword]
+                .flat_map { |keyword| [keyword, space, @guard_macro, nl] }
             end
           end
 
           def include_file_block
-            include_keyword = self.class.include_keyword
-            lambda do |code|
-              @include_files.each do |file|
-                code << include_keyword << space << string(file) << nl
-              end
+            @include_files && lambda do
+              keyword = self.class.include_keyword
+              @include_files
+                .flat_map { |file| [keyword, space, string(file), nl] }
             end
           end
 
           def include_guard_footer
-            endif_keyword = self.class.endif_keyword
-            ->(code) { code << endif_keyword << nl }
+            @guard_macro && (-> { self.class.endif_keyword })
           end
         end
       end
