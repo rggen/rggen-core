@@ -3,7 +3,7 @@
 module RgGen
   module Core
     module Configuration
-      class ConfigurationError < InputBase::InputError
+      class ConfigurationError < Core::RuntimeError
       end
 
       module RaiseError

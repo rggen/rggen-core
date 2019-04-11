@@ -3,7 +3,7 @@
 module RgGen
   module Core
     module RegisterMap
-      class RegisterMapError < InputBase::InputError
+      class RegisterMapError < Core::RuntimeError
       end
 
       module RaiseError

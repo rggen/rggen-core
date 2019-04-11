@@ -3,6 +3,18 @@
 module RgGen
   module Core
     class RgGenError < StandardError
+      def initialize(message, additional_info = nil)
+        super(message)
+        @error_message = message
+        @additional_info = additional_info
+      end
+
+      attr_reader :error_message
+      attr_reader :additional_info
+
+      def to_s
+        additional_info ? "#{super} -- #{additional_info}" : super
+      end
     end
 
     class BuilderError < RgGenError
@@ -12,15 +24,6 @@ module RgGen
     end
 
     class LoadError < Core::RuntimeError
-      def initialize(message, path = nil)
-        super(message)
-        @path = path
-      end
-
-      def to_s
-        @path && (return "#{super} -- #{@path}")
-        super
-      end
     end
   end
 end
