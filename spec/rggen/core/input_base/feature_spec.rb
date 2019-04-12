@@ -83,6 +83,25 @@ module RgGen::Core::InputBase
         end
       end
 
+      describe 'bodyオプション' do
+        let(:feature) do
+          create_feature do
+            property :foo, body: -> { baz }
+            property :bar, body: ->(v, &b) { baz * v * b.call }
+            def baz; 2; end
+          end
+        end
+
+        it '与えられたブロックを自身のコンテキストで実行するプロパティを定義する' do
+          expect(feature).to receive(:baz).and_call_original
+          expect(feature.foo).to eq 2
+        end
+
+        specify '定義されたプロパティは引数を取ることができる' do
+          expect(feature.bar(3) { 4 }).to eq 24
+        end
+      end
+
       describe "defaultオプション" do
         let(:feature) do
           create_feature do
