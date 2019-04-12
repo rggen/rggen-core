@@ -379,17 +379,17 @@ module RgGen::Core::Builder
         it "BuilderErrorを起こす" do
           expect {
             builder.register_loader(:foo, RgGen::Core::Configuration::YAMLLoader)
-          }.to raise_error RgGen::Core::BuilderError, 'unknown component: foo'
+          }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: foo'
 
           expect {
             builder.register_loaders(
               :foo, [RgGen::Core::Configuration::YAMLLoader, RgGen::Core::Configuration::JSONLoader]
             )
-          }.to raise_error RgGen::Core::BuilderError, 'unknown component: foo'
+          }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: foo'
 
           expect {
             builder.define_loader(:bar) { support_types [:txt] }
-          }.to raise_error RgGen::Core::BuilderError, 'unknown component: bar'
+          }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: bar'
         end
       end
     end
@@ -425,15 +425,15 @@ module RgGen::Core::Builder
         it "BuilderErrorを起こす" do
           expect {
             builder.define_simple_feature(:foo, :bar) {}
-          }.to raise_error RgGen::Core::BuilderError, 'unknown category: foo'
+          }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown category: foo'
 
           expect {
             builder.define_list_feature(:bar, :baz) {}
-          }.to raise_error RgGen::Core::BuilderError, 'unknown category: bar'
+          }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown category: bar'
 
           expect {
             builder.define_list_feature(:baz, :qux, :qux_0) {}
-          }.to raise_error RgGen::Core::BuilderError, 'unknown category: baz'
+          }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown category: baz'
         end
       end
     end
@@ -466,11 +466,11 @@ module RgGen::Core::Builder
         it "BuilderErrorを起こす" do
           expect {
             builder.enable(:foo, :bar)
-          }.to raise_error RgGen::Core::BuilderError, 'unknown category: foo'
+          }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown category: foo'
 
           expect {
             builder.enable(:bar, :baz, :qux)
-          }.to raise_error RgGen::Core::BuilderError, 'unknown category: bar'
+          }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown category: bar'
         end
       end
     end
@@ -495,7 +495,7 @@ module RgGen::Core::Builder
         it "BuilderErrorを起こす" do
           expect {
             builder.build_input_component_factory(:foo)
-          }.to raise_error RgGen::Core::BuilderError, 'unknown component: foo'
+          }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: foo'
         end
       end
     end

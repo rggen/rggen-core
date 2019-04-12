@@ -118,7 +118,7 @@ FILE
         it "LoadErrorを起こす" do
           expect {
             loader.load_file(invalid_file_name, input_data, valid_value_lists)
-          }.to raise_error RgGen::Core::LoadError, "cannot load such file -- #{invalid_file_name}"
+          }.to raise_rggen_error RgGen::Core::LoadError, 'cannot load such file', invalid_file_name
         end
       end
     end

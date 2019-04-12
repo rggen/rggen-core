@@ -218,11 +218,11 @@ module RgGen::Core::Builder
       specify "BuilderErrorが発生する" do
         expect {
           registry.define_list_item_feature(:foo, :foo_0)
-        }.to raise_error RgGen::Core::BuilderError, 'unknown list feature: foo'
+        }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown list feature: foo'
 
         expect {
           registry.define_list_item_feature(:bar, :bar_0)
-        }.to raise_error RgGen::Core::BuilderError, 'unknown list feature: bar'
+        }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown list feature: bar'
       end
     end
 

@@ -190,13 +190,13 @@ module RgGen::Core::Builder
           entry = create_entry(shared_context)
           expect {
             entry.define_feature(:foo, shared_context)
-          }.to raise_error RgGen::Core::BuilderError, 'shared context has already been set'
+          }.to raise_rggen_error RgGen::Core::BuilderError, 'shared context has already been set'
 
           entry = create_entry
           entry.define_feature(:foo, shared_context)
           expect {
             entry.define_feature(:foo, shared_context)
-          }.to raise_error RgGen::Core::BuilderError, 'shared context has already been set'
+          }.to raise_rggen_error RgGen::Core::BuilderError, 'shared context has already been set'
         end
       end
     end

@@ -27,7 +27,7 @@ module RgGen::Core::RegisterMap
         it "与えられたメッセージで、RegisterMapError を発生させる" do
           expect {
             object.error_test(message)
-          }.to raise_error RegisterMapError, message
+          }.to raise_rggen_error RegisterMapError, message
         end
       end
 
@@ -36,7 +36,7 @@ module RgGen::Core::RegisterMap
           object.position = positions[0]
           expect {
             object.error_test(message)
-          }.to raise_error RegisterMapError, "#{message} -- #{positions[0]}"
+          }.to raise_rggen_error RegisterMapError, message, positions[0]
         end
       end
 
@@ -44,12 +44,12 @@ module RgGen::Core::RegisterMap
         it "与えられた位置情報とメッセージで、RegisterMapError を発生させる" do
           expect {
             object.error_test(message, positions[1])
-          }.to raise_error RegisterMapError, "#{message} -- #{positions[1]}"
+          }.to raise_rggen_error RegisterMapError, message, positions[1]
 
           object.position = positions[0]
           expect {
             object.error_test(message, positions[1])
-          }.to raise_error RegisterMapError, "#{message} -- #{positions[1]}"
+          }.to raise_rggen_error RegisterMapError, message, positions[1]
         end
       end
     end

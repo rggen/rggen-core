@@ -187,7 +187,7 @@ DATA
           it "RgGen::Core::LoadErrorを起こす" do
             expect {
               foo_factory.create(other_input_data, ['foo.txt'])
-            }.to raise_error RgGen::Core::LoadError, "unsupported file type -- foo.txt"
+            }.to raise_rggen_error RgGen::Core::LoadError, 'unsupported file type', 'foo.txt'
           end
         end
 

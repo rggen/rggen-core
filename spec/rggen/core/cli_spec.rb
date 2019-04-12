@@ -164,7 +164,7 @@ module RgGen::Core
         it "LoadErrorを起こす" do
           expect {
             cli.run(['--setup', invalid_setup_file])
-          }.to raise_error RgGen::Core::LoadError, "cannot load such file -- #{invalid_setup_file}"
+          }.to raise_rggen_error RgGen::Core::LoadError, 'cannot load such file', invalid_setup_file
         end
       end
 
@@ -172,7 +172,7 @@ module RgGen::Core
         it "LoadErrorを起こす" do
           expect {
             cli.run([])
-          }.to raise_error RgGen::Core::LoadError, 'no setup file is given'
+          }.to raise_rggen_error RgGen::Core::LoadError, 'no setup file is given'
         end
       end
     end
@@ -232,7 +232,7 @@ module RgGen::Core
         it do
           expect {
             cli.run(['--setup', setup_file])
-          }.to raise_error RgGen::Core::LoadError, 'no register map files are given'
+          }.to raise_rggen_error RgGen::Core::LoadError, 'no register map files are given'
         end
       end
     end

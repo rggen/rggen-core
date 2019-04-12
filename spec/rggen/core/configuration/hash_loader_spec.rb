@@ -79,7 +79,7 @@ module RgGen::Core::Configuration
           expect {
             loader.load_data = load_data
             loader.load_file(file, input_data, valid_value_lists)
-          }.to raise_error RgGen::Core::LoadError, "can't convert #{load_data.class} into Hash -- #{file}"
+          }.to raise_rggen_error RgGen::Core::LoadError, "can't convert #{load_data.class} into Hash", file
         end
       end
     end
