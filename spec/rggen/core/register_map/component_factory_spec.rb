@@ -7,7 +7,7 @@ module RgGen::Core::RegisterMap
     def define_feature(feature_name)
       Class.new(Feature) do
         property feature_name
-        build { |v| instance_variable_set(feature_name.variablize, v) }
+        build { |v| instance_variable_set("@#{feature_name}", v) }
       end
     end
 

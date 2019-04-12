@@ -8,9 +8,7 @@ module RgGen
 
         [:component, :feature].each do |entry_name|
           define_method(entry_name) do |target, factory|
-            instance_variable_set(
-              __method__.variablize, Entry.new(target, factory)
-            )
+            instance_variable_set("@#{__method__}", Entry.new(target, factory))
           end
         end
 

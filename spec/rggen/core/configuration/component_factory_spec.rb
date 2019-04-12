@@ -7,7 +7,7 @@ module RgGen::Core::Configuration
     def define_feature(feature_name)
       Class.new(Feature) do
         property feature_name
-        build { |value| instance_variable_set(feature_name.variablize, value) }
+        build { |value| instance_variable_set("@#{feature_name}", value) }
       end
     end
 
