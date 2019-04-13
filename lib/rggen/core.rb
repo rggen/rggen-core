@@ -43,6 +43,7 @@ require_relative 'core/input_base/loader'
 require_relative 'core/input_base/input_matcher'
 require_relative 'core/input_base/component'
 require_relative 'core/input_base/component_factory'
+require_relative 'core/input_base/property'
 require_relative 'core/input_base/feature'
 require_relative 'core/input_base/feature_factory'
 

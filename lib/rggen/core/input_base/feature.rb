@@ -4,40 +4,9 @@ module RgGen
   module Core
     module InputBase
       class Feature < Base::Feature
-        PropertyContext = Struct.new(:name, :options, :body) do
-          def [](key)
-            options[key]
-          end
-
-          def custom_property?
-            return true if options[:body].is_a?(Proc)
-            return true if body
-            false
-          end
-
-          def custom_property_method_name
-            "__#{name}__"
-          end
-
-          def custom_property_body
-            options[:body] || body
-          end
-
-          def default_property?
-            return false if custom_property?
-            return false if options[:forward_to_helper]
-            return false if options[:forward_to]
-            true
-          end
-
-          def property_variable_name
-            "@#{name[-1] == '?' ? name[0..-2] : name}"
-          end
-        end
-
         class << self
           def property(name, **options, &body)
-            define_property(PropertyContext.new(name, options, body))
+            Property.define(self, name, **options, &body)
             properties.include?(name) || properties << name
           end
 
@@ -148,36 +117,6 @@ module RgGen
 
         def pattern_matched?
           !match_data.nil?
-        end
-
-        def property_method(context, args, block)
-          context[:need_validation] && validate
-          if context.default_property?
-            default_property_method(context)
-          else
-            forwarded_property_method(context, args, block)
-          end
-        end
-
-        def default_property_method(context)
-          variable_name = context.property_variable_name
-          if instance_variable_defined?(variable_name)
-            instance_variable_get(variable_name)
-          else
-            context[:default]
-          end
-        end
-
-        def forwarded_property_method(context, args, block)
-          receiver, method_name =
-            if context.custom_property?
-              [self, context.custom_property_method_name]
-            elsif context[:forward_to_helper]
-              [self.class, context.name]
-            else
-              [self, context[:forward_to]]
-            end
-          receiver.__send__(method_name, *args, &block)
         end
       end
     end
