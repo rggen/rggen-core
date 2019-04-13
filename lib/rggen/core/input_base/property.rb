@@ -38,7 +38,7 @@ module RgGen
         private
 
         def create_costom_property(body)
-          body && Module.new.class_eval do
+          body && Module.new.module_eval do
             define_method(:__costom_property__, &body)
             instance_method(:__costom_property__)
           end
