@@ -53,21 +53,6 @@ module RgGen
             export_instance_variable(:@input_matcher, subclass)
             export_instance_variable(:@match_automatically, subclass)
           end
-
-          private
-
-          def define_property(context)
-            define_method(context.name) do |*args, &block|
-              property_method(context, args, block)
-            end
-            context.custom_property? && define_custom_property(context)
-          end
-
-          def define_custom_property(context)
-            method_name = context.custom_property_method_name
-            body = context.custom_property_body
-            define_private_method(method_name, &body)
-          end
         end
 
         delegate_to_class [
