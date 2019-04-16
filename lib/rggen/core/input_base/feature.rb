@@ -4,6 +4,8 @@ module RgGen
   module Core
     module InputBase
       class Feature < Base::Feature
+        include Utility::RegexpPatterns
+
         class << self
           def property(name, **options, &body)
             Property.define(self, name, **options, &body)
