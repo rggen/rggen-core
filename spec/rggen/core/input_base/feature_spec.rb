@@ -267,16 +267,16 @@ module RgGen::Core::InputBase
             end
           end
 
-          it "#build実行時に、自動で一致比較を行わない" do
-            expect(feature).not_to receive(:match_pattern)
+          it "#build実行時に、自動で一致比較を行う" do
+            expect(feature).to receive(:match_pattern)
             feature.build(*input_values)
           end
         end
       end
 
-      specify "パターン及びmatch_automaticallyオプションは継承される" do
+      specify "パターンは継承される" do
         feature = create_feature(define_feature {
-          input_pattern %r{foo}, match_automatically: true
+          input_pattern %r{foo}
           build {}
         })
         feature.build(create_input_value(:foo))

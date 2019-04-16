@@ -15,12 +15,14 @@ module RgGen
             end
         end
 
-        attr_reader :options
-
         def match(rhs)
           rhs = rhs.to_s
           rhs = delete_blanks(rhs) if ignore_blanks?
           @pattern.match(rhs, &@converter)
+        end
+
+        def match_automatically?
+          @options.fetch(:match_automatically, true)
         end
 
         private

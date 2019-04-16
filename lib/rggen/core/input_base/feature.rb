@@ -39,7 +39,6 @@ module RgGen
           attr_reader :validators
 
           def input_pattern(pattern, **options, &converter)
-            @match_automatically = options[:match_automatically]
             @input_matcher = InputMatcher.new(pattern, options, &converter)
           end
 
@@ -51,7 +50,6 @@ module RgGen
             export_instance_variable(:@builders, subclass, &:dup)
             export_instance_variable(:@validators, subclass, &:dup)
             export_instance_variable(:@input_matcher, subclass)
-            export_instance_variable(:@match_automatically, subclass)
           end
         end
 
@@ -89,8 +87,7 @@ module RgGen
 
         def match_automatically?
           matcher = self.class.input_matcher
-          return false unless matcher
-          matcher.options[:match_automatically]
+          matcher&.match_automatically?
         end
 
         def match_pattern(rhs)
