@@ -30,9 +30,9 @@ module RgGen
         private
 
         def preprocess(input_value)
-          passive_feature_factory? && (return input_value)
-          input_value.empty_value? && (return input_value)
-          value_converter || (return input_value)
+          return input_value if passive_feature_factory?
+          return input_value if input_value.empty_value?
+          return input_value unless value_converter
           InputValue.new(convert(input_value.value), input_value.position)
         end
 
@@ -45,9 +45,13 @@ module RgGen
         end
 
         def build_feature(feature, input_value)
-          passive_feature_factory? && return
-          input_value.empty_value? && return
+          return if passive_feature_factory?
+          return if ignore_empty_value?(feature, input_value)
           feature.build(input_value)
+        end
+
+        def ignore_empty_value?(feature, input_value)
+          feature.ignore_empty_value? && input_value.empty_value?
         end
       end
     end

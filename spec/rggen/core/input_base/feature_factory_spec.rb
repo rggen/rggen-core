@@ -7,6 +7,7 @@ module RgGen::Core::InputBase
     let(:feature_name) { :feature_name }
 
     let(:active_feature) { Class.new(Feature) { build {} } }
+
     let(:passive_feature) { Class.new(Feature) }
 
     describe "#create" do
@@ -37,10 +38,33 @@ module RgGen::Core::InputBase
           active_factory.create(component, :other_arg, input_value)
         end
 
-        context "入力データが空データの場合" do
-          it "フィーチャーの組み立てを行わない" do
-            expect_any_instance_of(active_feature).not_to receive(:build)
-            active_factory.create(component, :other_arg, NilValue)
+        context "入力データが空データで" do
+          context "対象フィーチャーが空データを無視する場合" do
+            let(:active_feature) do
+              Class.new(Feature) do
+                ignore_empty_value true
+                build {}
+              end
+            end
+
+            it "フィーチャーの組み立てを行わない" do
+              expect_any_instance_of(active_feature).not_to receive(:build)
+              active_factory.create(component, :other_arg, NilValue)
+            end
+          end
+
+          context "対象フィーチャーが空データを無視しない場合" do
+            let(:active_feature) do
+              Class.new(Feature) do
+                ignore_empty_value false
+                build {}
+              end
+            end
+
+            it "フィーチャーの組み立てを行う" do
+              expect_any_instance_of(active_feature).to receive(:build)
+              active_factory.create(component, :other_arg, NilValue)
+            end
           end
         end
 

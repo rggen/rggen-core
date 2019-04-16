@@ -18,6 +18,15 @@ module RgGen
             @properties ||= []
           end
 
+          def ignore_empty_value(value = nil)
+            @ignore_empty_value = value unless value.nil?
+            @ignore_empty_value
+          end
+
+          def ignore_empty_value?
+            @ignore_empty_value.nil? || @ignore_empty_value
+          end
+
           def build(&block)
             @builders ||= []
             @builders << block
@@ -49,6 +58,7 @@ module RgGen
           def inherited(subclass)
             super
             export_instance_variable(:@properties, subclass, &:dup)
+            export_instance_variable(:@ignore_empty_value, subclass)
             export_instance_variable(:@builders, subclass, &:dup)
             export_instance_variable(:@validators, subclass, &:dup)
             export_instance_variable(:@input_matcher, subclass)
@@ -56,7 +66,7 @@ module RgGen
         end
 
         delegate_to_class [
-          :properties, :active_feature?, :passive_feature?
+          :properties, :active_feature?, :passive_feature?, :ignore_empty_value?
         ]
 
         def build(*args)

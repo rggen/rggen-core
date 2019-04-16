@@ -60,6 +60,29 @@ module RgGen::Core::InputBase
       end
     end
 
+    describe '.ignore_empty_value' do
+      it '空入力を無視するかどうかを示す' do
+        feature = create_feature { ignore_empty_value true }
+        expect(feature.ignore_empty_value?).to be_truthy
+
+        feature = create_feature { ignore_empty_value false }
+        expect(feature.ignore_empty_value?).to be_falsey
+      end
+
+      specify 'デフォルトは空入力を無視' do
+        feature = create_feature
+        expect(feature.ignore_empty_value?).to be_truthy
+      end
+
+      specify '設定は継承される' do
+        feature = create_feature(define_feature { ignore_empty_value true })
+        expect(feature.ignore_empty_value?).to be_truthy
+
+        feature = create_feature(define_feature { ignore_empty_value false })
+        expect(feature.ignore_empty_value?).to be_falsey
+      end
+    end
+
     describe "#build" do
       let(:feature) do
         create_feature do
