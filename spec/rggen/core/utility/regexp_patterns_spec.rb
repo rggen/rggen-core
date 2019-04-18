@@ -8,26 +8,38 @@ module RgGen::Core::Utility
       Class.new { include(RegexpPatterns) }.new
     end
 
+    def regexp_pattern(type)
+      /\A#{utility.send(type)}\z/
+    end
+
     describe '#variable_name' do
       it '識別子名にマッチするす' do
         [
-          /[a-z_]\w*/i,
-          /\s+[a-z_]\w*\s+/i,
-          /\W+\s+[a-z_]\w*/i,
-          /[a-z_]\w*\s+\W+/i
+          /_/i,
+          /_+/i,
+          /[a-z]/i,
+          /[a-z]+/i,
+          /_\d/i,
+          /_\d+/i,
+          /[a-z]\d/i,
+          /[a-z]\d+/i,
+          /[_a-z]\w+/i
         ].each do |pattern|
           string = random_string(pattern)
-          expect(string).to match(utility.send(:variable_name))
+          expect(string).to match(regexp_pattern(:variable_name))
         end
 
         [
-          /\d\w+/,
-          /\s+\d\w+/,
-          /[a-z_]\w*[[:punct:]&&[^_]]+\w*/i,
-          /\s+[a-z_]\w*[[:punct:]&&[^_]]+\w*\s+/i
+          /\d/i,
+          /\d+/i,
+          /\d_/i,
+          /\d_+/i,
+          /\d[a-z]/i,
+          /\d[a-z]+/i,
+          /\d\w+/i
         ].each do |pattern|
           string = random_string(pattern)
-          expect(string).not_to match(utility.send(:variable_name))
+          expect(string).not_to match(regexp_pattern(:variable_name))
         end
       end
     end
@@ -39,28 +51,24 @@ module RgGen::Core::Utility
           /0b[01]+/i,
           /\+0b[01]+/i,
           /\-0b[01]+/i,
-          /0b[01]+_[01]+/i,
-          /\s+[+-]?0b[01]+/i,
-          /\w\s+[+-]?0b[01]+/i,
-          /0b[01]+\s+/i,
-          /0b[01]+\s+\w/i
+          /0b[01]+_[01]+/i
         ].each do |pattern|
           string = random_string(pattern)
-          expect(string).to match(utility.send(:integer))
+          expect(string).to match(regexp_pattern(:integer))
         end
 
         [
-          /0b[01]+[2-9]+[01]+/i,
-          /0b[01]+[[:alpha:]][01]+/i,
-          /\w0b[01]+/i,
-          /0b[01]+[[:alpha:]]/i,
-          /[+-]{2}0b[01]/i,
-          /0b_[01]+/i,
-          /0b[01]+_{2,}[01]+/i,
-          /0b[01]+_/i
+          /0b[2-9]/i,
+          /0b[2-9][0-1]/i,
+          /0b[0-1][2-9]/i,
+          /0b[a-z]/i,
+          /0b[a-z][0-1]/i,
+          /0b[0-1][a-z]/i,
+          /0b_[0-1]+/i,
+          /0b_+[0-1]+/i
         ].each do |pattern|
           string = random_string(pattern)
-          expect(string).not_to match(utility.send(:integer))
+          expect(string).not_to match(regexp_pattern(:integer))
         end
       end
 
@@ -71,28 +79,28 @@ module RgGen::Core::Utility
           /[1-9][0-9]+/,
           /\+[1-9][0-9]*/,
           /\-[1-9][0-9]*/,
-          /[1-9][0-9]+_[0-9]+/,
-          /\s+[+-]?[1-9][0-9]*/i,
-          /\w\s+[+-]?[1-9][0-9]*/i,
-          /[1-9][0-9]*\s+/i,
-          /[1-9][0-9]*\s+\w/i
+          /[1-9][0-9]+_[0-9]+/
         ].each do |pattern|
           string = random_string(pattern)
-          expect(string).to match(utility.send(:integer))
+          expect(string).to match(regexp_pattern(:integer))
         end
 
         [
           /0[0-9]/,
-          /[[:alpha:]][1-9][0-9]*/,
-          /[1-9][0-9]*[[:alpha:]][0-9]+/,
-          /[1-9][0-9]*[[:alpha:]]/,
-          /[+-]{2}[1-9][0-9]*/,
-          /_[1-9][0-9]*/,
-          /[1-9][0-9]*_{2,}[0-9]+/,
-          /[1-9][0-9]*_/
+          /[a-z][1-9]/,
+          /[1-9][a-z]/,
+          /[1-9][0-9]+[a-z]/,
+          /_[1-9]/,
+          /_[+-][1-9]/,
+          /_[1-9][0-9]+/i,
+          /[1-9]__+[0-9]/i,
+          /[1-9]_/i,
+          /[1-9][0-9]_/i,
+          /[a-z]\d/i,
+          /\d[a-z]/i
         ].each do |pattern|
           string = random_string(pattern)
-          expect(string).not_to match(utility.send(:integer))
+          expect(string).not_to match(regexp_pattern(:integer))
         end
       end
 
@@ -102,27 +110,24 @@ module RgGen::Core::Utility
           /0x[0-9a-f]+/i,
           /\+0x[0-9a-f]+/i,
           /\-0x[0-9a-f]+/i,
-          /0x[0-9a-f]+_[0-9a-f]+/i,
-          /\s+[+-]?0x[0-9a-f]+/i,
-          /\w\s+[+-]?0x[0-9a-f]+/i,
-          /0x[0-9a-f]+\s+/i,
-          /0x[0-9a-f]+\s+\w/i
+          /0x[0-9a-f]_[0-9a-f]/i
         ].each do |pattern|
           string = random_string(pattern)
-          expect(string).to match(utility.send(:integer))
+          expect(string).to match(regexp_pattern(:integer))
         end
 
         [
-          /0x[0-9a-f]+[g-z]+[0-9a-f]+/i,
-          /\w0x[0-9a-f]+/i,
-          /0x[0-9a-f]+[g-z]/i,
-          /[+-]{2}0x[0-9a-f]/i,
-          /0x_[0-9a-f]+/i,
-          /0x[0-9a-f]+_{2,}[0-9a-f]+/i,
-          /0x[0-9a-f]+_/i
+          /0x[g-z]/i,
+          /0x[g-z][0-9a-f]/i,
+          /0x[0-9a-f][g-z]/i,
+          /0x_[0-9a-f]/i,
+          /0x[0-9a-f]_/i,
+          /0x[0-9a-f]__+[0-9a-f]/i,
+          /0x_[0-9a-f]/i,
+          /[a-z]0x[0-9a-f]/i
         ].each do |pattern|
           string = random_string(pattern)
-          expect(string).not_to match(utility.send(:integer))
+          expect(string).not_to match(regexp_pattern(:integer))
         end
       end
     end

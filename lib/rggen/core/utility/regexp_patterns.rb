@@ -8,31 +8,21 @@ module RgGen
           def included(klass)
             klass.extend(self)
           end
-
-          private
-
-          def match_word_pattern(pattern)
-            /(?<=(?:\A|\s))#{pattern}(?=(?:\z|\s))/
-          end
         end
 
         private
 
-        VARIABLE_NAME_PATTERN =
-          match_word_pattern(/[a-z_][a-z0-9_]*/i).freeze
+        VARIABLE_NAME_PATTERN = /[a-z_]\w*/i.freeze
 
         def variable_name
           VARIABLE_NAME_PATTERN
         end
 
-        BINARY_PATTERN =
-          match_word_pattern(/[+-]?0b[01](?:_?[01])*/i).freeze
+        BINARY_PATTERN = /[+-]?0b[01](?:_?[01])*/i.freeze
 
-        DECIMAL_PATTERN =
-          match_word_pattern(/[+-]?(?:[1-9]_?(?:[0-9]_?)*)?[0-9]/).freeze
+        DECIMAL_PATTERN = /[+-]?(?:[1-9]_?(?:\d_?)*)?\d/.freeze
 
-        HEXADECIMAL_PATTERN =
-          match_word_pattern(/[+-]?0x[0-9a-f](?:_?[0-9a-f])*/i).freeze
+        HEXADECIMAL_PATTERN = /[+-]?0x\h(?:_?\h)*/i.freeze
 
         INTEGER_PATTERN =
           Regexp.union(
