@@ -4,8 +4,8 @@ require 'spec_helper'
 
 module RgGen::Core::InputBase
   describe InputMatcher do
-    def create_matcher(pattern, options = {}, &conveter)
-      InputMatcher.new(pattern, options, &conveter)
+    def create_matcher(pattern_or_patterns, **options, &conveter)
+      InputMatcher.new(pattern_or_patterns, options, &conveter)
     end
 
     describe "#match" do
@@ -14,6 +14,14 @@ module RgGen::Core::InputBase
         expect(create_matcher(/foo/).match(:foo )).to be_truthy
         expect(create_matcher(/foo/).match('bar')).to be_falsey
         expect(create_matcher(/1/  ).match(1    )).to be_truthy
+      end
+
+      context '正規表現が複数個与えられた場合' do
+        specify '与えられた正規表現のどれかに一致すれば、一致となる' do
+          expect(create_matcher([/foo/, /bar/]).match('foo')).to be_truthy
+          expect(create_matcher([/foo/, /bar/]).match('bar')).to be_truthy
+          expect(create_matcher([/foo/, /bar/]).match('baz')).to be_falsey
+        end
       end
 
       context "入力がマッチした場合" do

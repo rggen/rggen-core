@@ -49,8 +49,8 @@ module RgGen
 
           attr_reader :validators
 
-          def input_pattern(pattern, **options, &converter)
-            @input_matcher = InputMatcher.new(pattern, options, &converter)
+          def input_pattern(pattern_or_patterns, **options, &converter)
+            @input_matcher = InputMatcher.new(pattern_or_patterns, options, &converter)
           end
 
           attr_reader :input_matcher

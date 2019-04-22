@@ -4,15 +4,10 @@ module RgGen
   module Core
     module InputBase
       class InputMatcher
-        def initialize(pattern, options, &converter)
+        def initialize(pattern_or_patterns, options, &converter)
           @options = options
           @converter = converter
-          @pattern =
-            if @options.fetch(:match_wholly, true)
-              /\A#{pattern}\z/
-            else
-              pattern
-            end
+          @pattern = unite_patterns(Array(pattern_or_patterns))
         end
 
         def match(rhs)
@@ -26,6 +21,15 @@ module RgGen
         end
 
         private
+
+        def unite_patterns(patterns)
+          united_pattern = Regexp.union(*patterns)
+          if @options.fetch(:match_wholly, true)
+            /\A#{united_pattern}\z/
+          else
+            united_pattern
+          end
+        end
 
         def ignore_blanks?
           @options.fetch(:ignore_blanks, true)
