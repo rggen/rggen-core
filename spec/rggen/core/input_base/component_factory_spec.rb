@@ -224,7 +224,7 @@ DATA
               expect(foo_feature_factories[name]).to receive(:create).ordered.and_call_original
             end
             expect(bar_factory).to receive(:create).twice.ordered.and_call_original
-            expect(component).to receive(:verify_integration).with(no_args).ordered.and_call_original
+            expect(component).to receive(:verify).with(no_args).ordered.and_call_original
 
             foo_factory.create(['foo.rb'])
           end
@@ -232,7 +232,7 @@ DATA
 
         context "ルートファクトリではない場合" do
           it "生成したフィーチャー、コンポーネントの検査を行わない" do
-            expect(component).not_to receive(:verify_integration)
+            expect(component).not_to receive(:verify)
             foo_factory.create(parent, input_data)
           end
         end

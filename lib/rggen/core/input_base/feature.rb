@@ -49,17 +49,14 @@ module RgGen
 
           attr_reader :input_matcher
 
-          def verify(&block)
-            (@verifiers ||= []) << block
+          def verify(scope = :each, &block)
+            @verifiers ||= {}
+            (@verifiers[scope] ||= []) << block
           end
 
-          attr_reader :verifiers
-
-          def verify_integration(&block)
-            (@integration_verifiers ||= []) << block
+          def verifiers(scope)
+            @verifiers && @verifiers[scope]
           end
-
-          attr_reader :integration_verifiers
 
           def inherited(subclass)
             super
@@ -67,8 +64,15 @@ module RgGen
             export_instance_variable(:@ignore_empty_value, subclass)
             export_instance_variable(:@builders, subclass, &:dup)
             export_instance_variable(:@input_matcher, subclass)
-            export_instance_variable(:@verifiers, subclass, &:dup)
-            export_instance_variable(:@integration_verifiers, subclass, &:dup)
+            export_verifiers(subclass) if @verifiers
+          end
+
+          private
+
+          def export_verifiers(subclass)
+            copied_verifiers =
+              @verifiers.map { |scope, blocks| [scope, blocks.dup] }.to_h
+            subclass.instance_variable_set(:@verifiers, copied_verifiers)
           end
         end
 
@@ -83,12 +87,10 @@ module RgGen
           execute_blocks(*extracted_args, self.class.builders)
         end
 
-        def verify
-          execute_blocks(self.class.verifiers)
-        end
-
-        def verify_integration
-          execute_blocks(self.class.integration_verifiers)
+        def verify(scope)
+          return if verified?(scope)
+          execute_blocks(self.class.verifiers(scope))
+          verified(scope)
         end
 
         private
@@ -120,6 +122,15 @@ module RgGen
 
         def pattern_matched?
           !match_data.nil?
+        end
+
+        def verified(scope)
+          @verified ||= {}
+          @verified[scope] = true
+        end
+
+        def verified?(scope)
+          @verified && @verified[scope]
         end
       end
     end

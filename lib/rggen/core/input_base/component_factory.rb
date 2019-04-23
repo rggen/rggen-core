@@ -58,7 +58,7 @@ module RgGen
         end
 
         def finalize(component)
-          component.verify_integration
+          component.verify
         end
 
         def active_feature_factories

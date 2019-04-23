@@ -13,9 +13,9 @@ module RgGen
           @features.each_value.flat_map(&:properties)
         end
 
-        def verify_integration
-          @features.each_value(&:verify_integration)
-          @children.each(&:verify_integration)
+        def verify
+          @features.each_value(&method(:verify_feature))
+          @children.each(&:verify)
         end
 
         private
@@ -23,6 +23,10 @@ module RgGen
         def define_property_methods(feature)
           target = "@features[:#{feature.feature_name}]"
           def_delegators(target, *feature.properties)
+        end
+
+        def verify_feature(feature)
+          feature.verify(:all)
         end
       end
     end

@@ -79,14 +79,14 @@ module RgGen::Core::InputBase
         end
       end
 
-      it "配下の全コンポーネント、アイテムの統合検証を行う" do
+      it "配下の全コンポーネント、アイテムの全体検証を行う" do
         [*bar_components, *baz_components].each do |component|
-          expect(component).to receive(:verify_integration).and_call_original
+          expect(component).to receive(:verify).and_call_original
         end
         features.each do |feature|
-          expect(feature).to receive(:verify_integration).and_call_original
+          expect(feature).to receive(:verify).with(:all).and_call_original
         end
-        foo_component.verify_integration
+        foo_component.verify
       end
     end
   end
