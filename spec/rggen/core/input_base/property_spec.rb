@@ -156,6 +156,34 @@ module RgGen::Core::InputBase
           expect(feature.barbar(2) { 3 }).to eq 5
         end
       end
+
+      describe 'verifyオプション' do
+        let(:feature) { create_feature }
+
+        context '未指定の場合' do
+          it 'プロパティ呼び出し時に、全体検証を実施しない' do
+            define_property(feature, :foo, verify: false)
+            expect(feature).not_to receive(:verify)
+            feature.foo
+          end
+        end
+
+        context 'trueが設定された場合' do
+          it 'プロパティ呼び出し時に、全体検証を実施する' do
+            define_property(feature, :foo, verify: true)
+            expect(feature).to receive(:verify).with(:all)
+            feature.foo
+          end
+        end
+
+        context 'falseが設定された場合' do
+          it 'プロパティ呼び出し時に、全体検証を実施しない' do
+            define_property(feature, :foo, verify: false)
+            expect(feature).not_to receive(:verify)
+            feature.foo
+          end
+        end
+      end
     end
   end
 end

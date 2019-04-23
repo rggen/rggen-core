@@ -17,18 +17,17 @@ module RgGen
         attr_reader :name
 
         def define(feature)
-          feature.class_exec(self) do |context|
-            define_method(context.name) do |*args, &block|
-              context.evaluate(self, args, block)
+          feature.class_exec(self) do |property|
+            define_method(property.name) do |*args, &block|
+              property.evaluate(self, args, block)
             end
           end
         end
 
         def evaluate(feature, args, block)
-          if @costom_property
-            @costom_property.bind(feature).call(*args, &block)
-          elsif @options[:forward_to_helper] || @options[:forward_to]
-            forwarded_property(feature, args, block)
+          feature.verify(:all) if @options[:verify]
+          if proxy_property?
+            proxy_property(feature, args, block)
           else
             default_property(feature)
           end
@@ -43,9 +42,19 @@ module RgGen
           end
         end
 
-        def forwarded_property(feature, args, block)
+        def proxy_property?
+          [
+            @costom_property,
+            @options[:forward_to_helper],
+            @options[:forward_to]
+          ].any?
+        end
+
+        def proxy_property(feature, args, block)
           receiver, method =
-            if @options[:forward_to_helper]
+            if @costom_property
+              [@costom_property.bind(feature), :call]
+            elsif @options[:forward_to_helper]
               [feature.class, @name]
             else
               [feature, @options[:forward_to]]
