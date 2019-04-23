@@ -90,7 +90,7 @@ module RgGen
         def verify(scope)
           return if verified?(scope)
           execute_blocks(self.class.verifiers(scope))
-          verified(scope)
+          (@verified ||= {})[scope] = true
         end
 
         private
@@ -122,11 +122,6 @@ module RgGen
 
         def pattern_matched?
           !match_data.nil?
-        end
-
-        def verified(scope)
-          @verified ||= {}
-          @verified[scope] = true
         end
 
         def verified?(scope)
