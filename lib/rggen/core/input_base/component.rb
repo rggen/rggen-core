@@ -13,9 +13,9 @@ module RgGen
           @features.each_value.flat_map(&:properties)
         end
 
-        def validate
-          @features.each_value(&:validate)
-          @children.each(&:validate)
+        def verify_integration
+          @features.each_value(&:verify_integration)
+          @children.each(&:verify_integration)
         end
 
         private

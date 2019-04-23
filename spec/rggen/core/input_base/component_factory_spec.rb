@@ -219,12 +219,12 @@ DATA
             foo_factory.loaders [loader]
           end
 
-          it "生成後に、配下のフィーチャー、コンポーネントの検査を行う" do
+          it "生成後に、配下のフィーチャー、コンポーネントの統合検証を行う" do
             [:foo_0, :foo_1, :foo_2].each do |name|
               expect(foo_feature_factories[name]).to receive(:create).ordered.and_call_original
             end
             expect(bar_factory).to receive(:create).twice.ordered.and_call_original
-            expect(component).to receive(:validate).with(no_args).ordered.and_call_original
+            expect(component).to receive(:verify_integration).with(no_args).ordered.and_call_original
 
             foo_factory.create(['foo.rb'])
           end
@@ -232,7 +232,7 @@ DATA
 
         context "ルートファクトリではない場合" do
           it "生成したフィーチャー、コンポーネントの検査を行わない" do
-            expect(component).not_to receive(:validate)
+            expect(component).not_to receive(:verify_integration)
             foo_factory.create(parent, input_data)
           end
         end

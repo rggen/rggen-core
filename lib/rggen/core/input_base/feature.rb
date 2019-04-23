@@ -42,26 +42,33 @@ module RgGen
             builders.nil?
           end
 
-          def validate(&block)
-            @validators ||= []
-            @validators << block
-          end
-
-          attr_reader :validators
-
           def input_pattern(pattern_or_patterns, **options, &converter)
-            @input_matcher = InputMatcher.new(pattern_or_patterns, options, &converter)
+            @input_matcher =
+              InputMatcher.new(pattern_or_patterns, options, &converter)
           end
 
           attr_reader :input_matcher
+
+          def verify(&block)
+            (@verifiers ||= []) << block
+          end
+
+          attr_reader :verifiers
+
+          def verify_integration(&block)
+            (@integration_verifiers ||= []) << block
+          end
+
+          attr_reader :integration_verifiers
 
           def inherited(subclass)
             super
             export_instance_variable(:@properties, subclass, &:dup)
             export_instance_variable(:@ignore_empty_value, subclass)
             export_instance_variable(:@builders, subclass, &:dup)
-            export_instance_variable(:@validators, subclass, &:dup)
             export_instance_variable(:@input_matcher, subclass)
+            export_instance_variable(:@verifiers, subclass, &:dup)
+            export_instance_variable(:@integration_verifiers, subclass, &:dup)
           end
         end
 
@@ -76,9 +83,12 @@ module RgGen
           execute_blocks(*extracted_args, self.class.builders)
         end
 
-        def validate
-          return if @validated
-          @validated = execute_blocks(self.class.validators)
+        def verify
+          execute_blocks(self.class.verifiers)
+        end
+
+        def verify_integration
+          execute_blocks(self.class.integration_verifiers)
         end
 
         private
@@ -87,7 +97,6 @@ module RgGen
           return unless blocks
           return if blocks.empty?
           blocks.each { |b| instance_exec(*args, &b) }
-          true
         end
 
         def extract_last_arg(args)

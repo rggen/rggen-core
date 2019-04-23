@@ -163,46 +163,6 @@ module RgGen::Core::InputBase
       end
     end
 
-    describe "#validate" do
-      let(:feature) do
-        create_feature do
-          validate { foo }
-        end
-      end
-
-      let(:child_feature) do
-        create_feature(feature.class) do
-          validate { bar }
-        end
-      end
-
-      let(:grandchild_feature) do
-        create_feature(child_feature.class)
-      end
-
-      it ".validateで登録されたブロックを実行し、フィーチャーの検査をおこなう" do
-        expect(feature).to receive(:foo)
-        feature.validate
-      end
-
-      it "検査ブロックは一度しか実行しない" do
-        expect(feature).to receive(:foo).once
-        2.times { feature.validate }
-      end
-
-      specify "登録された検査ブロックは、継承される" do
-        expect(grandchild_feature).to receive(:foo)
-        expect(grandchild_feature).to receive(:bar)
-        grandchild_feature.validate
-      end
-
-      it "検査ブロックの登録がなくても、実行できる" do
-        expect {
-          create_feature.validate
-        }.not_to raise_error
-      end
-    end
-
     describe "#match_pattern" do
       it ".input_patternで登録されたパターンで、一致比較を行う" do
         feature = create_feature { input_pattern %r{foo} }
@@ -304,6 +264,78 @@ module RgGen::Core::InputBase
         })
         feature.build(create_input_value(:foo))
         expect(feature.send(:pattern_matched?)).to be true
+      end
+    end
+
+    describe '#verify' do
+      let(:feature) do
+        create_feature do
+          verify { foo }
+          verify { bar }
+        end
+      end
+
+      let(:child_feature) do
+        create_feature(feature.class) { verify { baz } }
+      end
+
+      let(:grandchild_feature) do
+        create_feature(child_feature.class)
+      end
+
+      it '.verifyで登録された検証ブロックを実行し、フィーチャーの検証を行う' do
+        expect(feature).to receive(:foo)
+        expect(feature).to receive(:bar)
+        feature.verify
+      end
+
+      specify '登録された検証ブロックは継承される' do
+        expect(grandchild_feature).to receive(:foo)
+        expect(grandchild_feature).to receive(:bar)
+        expect(grandchild_feature).to receive(:baz)
+        grandchild_feature.verify
+      end
+
+      it '検証ブロックの登録がなくても、エラー無く、実行できる' do
+        expect {
+          create_feature.verify
+        }.not_to raise_error
+      end
+    end
+
+    describe '#verify_integration' do
+      let(:feature) do
+        create_feature do
+          verify_integration { foo }
+          verify_integration { bar }
+        end
+      end
+
+      let(:child_feature) do
+        create_feature(feature.class) { verify_integration { baz } }
+      end
+
+      let(:grandchild_feature) do
+        create_feature(child_feature.class)
+      end
+
+      it '.verifyで登録された統合検証ブロックを実行し、フィーチャーの統合検証を行う' do
+        expect(feature).to receive(:foo)
+        expect(feature).to receive(:bar)
+        feature.verify_integration
+      end
+
+      specify '登録された統合検証ブロックは継承される' do
+        expect(grandchild_feature).to receive(:foo)
+        expect(grandchild_feature).to receive(:bar)
+        expect(grandchild_feature).to receive(:baz)
+        grandchild_feature.verify_integration
+      end
+
+      it '統合検証検証ブロックの登録がなくても、エラー無く、実行できる' do
+        expect {
+          create_feature.verify_integration
+        }.not_to raise_error
       end
     end
   end

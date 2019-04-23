@@ -156,34 +156,6 @@ module RgGen::Core::InputBase
           expect(feature.barbar(2) { 3 }).to eq 5
         end
       end
-
-      describe "need_validationオプション" do
-        let(:feature) { create_feature }
-
-        context 'trueが指定された場合' do
-          it '評価時に検査が実行されるプロパティを定義する' do
-            define_property(feature, :foo, need_validation: true)
-            expect(feature).to receive(:validate)
-            feature.foo
-          end
-        end
-
-        context 'falseが指定された場合' do
-          it '評価時に検査が実行されないプロパティを定義する' do
-            define_property(feature, :foo, need_validation: false)
-            expect(feature).not_to receive(:validate)
-            feature.foo
-          end
-        end
-
-        context 'オプションが未指定の場合' do
-          it '評価時に検査が実行されないプロパティを定義する' do
-            define_property(feature, :foo, need_validation: false)
-            expect(feature).not_to receive(:validate)
-            feature.foo
-          end
-        end
-      end
     end
   end
 end

@@ -76,6 +76,33 @@ module RgGen::Core::InputBase
         end
       end
 
+      describe 'フィーチャーの検証' do
+        let(:features) do
+          [
+            Class.new(Feature) { ignore_empty_value false; build {} },
+            Class.new(Feature) { ignore_empty_value true; build {} },
+            Class.new(Feature)
+          ]
+        end
+
+        let(:feature_factories) do
+          features.map do |feature|
+            FeatureFactory.new(feature_name) { |f| f.target_feature feature }
+          end
+        end
+
+        it 'Feature#buildの呼び出しにかかわらず、#verifyを呼び出して、フィーチャーの検証を行う' do
+          expect_any_instance_of(features[0]).to receive(:verify)
+          feature_factories[0].create(component, :other_arg, NilValue)
+
+          expect_any_instance_of(features[1]).to receive(:verify)
+          feature_factories[1].create(component, :other_arg, NilValue)
+
+          expect_any_instance_of(features[2]).to receive(:verify)
+          feature_factories[2].create(component)
+        end
+      end
+
       describe "入力値の変換" do
         let(:feature_class) do
           Class.new(Feature) do

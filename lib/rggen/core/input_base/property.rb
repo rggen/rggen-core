@@ -25,7 +25,6 @@ module RgGen
         end
 
         def evaluate(feature, args, block)
-          feature.validate if @options[:need_validation]
           if @costom_property
             @costom_property.bind(feature).call(*args, &block)
           elsif @options[:forward_to_helper] || @options[:forward_to]
