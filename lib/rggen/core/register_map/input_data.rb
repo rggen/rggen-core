@@ -3,34 +3,30 @@
 module RgGen
   module Core
     module RegisterMap
-      class InputData < InputBase::InputData
-        def initialize(hierarchy, valid_value_lists)
-          @hierarchy = hierarchy
-          define_child_creator
-          super(valid_value_lists)
+      class BitFieldData < InputBase::InputData
+      end
+
+      class RegisterData < InputBase::InputData
+        alias_method :bit_field, :child
+
+        def child_data_class
+          BitFieldData
         end
+      end
 
-        attr_reader :hierarchy
+      class RegisterBlockData < InputBase::InputData
+        alias_method :register, :child
 
-        private
-
-        CHILD_HIERARCHY = {
-          register_map: :register_block,
-          register_block: :register,
-          register: :bit_field
-        }.freeze
-
-        def create_child_data(&block)
-          InputData.new(
-            CHILD_HIERARCHY[hierarchy], @valid_value_lists[1..-1], &block
-          )
+        def child_data_class
+          RegisterData
         end
+      end
 
-        def define_child_creator
-          return unless CHILD_HIERARCHY.keys.include?(hierarchy)
-          singleton_exec(CHILD_HIERARCHY[hierarchy]) do |method_name|
-            alias_method method_name, :child
-          end
+      class RegisterMapData < InputBase::InputData
+        alias_method :register_block, :child
+
+        def child_data_class
+          RegisterBlockData
         end
       end
     end

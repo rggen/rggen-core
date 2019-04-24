@@ -29,36 +29,36 @@ module RgGen::Core::RegisterMap
         [[], [:foo], [:bar], [:baz]]
       end
 
-      let(:input_data) { InputData.new(:register_map, valid_value_lists) }
+      let(:input_data) { RegisterMapData.new(valid_value_lists) }
 
       let(:file_contents) do
-        <<'RUBY'
-register_block {
-  foo 'foo_0'
-  register {
-    bar 'bar_0_0'
-    bit_field { baz 'baz_0_0_0' }
-    bit_field { baz 'baz_0_0_1' }
-  }
-  register {
-    bar 'bar_0_1'
-    bit_field { baz 'baz_0_1_0' }
-  }
-}
+        <<~'RUBY'
+          register_block {
+            foo 'foo_0'
+            register {
+              bar 'bar_0_0'
+              bit_field { baz 'baz_0_0_0' }
+              bit_field { baz 'baz_0_0_1' }
+            }
+            register {
+              bar 'bar_0_1'
+              bit_field { baz 'baz_0_1_0' }
+            }
+          }
 
-register_block {
-  foo 'foo_1'
-  register {
-    bar 'bar_1_0'
-    bit_field { baz 'baz_1_0_0' }
-  }
-  register {
-    bar 'bar_1_1'
-    bit_field { baz 'baz_1_1_0' }
-    bit_field { baz 'baz_1_1_1' }
-  }
-}
-RUBY
+          register_block {
+            foo 'foo_1'
+            register {
+              bar 'bar_1_0'
+              bit_field { baz 'baz_1_0_0' }
+            }
+            register {
+              bar 'bar_1_1'
+              bit_field { baz 'baz_1_1_0' }
+              bit_field { baz 'baz_1_1_1' }
+            }
+          }
+        RUBY
       end
 
       let(:register_blocks) { input_data.children }

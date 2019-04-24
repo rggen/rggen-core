@@ -35,33 +35,33 @@ module RgGen::Core::RegisterMap
       end
 
       let(:input_data) do
-        InputData.new(:register_map, valid_value_lists)
+        RegisterMapData.new(valid_value_lists)
       end
 
       let(:file) { files.sample }
 
       let(:file_contents) do
-        <<'YAML'
-register_blocks:
-- foo: foo_0
-  registers:
-  - bar: bar_0_0
-    bit_fields:
-    - baz: baz_0_0_0
-    - baz: baz_0_0_1
-  - bar: bar_0_1
-    bit_fields:
-      - baz: baz_0_1_0
-- foo: foo_1
-  registers:
-    - bar: bar_1_0
-      bit_fields:
-      - baz: baz_1_0_0
-    - bar: bar_1_1
-      bit_fields:
-      - baz: baz_1_1_0
-      - baz: baz_1_1_1
-YAML
+        <<~'YAML'
+          register_blocks:
+          - foo: foo_0
+            registers:
+            - bar: bar_0_0
+              bit_fields:
+              - baz: baz_0_0_0
+              - baz: baz_0_0_1
+            - bar: bar_0_1
+              bit_fields:
+                - baz: baz_0_1_0
+          - foo: foo_1
+            registers:
+              - bar: bar_1_0
+                bit_fields:
+                - baz: baz_1_0_0
+              - bar: bar_1_1
+                bit_fields:
+                - baz: baz_1_1_0
+                - baz: baz_1_1_1
+        YAML
       end
 
       let(:register_blocks) { input_data.children }

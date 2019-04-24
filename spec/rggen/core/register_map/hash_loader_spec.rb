@@ -23,7 +23,7 @@ module RgGen::Core::RegisterMap
     end
 
     let(:input_data) do
-      InputData.new(:register_map, valid_value_lists)
+      RegisterMapData.new(valid_value_lists)
     end
 
     let(:file) { 'foo.txt' }

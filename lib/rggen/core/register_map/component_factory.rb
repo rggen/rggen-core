@@ -11,7 +11,7 @@ module RgGen
         end
 
         def create_input_data(&block)
-          InputData.new(:register_map, valid_value_lists, &block)
+          RegisterMapData.new(valid_value_lists, &block)
         end
       end
     end

@@ -80,7 +80,11 @@ module RgGen
         end
 
         def create_child_data(&block)
-          InputData.new(@valid_value_lists[1..-1], &block)
+          child_data_class.new(@valid_value_lists[1..-1], &block)
+        end
+
+        def child_data_class
+          InputData
         end
 
         protected
