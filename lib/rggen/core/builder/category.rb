@@ -38,33 +38,33 @@ module RgGen
           @proxy.shared_context&.instance_exec(&body)
         end
 
-        def define_simple_feature(feature_names, shared_context: false, &body)
+        def define_simple_feature(feature_names, **options, &body)
           Array(feature_names).each do |feature_name|
             do_proxy_call(body) do |proxy|
               proxy.method_name(__method__)
               proxy.feature_name(feature_name)
-              proxy.shared_context(create_shared_context(shared_context))
+              proxy.shared_context(create_shared_context(options))
             end
           end
         end
 
-        def define_list_feature(list_names, shared_context: false, &body)
+        def define_list_feature(list_names, **options, &body)
           Array(list_names).each do |list_name|
             do_proxy_call(body) do |proxy|
               proxy.method_name(__method__)
               proxy.list_name(list_name)
-              proxy.shared_context(create_shared_context(shared_context))
+              proxy.shared_context(create_shared_context(options))
             end
           end
         end
 
-        def define_list_item_feature(list_name, feature_names, shared_context: false, &body)
+        def define_list_item_feature(list_name, feature_names, **options, &body)
           Array(feature_names).each do |feature_name|
             do_proxy_call(body) do |proxy|
               proxy.method_name(__method__)
               proxy.list_name(list_name)
               proxy.feature_name(feature_name)
-              proxy.shared_context(create_shared_context(shared_context))
+              proxy.shared_context(create_shared_context(options))
             end
           end
         end
@@ -90,8 +90,8 @@ module RgGen
           remove_instance_variable(:@proxy)
         end
 
-        def create_shared_context(use_shared_context)
-          (use_shared_context && Object.new) || nil
+        def create_shared_context(options)
+          (options[:shared_context] && Object.new) || nil
         end
       end
     end
