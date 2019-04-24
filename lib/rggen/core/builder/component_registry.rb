@@ -20,7 +20,7 @@ module RgGen
           end
         end
 
-        def build_root_factory
+        def build_factory
           factories = @entries.map(&:build_factory)
           factories.each_cons(2) { |(f0, f1)| f0.child_factory(f1) }
           root_factory = factories.first

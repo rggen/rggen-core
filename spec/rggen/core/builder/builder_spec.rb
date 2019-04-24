@@ -483,7 +483,7 @@ module RgGen::Core::Builder
       it "指定した入力コンポーネントのファクトリを生成する" do
         [:configuration, :register_map].shuffle.each do |component|
           factory = nil
-          allow(component_registries[component]).to receive(:build_root_factory).and_wrap_original do |m|
+          allow(component_registries[component]).to receive(:build_factory).and_wrap_original do |m|
             m.call.tap { |f| factory = f }
           end
 
@@ -508,7 +508,7 @@ module RgGen::Core::Builder
       it "出力コンポーネントのファクトリを生成する" do
         factories = []
         [:foo, :bar, :baz].each do |component|
-          allow(component_registries[component]).to receive(:build_root_factory).and_wrap_original do |m|
+          allow(component_registries[component]).to receive(:build_factory).and_wrap_original do |m|
             m.call.tap { |f| factories << f }
           end
         end
@@ -525,9 +525,9 @@ module RgGen::Core::Builder
           factories = []
           [:foo, :bar, :baz].each do |component|
             if exceptions.include?(component)
-              expect(component_registries[component]).not_to receive(:build_root_factory)
+              expect(component_registries[component]).not_to receive(:build_factory)
             else
-              allow(component_registries[component]).to receive(:build_root_factory).and_wrap_original do |m|
+              allow(component_registries[component]).to receive(:build_factory).and_wrap_original do |m|
                 m.call.tap { |f| factories << f }
               end
             end

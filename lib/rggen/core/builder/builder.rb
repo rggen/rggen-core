@@ -62,13 +62,13 @@ module RgGen
         end
 
         def build_input_component_factory(component)
-          @input_component_registries[component].build_root_factory
+          @input_component_registries[component].build_factory
         end
 
         def build_output_component_factories(exceptions)
           @output_component_registries
             .reject { |name, _| exceptions.include?(name) }
-            .map { |_, registry| registry.build_root_factory }
+            .map { |_, registry| registry.build_factory }
         end
 
         def register_input_components

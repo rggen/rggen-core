@@ -63,7 +63,7 @@ module RgGen::Core::Builder
           end
         end
 
-        factory = registry.build_root_factory
+        factory = registry.build_factory
         root_component = factory.create
         components = *root_component.all_children
 

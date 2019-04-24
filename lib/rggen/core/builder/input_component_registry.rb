@@ -24,7 +24,7 @@ module RgGen
           register_loader(loader)
         end
 
-        def build_root_factory
+        def build_factory
           factory = super
           factory.loaders(@loaders)
           factory

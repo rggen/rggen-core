@@ -63,22 +63,22 @@ module RgGen::Core::Builder
 
         value = rand(99)
         setup_file_access('test.rb', "foo #{value}")
-        component = registry.build_root_factory.create(['test.rb'])
+        component = registry.build_factory.create(['test.rb'])
         expect(component.foo).to eq value
 
         value = rand(99)
         setup_file_access('test.yaml', "foo: #{value}")
-        component = registry.build_root_factory.create(['test.yaml'])
+        component = registry.build_factory.create(['test.yaml'])
         expect(component.foo).to eq value
 
         value = rand(99)
         setup_file_access('test.json', "{\"foo\": #{value}}")
-        component = registry.build_root_factory.create(['test.json'])
+        component = registry.build_factory.create(['test.json'])
         expect(component.foo).to eq value
 
         value = rand(99)
         setup_file_access('test.txt', Marshal.dump({ foo: value }))
-        component = registry.build_root_factory.create(['test.txt'])
+        component = registry.build_factory.create(['test.txt'])
         expect(component.foo).to eq value
       end
     end
