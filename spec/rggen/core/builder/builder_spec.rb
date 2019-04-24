@@ -475,66 +475,76 @@ module RgGen::Core::Builder
       end
     end
 
-    describe "#build_input_component_factory" do
+    describe "#build_factory" do
       before do
         default_component_registration
       end
 
-      it "指定した入力コンポーネントのファクトリを生成する" do
+      it "指定したコンポーネントのファクトリを生成する" do
         [:configuration, :register_map].shuffle.each do |component|
           factory = nil
           allow(component_registries[component]).to receive(:build_factory).and_wrap_original do |m|
             m.call.tap { |f| factory = f }
           end
 
-          expect(builder.build_input_component_factory(component)).to be factory
+          expect(builder.build_factory(:input, component)).to be factory
+        end
+
+        [:foo, :bar, :baz].shuffle.each do |component|
+          factory = nil
+          allow(component_registries[component]).to receive(:build_factory).and_wrap_original do |m|
+            m.call.tap { |f| factory = f }
+          end
+
+          expect(builder.build_factory(:output, component)).to be factory
         end
       end
 
       context "未定義のコンポーネントが指定された場合" do
         it "BuilderErrorを起こす" do
           expect {
-            builder.build_input_component_factory(:foo)
+            builder.build_factory(:input, :foo)
           }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: foo'
+
+          expect {
+            builder.build_factory(:output, :register_map)
+          }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: register_map'
         end
       end
     end
 
-    describe '#build_output_component_factories' do
+    describe '#build_factories' do
       before do
         default_component_registration
       end
 
-      it "出力コンポーネントのファクトリを生成する" do
+      it '指定した種類のコンポーネントファクトリを生成する' do
         factories = []
-        [:foo, :bar, :baz].each do |component|
+        [:configuration, :register_map, :foo, :bar, :baz].each do |component|
           allow(component_registries[component]).to receive(:build_factory).and_wrap_original do |m|
             m.call.tap { |f| factories << f }
           end
         end
 
-        expect(builder.build_output_component_factories([])).to match(factories.map { |f| equal(f) })
+        expect(builder.build_factories(:input, [])).to match([equal(factories[0]), equal(factories[1])])
+        expect(builder.build_factories(:output, [])).to match([equal(factories[2]), equal(factories[3]), equal(factories[4])])
       end
 
       context '除外指定がある場合' do
         let(:exceptions) do
-          [:foo, :bar, :baz].sample([0, 1, 2, 3].sample)
+          [:foo, :bar, :baz].sample([1, 2, 3].sample)
         end
 
-        it '配列で指定されたコンポーネントを除く、出力コンポーネントのファクトリを生成する' do
-          factories = []
+        it '除外していされていないコンポーネントのファクトリを生成する' do
           [:foo, :bar, :baz].each do |component|
             if exceptions.include?(component)
               expect(component_registries[component]).not_to receive(:build_factory)
             else
-              allow(component_registries[component]).to receive(:build_factory).and_wrap_original do |m|
-                m.call.tap { |f| factories << f }
-              end
+              expect(component_registries[component]).to receive(:build_factory).and_call_original
             end
           end
 
-          expect(builder.build_output_component_factories([:qux, :fizzbuzz, *exceptions])).
-          to match(factories.map { |f| equal(f) })
+          builder.build_factories(:output, [*exceptions, :qux, :fizz])
         end
       end
     end
@@ -648,12 +658,12 @@ module RgGen::Core::Builder
 
         allow(File).to receive(:readable?).with(configuration_file).and_return(true)
         allow(File).to receive(:binread).with(configuration_file).and_return(configuration_file_contents)
-        factory = builder.build_input_component_factory(:configuration)
+        factory = builder.build_factory(:input, :configuration)
         configuration = factory.create([configuration_file])
 
         allow(File).to receive(:readable?).with(register_map_file).and_return(true)
         allow(File).to receive(:binread).with(register_map_file).and_return(register_map_file_contents)
-        factory = builder.build_input_component_factory(:register_map)
+        factory = builder.build_factory(:input, :register_map)
         register_map = factory.create(configuration, [register_map_file])
 
         expect(configuration.prefix).to eq 'foo'

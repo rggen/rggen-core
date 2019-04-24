@@ -5,13 +5,7 @@ module RgGen
     module Builder
       class Builder
         def initialize
-          @categories = Hash.new do |_, category_name|
-            raise BuilderError.new("unknown category: #{category_name}")
-          end
-          @input_component_registries = Hash.new do |_, component_name|
-            raise BuilderError.new("unknown component: #{component_name}")
-          end
-          @output_component_registries = {}
+          initialize_component_registries
           initialize_categories
         end
 
@@ -24,15 +18,15 @@ module RgGen
         end
 
         def register_loader(component, loader)
-          @input_component_registries[component].register_loader(loader)
+          @component_registries[:input][component].register_loader(loader)
         end
 
         def register_loaders(component, loaders)
-          @input_component_registries[component].register_loaders(loaders)
+          @component_registries[:input][component].register_loaders(loaders)
         end
 
         def define_loader(component, &body)
-          @input_component_registries[component].define_loader(&body)
+          @component_registries[:input][component].define_loader(&body)
         end
 
         def add_feature_registry(name, target_category, registry)
@@ -61,12 +55,12 @@ module RgGen
           @categories[category].enable(*args)
         end
 
-        def build_input_component_factory(component)
-          @input_component_registries[component].build_factory
+        def build_factory(type, component)
+          @component_registries[type][component].build_factory
         end
 
-        def build_output_component_factories(exceptions)
-          @output_component_registries
+        def build_factories(type, exceptions)
+          @component_registries[type]
             .reject { |name, _| exceptions.include?(name) }
             .map { |_, registry| registry.build_factory }
         end
@@ -78,7 +72,19 @@ module RgGen
 
         private
 
+        def initialize_component_registries
+          @component_registries = {}
+          [:input, :output].each do |type|
+            @component_registries[type] = Hash.new do |_, component_name|
+              raise BuilderError.new("unknown component: #{component_name}")
+            end
+          end
+        end
+
         def initialize_categories
+          @categories = Hash.new do |_, category_name|
+            raise BuilderError.new("unknown category: #{category_name}")
+          end
           [
             :global, :register_map, :register_block, :register, :bit_field
           ].each do |category|
@@ -86,14 +92,13 @@ module RgGen
           end
         end
 
+        COMPONENT_REGISTRIES = {
+          input: InputComponentRegistry, output: OutputComponentRegistry
+        }
+
         def component_registry(type, name, body)
-          registries, klass =
-            case type
-            when :input
-              [@input_component_registries, InputComponentRegistry]
-            when :output
-              [@output_component_registries, OutputComponentRegistry]
-            end
+          registries = @component_registries[type]
+          klass = COMPONENT_REGISTRIES[type]
           registries.key?(name) || (registries[name] = klass.new(name, self))
           Docile.dsl_eval(registries[name], &body)
         end

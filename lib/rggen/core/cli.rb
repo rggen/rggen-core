@@ -58,20 +58,18 @@ module RgGen
       end
 
       def write_files
-        options[:load_only] || create_output_components do |component|
+        options[:load_only] || each_output_component do |component|
           component.write_file(options[:output])
         end
       end
 
       def create_input_component(component, *args)
-        builder
-          .build_input_component_factory(component)
-          .create(*args)
+        builder.build_factory(:input, component).create(*args)
       end
 
-      def create_output_components
+      def each_output_component
         builder
-          .build_output_component_factories(options[:exceptions])
+          .build_factories(:output, options[:exceptions])
           .each { |f| yield(f.create(configuration, register_map)) }
       end
     end
