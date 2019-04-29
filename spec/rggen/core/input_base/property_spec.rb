@@ -160,25 +160,20 @@ module RgGen::Core::InputBase
       describe 'verifyオプション' do
         let(:feature) { create_feature }
 
+        it '指定された検証範囲で検証を行う' do
+          define_property(feature, :foo, verify: :component)
+          define_property(feature, :bar, verify: :all)
+
+          expect(feature).to receive(:verify).with(:component)
+          feature.foo
+
+          expect(feature).to receive(:verify).with(:all)
+          feature.bar
+        end
+
         context '未指定の場合' do
-          it 'プロパティ呼び出し時に、全体検証を実施しない' do
-            define_property(feature, :foo, verify: false)
-            expect(feature).not_to receive(:verify)
-            feature.foo
-          end
-        end
-
-        context 'trueが設定された場合' do
-          it 'プロパティ呼び出し時に、全体検証を実施する' do
-            define_property(feature, :foo, verify: true)
-            expect(feature).to receive(:verify).with(:all)
-            feature.foo
-          end
-        end
-
-        context 'falseが設定された場合' do
-          it 'プロパティ呼び出し時に、全体検証を実施しない' do
-            define_property(feature, :foo, verify: false)
+          it 'プロパティ呼び出し時に、検証を実施しない' do
+            define_property(feature, :foo)
             expect(feature).not_to receive(:verify)
             feature.foo
           end

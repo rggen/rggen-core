@@ -270,16 +270,16 @@ module RgGen::Core::InputBase
     describe '#verify' do
       let(:feature) do
         create_feature do
-          verify { foo_0 }
-          verify(:each) { bar_0 }
+          verify(:feature) { foo_0 }
+          verify(:component) { bar_0 }
           verify(:all) { baz_0 }
         end
       end
 
       let(:child_feature) do
         create_feature(feature.class) do
-          verify { foo_1 }
-          verify(:each) { bar_1 }
+          verify(:feature) { foo_1 }
+          verify(:component) { bar_1 }
           verify(:all) { baz_1 }
         end
       end
@@ -288,16 +288,22 @@ module RgGen::Core::InputBase
         create_feature(child_feature.class)
       end
 
-      context '検証範囲が:eachの場合' do
-        it '.verify/.verify(:each)で登録された検証ブロックを実行し、フィーチャーの検証を行う' do
+      context '検証範囲が:featureの場合' do
+        it '.verify(:feature)で登録された検証ブロックを実行し、フィーチャーの検証を行う' do
           expect(feature).to receive(:foo_0)
+          feature.verify(:feature)
+        end
+      end
+
+      context '検証範囲が:componentの場合' do
+        it '.verify(:component)で登録された検証ブロックを実行し、コンポーネントの検証を行う' do
           expect(feature).to receive(:bar_0)
-          feature.verify(:each)
+          feature.verify(:component)
         end
       end
 
       context '検証範囲が:allの場合' do
-        it '.verify(:all)で登録された検証ブロックを実行し、フィーチャーの全体検証を行う' do
+        it '.verify(:all)で登録された検証ブロックを実行し、全体の検証を行う' do
           expect(feature).to receive(:baz_0)
           feature.verify(:all)
         end
@@ -308,18 +314,21 @@ module RgGen::Core::InputBase
         expect(feature).to receive(:bar_0).once
         expect(feature).to receive(:baz_0).once
 
-        feature.verify(:each)
-        feature.verify(:all)
-        feature.verify(:each)
-        feature.verify(:all)
+        2.times do
+          feature.verify(:feature)
+          feature.verify(:component)
+          feature.verify(:all)
+        end
       end
 
       specify '登録された検証ブロックは継承される' do
         expect(grandchild_feature).to receive(:foo_0)
-        expect(grandchild_feature).to receive(:bar_0)
         expect(grandchild_feature).to receive(:foo_1)
+        grandchild_feature.verify(:feature)
+
+        expect(grandchild_feature).to receive(:bar_0)
         expect(grandchild_feature).to receive(:bar_1)
-        grandchild_feature.verify(:each)
+        grandchild_feature.verify(:component)
 
         expect(grandchild_feature).to receive(:baz_0)
         expect(grandchild_feature).to receive(:baz_1)
@@ -328,7 +337,11 @@ module RgGen::Core::InputBase
 
       it '検証ブロックの登録がなくても、エラー無く、実行できる' do
         expect {
-          create_feature.verify(:each)
+          create_feature.verify(:feature)
+        }.not_to raise_error
+
+        expect {
+          create_feature.verify(:component)
         }.not_to raise_error
 
         expect {

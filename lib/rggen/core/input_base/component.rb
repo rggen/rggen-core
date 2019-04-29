@@ -13,9 +13,9 @@ module RgGen
           @features.each_value.flat_map(&:properties)
         end
 
-        def verify
-          @features.each_value(&method(:verify_feature))
-          @children.each(&:verify)
+        def verify(scope)
+          @features.each_value { |feature| feature.verify(scope) }
+          @children.each { |child| child.verify(scope) } if scope == :all
         end
 
         private
@@ -23,10 +23,6 @@ module RgGen
         def define_property_methods(feature)
           target = "@features[:#{feature.feature_name}]"
           def_delegators(target, *feature.properties)
-        end
-
-        def verify_feature(feature)
-          feature.verify(:all)
         end
       end
     end

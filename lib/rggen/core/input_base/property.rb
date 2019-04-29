@@ -25,7 +25,7 @@ module RgGen
         end
 
         def evaluate(feature, args, block)
-          feature.verify(:all) if @options[:verify]
+          feature.verify(@options[:verify]) if @options.key?(:verify)
           if proxy_property?
             proxy_property(feature, args, block)
           else

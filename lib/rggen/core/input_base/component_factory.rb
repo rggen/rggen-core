@@ -51,6 +51,10 @@ module RgGen
           end
         end
 
+        def post_create_features(component)
+          component.verify(:component)
+        end
+
         def create_children(component, *sources)
           sources.last.children.each do |child_data|
             create_child(component, *sources[0..-2], child_data)
@@ -58,7 +62,7 @@ module RgGen
         end
 
         def finalize(component)
-          component.verify
+          component.verify(:all)
         end
 
         def active_feature_factories

@@ -48,7 +48,7 @@ module RgGen::Core::InputBase
       end
     end
 
-    describe "#verify_integration" do
+    describe "#verify" do
       let(:foo_component) { Component.new }
 
       let(:bar_components) do
@@ -79,14 +79,30 @@ module RgGen::Core::InputBase
         end
       end
 
-      it "配下の全コンポーネント、アイテムの全体検証を行う" do
+      context '検証範囲が:componentの場合' do
+        it '配下のフィーチャーの#verifyを呼び出して、自身の検証を行う' do
+          [*bar_components, *baz_components].each do |component|
+            expect(component).not_to receive(:verify)
+          end
+          features.each_with_index do |feature, i|
+            if [0, 1].include?(i)
+              expect(feature).to receive(:verify).with(:component)
+            else
+              expect(feature).not_to receive(:verify)
+            end
+          end
+          foo_component.verify(:component)
+        end
+      end
+
+      it "配下の全コンポーネント、アイテムの#verifyを呼び出して、全体検証を行う" do
         [*bar_components, *baz_components].each do |component|
-          expect(component).to receive(:verify).and_call_original
+          expect(component).to receive(:verify).with(:all).and_call_original
         end
         features.each do |feature|
           expect(feature).to receive(:verify).with(:all).and_call_original
         end
-        foo_component.verify
+        foo_component.verify(:all)
       end
     end
   end

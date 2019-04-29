@@ -92,13 +92,13 @@ module RgGen::Core::InputBase
         end
 
         it 'Feature#buildの呼び出しにかかわらず、#verifyを呼び出して、フィーチャーの検証を行う' do
-          expect_any_instance_of(features[0]).to receive(:verify).with(:each).and_call_original
+          expect_any_instance_of(features[0]).to receive(:verify).with(:feature).and_call_original
           feature_factories[0].create(component, :other_arg, NilValue)
 
-          expect_any_instance_of(features[1]).to receive(:verify).with(:each).and_call_original
+          expect_any_instance_of(features[1]).to receive(:verify).with(:feature).and_call_original
           feature_factories[1].create(component, :other_arg, NilValue)
 
-          expect_any_instance_of(features[2]).to receive(:verify).with(:each).and_call_original
+          expect_any_instance_of(features[2]).to receive(:verify).with(:feature).and_call_original
           feature_factories[2].create(component)
         end
       end

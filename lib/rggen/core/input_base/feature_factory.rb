@@ -16,7 +16,7 @@ module RgGen
           input_value = preprocess(args.last)
           create_feature(component, *args[0..-2], input_value) do |feature|
             build_feature(feature, input_value)
-            feature.verify(:each)
+            feature.verify(:feature)
           end
         end
 

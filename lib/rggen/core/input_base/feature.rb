@@ -49,7 +49,7 @@ module RgGen
 
           attr_reader :input_matcher
 
-          def verify(scope = :each, &block)
+          def verify(scope, &block)
             @verifiers ||= {}
             (@verifiers[scope] ||= []) << block
           end

@@ -101,6 +101,12 @@ module RgGen::Core::InputBase
             foo_factory.create(parent, other_input_data, input_data)
           end
         end
+
+        it '#verifyを呼び出して、コンポーネントの検証を行う' do
+          expect(component).to receive(:verify).with(:component).ordered.and_call_original
+          expect(parent).to receive(:add_child).ordered.and_call_original
+          foo_factory.create(parent, other_input_data, input_data)
+        end
       end
 
       describe "子コンポーネントの生成" do
@@ -126,15 +132,15 @@ module RgGen::Core::InputBase
         end
 
         let(:foo_load_data) do
-            <<'DATA'
-foo_0 0
-DATA
+          <<~'DATA'
+            foo_0 0
+          DATA
         end
 
         let(:bar_load_data) do
-            <<'DATA'
-child { bar_0 1 }
-DATA
+          <<~'DATA'
+            child { bar_0 1 }
+          DATA
         end
 
         let(:input_files) { ['foo.rb', 'bar.rb'] }
@@ -220,11 +226,10 @@ DATA
           end
 
           it "生成後に、配下のフィーチャー、コンポーネントの統合検証を行う" do
-            [:foo_0, :foo_1, :foo_2].each do |name|
-              expect(foo_feature_factories[name]).to receive(:create).ordered.and_call_original
-            end
-            expect(bar_factory).to receive(:create).twice.ordered.and_call_original
-            expect(component).to receive(:verify).with(no_args).ordered.and_call_original
+            expect(component).to receive(:add_feature).exactly(3).times.ordered.and_call_original
+            expect(component).to receive(:verify).with(:component).ordered.and_call_original
+            expect(component).to receive(:add_child).twice.ordered.and_call_original
+            expect(component).to receive(:verify).with(:all).ordered.and_call_original
 
             foo_factory.create(['foo.rb'])
           end
@@ -232,7 +237,7 @@ DATA
 
         context "ルートファクトリではない場合" do
           it "生成したフィーチャー、コンポーネントの検査を行わない" do
-            expect(component).not_to receive(:verify)
+            expect(component).not_to receive(:verify).with(:all)
             foo_factory.create(parent, input_data)
           end
         end
