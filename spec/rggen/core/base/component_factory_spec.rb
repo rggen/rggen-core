@@ -146,11 +146,18 @@ module RgGen::Core::Base
           }
         end
 
-        it "フィf－チャーを含むコンポーネントオブジェクトを生成する" do
+        it "フィーチャーを含むコンポーネントオブジェクトを生成する" do
           component = factory.create(parent)
           expect(component.features).to match [
             be_instance_of(foo_feature), be_instance_of(bar_feature)
           ]
+        end
+
+        it 'フィーチャー生成後に#post_create_featuresを呼び出す' do
+          expect(factory).to receive(:create_features).ordered.and_call_original
+          expect(factory).to receive(:post_create_features).ordered.and_call_original
+          expect(parent).to receive(:add_child).ordered.and_call_original
+          factory.create(parent)
         end
       end
 
