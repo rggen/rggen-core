@@ -270,17 +270,39 @@ module RgGen::Core::InputBase
     describe '#verify' do
       let(:feature) do
         create_feature do
-          verify(:feature) { foo_0 }
-          verify(:component) { bar_0 }
-          verify(:all) { baz_0 }
+          verify(:feature) do
+            error_condition { condition_foo_0 }
+            message { message_foo_0 }
+          end
+          verify(:component) do
+            error_condition { condition_bar_0 }
+            message { message_bar_0 }
+          end
+          verify(:all) do
+            error_condition { condition_baz_0 }
+            message { message_baz_0 }
+          end
+
+          def error(message)
+            raise message
+          end
         end
       end
 
       let(:child_feature) do
         create_feature(feature.class) do
-          verify(:feature) { foo_1 }
-          verify(:component) { bar_1 }
-          verify(:all) { baz_1 }
+          verify(:feature) do
+            error_condition { condition_foo_1 }
+            message { message_foo_1 }
+          end
+          verify(:component) do
+            error_condition { condition_bar_1 }
+            message { message_bar_1 }
+          end
+          verify(:all) do
+            error_condition { condition_baz_1 }
+            message { message_baz_1 }
+          end
         end
       end
 
@@ -290,29 +312,32 @@ module RgGen::Core::InputBase
 
       context '検証範囲が:featureの場合' do
         it '.verify(:feature)で登録された検証ブロックを実行し、フィーチャーの検証を行う' do
-          expect(feature).to receive(:foo_0)
-          feature.verify(:feature)
+          expect(feature).to receive(:condition_foo_0).and_return(true)
+          expect(feature).to receive(:message_foo_0).and_return('error foo 0')
+          expect { feature.verify(:feature) }.to raise_error('error foo 0')
         end
       end
 
       context '検証範囲が:componentの場合' do
         it '.verify(:component)で登録された検証ブロックを実行し、コンポーネントの検証を行う' do
-          expect(feature).to receive(:bar_0)
-          feature.verify(:component)
+          expect(feature).to receive(:condition_bar_0).and_return(true)
+          expect(feature).to receive(:message_bar_0).and_return('error bar 0')
+          expect { feature.verify(:component) }.to raise_error('error bar 0')
         end
       end
 
       context '検証範囲が:allの場合' do
         it '.verify(:all)で登録された検証ブロックを実行し、全体の検証を行う' do
-          expect(feature).to receive(:baz_0)
-          feature.verify(:all)
+          expect(feature).to receive(:condition_baz_0).and_return(true)
+          expect(feature).to receive(:message_baz_0).and_return('error baz 0')
+          expect { feature.verify(:all) }.to raise_error('error baz 0')
         end
       end
 
       specify '検証は一度だけ行われる' do
-        expect(feature).to receive(:foo_0).once
-        expect(feature).to receive(:bar_0).once
-        expect(feature).to receive(:baz_0).once
+        expect(feature).to receive(:condition_foo_0).once.and_return(false)
+        expect(feature).to receive(:condition_bar_0).once.and_return(false)
+        expect(feature).to receive(:condition_baz_0).once.and_return(false)
 
         2.times do
           feature.verify(:feature)
@@ -322,16 +347,16 @@ module RgGen::Core::InputBase
       end
 
       specify '登録された検証ブロックは継承される' do
-        expect(grandchild_feature).to receive(:foo_0)
-        expect(grandchild_feature).to receive(:foo_1)
+        expect(grandchild_feature).to receive(:condition_foo_0).and_return(false)
+        expect(grandchild_feature).to receive(:condition_foo_1).and_return(false)
         grandchild_feature.verify(:feature)
 
-        expect(grandchild_feature).to receive(:bar_0)
-        expect(grandchild_feature).to receive(:bar_1)
+        expect(grandchild_feature).to receive(:condition_bar_0).and_return(false)
+        expect(grandchild_feature).to receive(:condition_bar_1).and_return(false)
         grandchild_feature.verify(:component)
 
-        expect(grandchild_feature).to receive(:baz_0)
-        expect(grandchild_feature).to receive(:baz_1)
+        expect(grandchild_feature).to receive(:condition_baz_0).and_return(false)
+        expect(grandchild_feature).to receive(:condition_baz_1).and_return(false)
         grandchild_feature.verify(:all)
       end
 
