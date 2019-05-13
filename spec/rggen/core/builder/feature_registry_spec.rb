@@ -70,6 +70,42 @@ module RgGen::Core::Builder
       expect(feature.m).to eq 'default baz!'
     end
 
+    specify '複数個のフィーチャーを同時に定義できる' do
+      registry.define_simple_feature([:foo, :bar]) do |feature|
+        define_method(:m) { feature.to_s }
+      end
+      registry.define_list_feature([:baz_0, :baz_1]) do |feature|
+        default_feature do
+          define_method(:m) { feature.to_s }
+        end
+      end
+      registry.define_list_item_feature(:baz_0, [:baz_0_0, :baz_0_1]) do |feature|
+        define_method(:m) { feature.to_s }
+      end
+
+      registry.enable([:foo, :bar, :baz_0, :baz_1])
+      registry.enable(:baz_0, [:baz_0_0, :baz_0_1])
+      factories = registry.build_factories
+
+      feature = factories[:foo].create(component)
+      expect(feature.m).to eq 'foo'
+
+      feature = factories[:bar].create(component)
+      expect(feature.m).to eq 'bar'
+
+      feature = factories[:baz_0].create(component, :baz_0_0)
+      expect(feature.m).to eq 'baz_0_0'
+
+      feature = factories[:baz_0].create(component, :baz_0_1)
+      expect(feature.m).to eq 'baz_0_1'
+
+      feature = factories[:baz_0].create(component, :baz_0_2)
+      expect(feature.m).to eq 'baz_0'
+
+      feature = factories[:baz_1].create(component, :baz_1_0)
+      expect(feature.m).to eq 'baz_1'
+    end
+
     specify "#enableで指定したフィーチャーを生成できる" do
       registry.define_simple_feature(:foo_0) do
         def m; 'foo_0'; end

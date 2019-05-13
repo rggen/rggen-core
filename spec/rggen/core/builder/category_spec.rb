@@ -34,45 +34,37 @@ module RgGen::Core::Builder
           buzz {}
         end
 
-        expect(fizz_feature_registry).to receive(:define_list_feature).with(:bar).and_call_original
-        expect(buzz_feature_registry).to receive(:define_list_feature).with(:bar).and_call_original
-        category.define_list_feature(:bar) do
+        expect(fizz_feature_registry).to receive(:define_simple_feature).with(match([:bar_0, :bar_1])).and_call_original
+        expect(buzz_feature_registry).to receive(:define_simple_feature).with(match([:bar_0, :bar_1])).and_call_original
+        category.define_simple_feature([:bar_0, :bar_1]) do
           fizz {}
           buzz {}
         end
 
-        expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:bar, :bar_0).and_call_original
-        expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:bar, :bar_0).and_call_original
-        category.define_list_item_feature(:bar, :bar_0) do
-          fizz {}
-          buzz {}
-        end
-      end
-
-      specify "複数個のフィーチャーを同時に定義できる" do
-        expect(fizz_feature_registry).to receive(:define_simple_feature).with(:foo_0).and_call_original
-        expect(buzz_feature_registry).to receive(:define_simple_feature).with(:foo_0).and_call_original
-        expect(fizz_feature_registry).to receive(:define_simple_feature).with(:foo_1).and_call_original
-        expect(buzz_feature_registry).to receive(:define_simple_feature).with(:foo_1).and_call_original
-        category.define_simple_feature([:foo_0, :foo_1]) do
+        expect(fizz_feature_registry).to receive(:define_list_feature).with(:baz).and_call_original
+        expect(buzz_feature_registry).to receive(:define_list_feature).with(:baz).and_call_original
+        category.define_list_feature(:baz) do
           fizz {}
           buzz {}
         end
 
-        expect(fizz_feature_registry).to receive(:define_list_feature).with(:bar_0).and_call_original
-        expect(buzz_feature_registry).to receive(:define_list_feature).with(:bar_0).and_call_original
-        expect(fizz_feature_registry).to receive(:define_list_feature).with(:bar_1).and_call_original
-        expect(buzz_feature_registry).to receive(:define_list_feature).with(:bar_1).and_call_original
-        category.define_list_feature([:bar_0, :bar_1]) do
+        expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:baz, :baz_0).and_call_original
+        expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:baz, :baz_0).and_call_original
+        category.define_list_item_feature(:baz, :baz_0) do
           fizz {}
           buzz {}
         end
 
-        expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:bar_0, :bar_0_0).and_call_original
-        expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:bar_0, :bar_0_0).and_call_original
-        expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:bar_0, :bar_0_1).and_call_original
-        expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:bar_0, :bar_0_1).and_call_original
-        category.define_list_item_feature(:bar_0, [:bar_0_0, :bar_0_1]) do
+        expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:baz, match([:baz_1, :baz_2])).and_call_original
+        expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:baz, match([:baz_1, :baz_2])).and_call_original
+        category.define_list_item_feature(:baz, [:baz_1, :baz_2]) do
+          fizz {}
+          buzz {}
+        end
+
+        expect(fizz_feature_registry).to receive(:define_list_feature).with(match([:qux_0, :qux_1])).and_call_original
+        expect(buzz_feature_registry).to receive(:define_list_feature).with(match([:qux_0, :qux_1])).and_call_original
+        category.define_list_feature([:qux_0, :qux_1]) do
           fizz {}
           buzz {}
         end

@@ -17,7 +17,7 @@ module RgGen
           @base_feature = Class.new(base_feature)
           @factory = Class.new(base_factory)
           context && apply_shared_context(context)
-          body && Docile.dsl_eval(self, &body)
+          body && Docile.dsl_eval(self, @name, &body)
         end
 
         def match_entry_type?(entry_type)
@@ -52,7 +52,7 @@ module RgGen
             )
             feature.shared_context(context)
           end
-          body && feature.class_exec(&body)
+          body && feature.class_exec(feature_name, &body)
         end
 
         alias_method :feature, :define_feature

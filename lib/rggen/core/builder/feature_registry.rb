@@ -11,27 +11,32 @@ module RgGen
           @enabled_features = {}
         end
 
-        def define_simple_feature(name, context = nil, &body)
-          create_new_entry(:simple, name, context, body)
+        def define_simple_feature(names, context = nil, &body)
+          Array(names)
+            .each { |name| create_new_entry(:simple, name, context, body) }
         end
 
-        def define_list_feature(list_name, context = nil, &body)
-          create_new_entry(:list, list_name, context, body)
+        def define_list_feature(list_names, context = nil, &body)
+          Array(list_names)
+            .each { |name| create_new_entry(:list, name, context, body) }
         end
 
-        def define_list_item_feature(list_name, feature_name, context = nil, &body)
+        def define_list_item_feature(list_name, feature_names, context = nil, &body)
           entry = @feature_entries[list_name]
           entry&.match_entry_type?(:list) ||
             (raise BuilderError.new("unknown list feature: #{list_name}"))
-          entry.define_feature(feature_name, context, &body)
+          Array(feature_names)
+            .each { |name| entry.define_feature(name, context, &body) }
         end
 
         def enable(feature_or_list_names, feature_names = nil)
           if feature_names
-            list_name = feature_or_list_names
-            enable_list_features(list_name, feature_names)
+            @enabled_features[feature_or_list_names]
+              &.merge!(Array(feature_names))
           else
-            enable_features(feature_or_list_names)
+            Array(feature_or_list_names).each do |name|
+              @enabled_features[name] ||= []
+            end
           end
         end
 
@@ -71,16 +76,6 @@ module RgGen
           entry = FEATURE_ENTRIES[type].new(self, name)
           entry.setup(@base_feature, @factory, context, body)
           @feature_entries[name] = entry
-        end
-
-        def enable_features(features)
-          Array(features).each do |feaure|
-            @enabled_features[feaure] ||= []
-          end
-        end
-
-        def enable_list_features(list_name, features)
-          @enabled_features[list_name]&.merge!(Array(features))
         end
 
         def enabled_feature?(name, entry_type)

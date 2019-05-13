@@ -9,16 +9,18 @@ module RgGen
             body.call(self)
           end
 
-          attr_setter :method_name
+          attr_setter :method
           attr_setter :list_name
-          attr_setter :feature_name
+          attr_setter :list_names
+          attr_setter :feature_names
           attr_setter :shared_context
+          attr_setter :block
 
           def execute(feature_registry, args, body)
             send_args = [
-              list_name, feature_name, shared_context, *args
+              list_name, list_names, feature_names, shared_context, *args
             ].compact
-            feature_registry.__send__(method_name, *send_args, &body)
+            feature_registry.__send__(method, *send_args, &body)
           end
         end
 
@@ -38,34 +40,31 @@ module RgGen
           @proxy.shared_context&.instance_exec(&body)
         end
 
-        def define_simple_feature(feature_names, **options, &body)
-          Array(feature_names).each do |feature_name|
-            do_proxy_call(body) do |proxy|
-              proxy.method_name(__method__)
-              proxy.feature_name(feature_name)
-              proxy.shared_context(create_shared_context(options))
-            end
+        def define_simple_feature(feature_names, **options, &block)
+          do_proxy_call do |proxy|
+            proxy.method(__method__)
+            proxy.feature_names(feature_names)
+            proxy.shared_context(create_shared_context(options))
+            proxy.block(block)
           end
         end
 
-        def define_list_feature(list_names, **options, &body)
-          Array(list_names).each do |list_name|
-            do_proxy_call(body) do |proxy|
-              proxy.method_name(__method__)
-              proxy.list_name(list_name)
-              proxy.shared_context(create_shared_context(options))
-            end
+        def define_list_feature(list_names, **options, &block)
+          do_proxy_call do |proxy|
+            proxy.method(__method__)
+            proxy.list_names(list_names)
+            proxy.shared_context(create_shared_context(options))
+            proxy.block(block)
           end
         end
 
-        def define_list_item_feature(list_name, feature_names, **options, &body)
-          Array(feature_names).each do |feature_name|
-            do_proxy_call(body) do |proxy|
-              proxy.method_name(__method__)
-              proxy.list_name(list_name)
-              proxy.feature_name(feature_name)
-              proxy.shared_context(create_shared_context(options))
-            end
+        def define_list_item_feature(list_name, feature_names, **options, &block)
+          do_proxy_call do |proxy|
+            proxy.method(__method__)
+            proxy.list_names(list_name)
+            proxy.feature_names(feature_names)
+            proxy.shared_context(create_shared_context(options))
+            proxy.block(block)
           end
         end
 
@@ -83,10 +82,9 @@ module RgGen
           end
         end
 
-        def do_proxy_call(body, &proxy_block)
+        def do_proxy_call(&proxy_block)
           @proxy = Proxy.new(proxy_block)
-          body_args = [@proxy.list_name, @proxy.feature_name].compact
-          Docile.dsl_eval(self, *body_args, &body)
+          Docile.dsl_eval(self, &@proxy.block)
           remove_instance_variable(:@proxy)
         end
 

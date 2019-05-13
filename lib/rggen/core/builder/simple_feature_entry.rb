@@ -30,7 +30,7 @@ module RgGen
         def define_feature(base, context, body)
           feature = Class.new(base)
           context && feature.shared_context(context)
-          body && feature.class_exec(&body)
+          body && feature.class_exec(@name, &body)
           feature
         end
       end

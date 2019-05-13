@@ -303,13 +303,13 @@ module RgGen::Core::Builder
     end
 
     def default_feature_definitions(category)
-      builder.define_simple_feature(category, [:fizz_0, :fizz_1, :fizz_2]) do |feature_name|
-        configuration { define_method(feature_name) { feature_name } }
+      builder.define_simple_feature(category, [:fizz_0, :fizz_1, :fizz_2]) do
+        configuration { |feature_name| define_method(feature_name) { feature_name } }
         if category != :global
-          register_map { define_method(feature_name) { feature_name } }
-          foo { define_method(feature_name) { feature_name } }
-          bar { define_method(feature_name) { feature_name } }
-          baz { define_method(feature_name) { feature_name } }
+          register_map { |feature_name| define_method(feature_name) { feature_name } }
+          foo { |feature_name| define_method(feature_name) { feature_name } }
+          bar { |feature_name| define_method(feature_name) { feature_name } }
+          baz { |feature_name| define_method(feature_name) { feature_name } }
         end
       end
 
@@ -323,13 +323,13 @@ module RgGen::Core::Builder
         end
       end
 
-      builder.define_list_item_feature(category, :buzz, [:buzz_0, :buzz_1, :buzz_2]) do |_, feature_name|
-        configuration { define_method(feature_name) { feature_name } }
+      builder.define_list_item_feature(category, :buzz, [:buzz_0, :buzz_1, :buzz_2]) do
+        configuration { |feature_name| define_method(feature_name) { feature_name } }
         if category != :global
-          register_map { define_method(feature_name) { feature_name } }
-          foo { define_method(feature_name) { feature_name } }
-          bar { define_method(feature_name) { feature_name } }
-          baz { define_method(feature_name) { feature_name } }
+          register_map { |feature_name| define_method(feature_name) { feature_name } }
+          foo { |feature_name| define_method(feature_name) { feature_name } }
+          bar { |feature_name| define_method(feature_name) { feature_name } }
+          baz { |feature_name| define_method(feature_name) { feature_name } }
         end
       end
     end
