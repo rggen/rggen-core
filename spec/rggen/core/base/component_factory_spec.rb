@@ -160,45 +160,6 @@ module RgGen::Core::Base
           factory.create(parent)
         end
       end
-
-      describe "フックブロックの実行" do
-        let(:factory) do
-          define_factory {
-            def create_children(component, *args)
-              args[0].times { create_child(component, args[1]) }
-            end
-          }.new { |f|
-            f.target_component component_class
-            f.child_factory child_factory
-          }
-        end
-
-        let(:child_factory) do
-          define_factory.new { |f| f.target_component child_component_class }
-        end
-
-        let(:child_component_class) { Class.new(Component) }
-
-        it "#build_hook(:before)で登録されたフックブロックを、コンポーネントの組み立て前に実行する" do
-          child_components = nil
-          factory.build_hook(:before) do |component|
-            child_components = component.children.size
-          end
-
-          factory.create(parent, *arguments)
-          expect(child_components).to eq 0
-        end
-
-        it "#build_hook(:after)で登録されたフックブロックを、コンポーネントの組み立て後に実行する" do
-          child_components = nil
-          factory.build_hook(:after) do |component|
-            child_components = component.children.size
-          end
-
-          factory.create(parent, *arguments)
-          expect(child_components).to eq 2
-        end
-      end
     end
   end
 end
