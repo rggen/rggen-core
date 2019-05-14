@@ -120,10 +120,54 @@ module RgGen::Core::Builder
           end
 
           factory = entry.build_factory([:foo, :bar])
-          [:foo, :bar, :baz].map do |feature_name|
+          [:foo, :bar, :baz].each do |feature_name|
             entry = factory.create(component, feature_name)
             expect(entry.fizz).to eq 'fizz!'
             expect(entry.buzz).to eq 'buzz!'
+          end
+        end
+      end
+
+      describe '定義したフィーチャーの削除' do
+        let(:entry) do
+          create_entry do
+            define_factory(&default_factory_body)
+            define_default_feature do
+              def m; 'default'; end
+            end
+            define_feature(:foo) { def m; 'foo'; end }
+            define_feature(:bar) { def m; 'bar'; end }
+            define_feature(:baz) { def m; 'baz'; end }
+            define_feature(:qux) { def m; 'qux'; end }
+          end
+        end
+
+        context '#deleteを無引数で呼び出した場合' do
+          it '定義済みフィーチャーを全て削除する' do
+            entry.delete
+
+            factory = entry.build_factory([:foo, :bar, :baz, :qux])
+            [:foo, :bar, :baz, :qux].each do |feature_name|
+              entry = factory.create(component, feature_name)
+              expect(entry.m).to eq 'default'
+            end
+          end
+        end
+
+        context '#deleteにフィーチャー名を与えた場合' do
+          it '指定したフィーチャーを削除する' do
+            entry.delete(:foo)
+            entry.delete([:bar, :baz])
+
+            factory = entry.build_factory([:foo, :bar, :baz, :qux])
+            [:foo, :bar, :baz, :qux].each do |feature_name|
+              entry = factory.create(component, feature_name)
+              if feature_name == :qux
+                expect(entry.m).to eq 'qux'
+              else
+                expect(entry.m).to eq 'default'
+              end
+            end
           end
         end
       end

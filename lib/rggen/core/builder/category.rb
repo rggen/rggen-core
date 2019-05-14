@@ -74,6 +74,12 @@ module RgGen
           end
         end
 
+        def delete(feature_or_list_names = nil, feature_names = nil)
+          @feature_registries.each_value do |registry|
+            registry.delete(*[feature_or_list_names, feature_names].compact)
+          end
+        end
+
         private
 
         def define_proxy_call(name)

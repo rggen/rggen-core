@@ -40,6 +40,17 @@ module RgGen
           end
         end
 
+        def delete(feature_or_list_names = nil, feature_names = nil)
+          if feature_names
+            @feature_entries[feature_or_list_names]&.delete(feature_names)
+          elsif feature_or_list_names
+            Array(feature_or_list_names)
+              .each(&@feature_entries.method(:delete))
+          else
+            @feature_entries.clear
+          end
+        end
+
         def simple_feature?(feature_name)
           enabled_feature?(feature_name, :simple)
         end

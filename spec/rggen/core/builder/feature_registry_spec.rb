@@ -262,6 +262,55 @@ module RgGen::Core::Builder
       end
     end
 
+    describe '#delete' do
+      before do
+        registry.define_simple_feature([:foo, :bar, :baz]) do |feature|
+          define_method(:m) { feature }
+        end
+        registry.define_list_feature([:qux_0, :qux_1]) do |feature|
+          define_default_feature do
+            define_method(:m) { feature }
+          end
+        end
+        registry.define_list_item_feature(:qux_0, [:qux_0_0, :qux_0_1, :qux_0_2, :qux_0_3]) do |feature|
+          define_method(:m) { feature }
+        end
+        registry.define_list_item_feature(:qux_1, [:qux_1_0, :qux_1_1, :qux_1_2, :qux_1_3]) do |feature|
+          define_method(:m) { feature }
+        end
+        registry.enable([:foo, :bar, :baz, :qux_0, :qux_1])
+        registry.enable(:qux_0, [:qux_0_0, :qux_0_1, :qux_0_2, :qux_0_3])
+        registry.enable(:qux_1, [:qux_1_0, :qux_1_1, :qux_1_2, :qux_1_3])
+      end
+
+      context '無引数で呼び出した場合' do
+        it '定義したフィーチャーを全て削除する' do
+          registry.delete
+          expect(registry.build_factories).to be_empty
+        end
+      end
+
+      context 'フィーチャー名が与えられた場合' do
+        it '指定されたフィーチャーを削除する' do
+          registry.delete(:foo)
+          registry.delete([:bar, :qux_0])
+          registry.delete(:qux_1, :qux_1_0)
+          registry.delete(:qux_1, [:qux_1_1, :qux_1_2])
+
+          factories = registry.build_factories
+          expect(factories.keys).to match([:baz, :qux_1])
+
+          feature = factories[:baz].create(component)
+          expect(feature.m).to eq :baz
+
+          [:qux_1_0, :qux_1_1, :qux_1_2, :qux_1_3].each do |feature_name|
+            feature = factories[:qux_1].create(component, feature_name)
+            expect(feature.m).to eq(feature_name == :qux_1_3 ? :qux_1_3 : :qux_1)
+          end
+        end
+      end
+    end
+
     describe "#feature?" do
       before do
         registry.define_simple_feature(:foo_0)

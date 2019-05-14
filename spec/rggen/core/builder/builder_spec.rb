@@ -549,6 +549,69 @@ module RgGen::Core::Builder
       end
     end
 
+    describe '#delete' do
+      before do
+        default_component_registration
+      end
+
+      let(:target_category) do
+        [:global, :register_block, :register, :bit_field].sample
+      end
+
+      let(:category) { categories[target_category] }
+
+      context 'カテゴリ名のみ指定された場合' do
+        it '指定されたカテゴリの定義済みフィーチャーを全て削除する' do
+          expect(category).to receive(:delete).with(no_args)
+          builder.delete(target_category)
+        end
+      end
+
+      context 'カテゴリ名とフィーチャー名が指定された場合' do
+        it '指定されたカテゴリの、指定されたフィーチャーを削除する' do
+          expect(category).to receive(:delete).with(:fizz_0)
+          builder.delete(target_category, :fizz_0)
+
+          expect(category).to receive(:delete).with(match([:fizz_1, :fizz_2]))
+          builder.delete(target_category, [:fizz_1, :fizz_2])
+
+          expect(category).to receive(:delete).with(:buzz, :buzz_0)
+          builder.delete(target_category, :buzz, :buzz_0)
+
+          expect(category).to receive(:delete).with(:buzz, match([:buzz_1, :buzz_2]))
+          builder.delete(target_category, :buzz, [:buzz_1, :buzz_2])
+        end
+      end
+
+      context '未定義のカテゴリが指定された場合' do
+        it 'エラーを起こさない' do
+          expect {
+            builder.delete(:foo)
+          }.not_to raise_error
+
+          expect {
+            builder.delete(:foo, :foo)
+          }.not_to raise_error
+
+          expect {
+            builder.delete(:foo, [:foo_0, :foo_1])
+          }.not_to raise_error
+
+          expect {
+            builder.delete(:foo, [:foo_0, :foo_1])
+          }.not_to raise_error
+
+          expect {
+            builder.delete(:foo, :foo, :foo_0)
+          }.not_to raise_error
+
+          expect {
+            builder.delete(:foo, :foo, [:foo_0, :foo_1])
+          }.not_to raise_error
+        end
+      end
+    end
+
     describe  "#register_input_components" do
       let(:configuration_file_format) do
        [:yaml, :json, :ruby].sample

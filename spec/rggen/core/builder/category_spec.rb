@@ -165,5 +165,50 @@ module RgGen::Core::Builder
         category.enable(:bar_0, [:bar_0_1, :bar_0_2])
       end
     end
+
+    describe '定義済みフィーチャーの削除' do
+      before do
+        category.define_simple_feature([:foo_0, :foo_1, :foo_2]) do
+          fizz {}
+          buzz {}
+        end
+        category.define_list_feature([:bar_0, :bar_1, :bar_2]) do
+          fizz {}
+          buzz {}
+        end
+        category.define_list_item_feature(:bar_0, [:bar_0_0, :bar_0_1, :bar_0_2, :bar_0_3]) do
+          fizz {}
+          buzz {}
+        end
+      end
+
+      context '#deleteを無引数で呼び出した場合' do
+        it '定義済みフィーチャーを全て削除する' do
+          expect(fizz_feature_registry).to receive(:delete).with(no_args)
+          expect(buzz_feature_registry).to receive(:delete).with(no_args)
+          category.delete
+        end
+      end
+
+      context '引数でフィーチャー名が指定された場合' do
+        it '指定されたフィーチャーを削除する' do
+          expect(fizz_feature_registry).to receive(:delete).with(:foo_0)
+          expect(buzz_feature_registry).to receive(:delete).with(:foo_0)
+          category.delete(:foo_0)
+
+          expect(fizz_feature_registry).to receive(:delete).with(match([:foo_1, :bar_1]))
+          expect(buzz_feature_registry).to receive(:delete).with(match([:foo_1, :bar_1]))
+          category.delete([:foo_1, :bar_1])
+
+          expect(fizz_feature_registry).to receive(:delete).with(:bar_0, :bar_0_0)
+          expect(buzz_feature_registry).to receive(:delete).with(:bar_0, :bar_0_0)
+          category.delete(:bar_0, :bar_0_0)
+
+          expect(fizz_feature_registry).to receive(:delete).with(:bar_0, match([:bar_0_1, :bar_0_2]))
+          expect(buzz_feature_registry).to receive(:delete).with(:bar_0, match([:bar_0_1, :bar_0_2]))
+          category.delete(:bar_0, [:bar_0_1, :bar_0_2])
+        end
+      end
+    end
   end
 end

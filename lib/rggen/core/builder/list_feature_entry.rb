@@ -64,6 +64,14 @@ module RgGen
 
         alias_method :default_feature, :define_default_feature
 
+        def delete(features = nil)
+          if features
+            Array(features).each { |feature| @features.delete(feature) }
+          else
+            @features.clear
+          end
+        end
+
         def feature?(feature)
           @features.key?(feature)
         end

@@ -65,6 +65,10 @@ module RgGen
             .map { |_, registry| registry.build_factory }
         end
 
+        def delete(category, *args)
+          @categories.key?(category) && @categories[category].delete(*args)
+        end
+
         def register_input_components
           Configuration.setup(self)
           RegisterMap.setup(self)

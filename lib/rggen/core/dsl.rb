@@ -14,7 +14,8 @@ module RgGen
         :define_loader,
         :define_simple_feature,
         :define_list_feature,
-        :enable
+        :enable,
+        :delete
       ].each do |method_name|
         def_delegator :'RgGen.builder', method_name
       end
