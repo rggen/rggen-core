@@ -262,6 +262,64 @@ module RgGen::Core::Builder
       end
     end
 
+    describe '#disable' do
+      before do
+        registry.define_simple_feature([:foo_0, :foo_1, :foo_2]) do |feature|
+          define_method(:m) { feature }
+        end
+        registry.define_list_feature([:bar_0, :bar_1]) do |feature|
+          define_default_feature { define_method(:m) { feature } }
+        end
+        registry.define_list_item_feature(:bar_0, [:bar_0_0, :bar_0_1, :bar_0_2, :bar_0_3]) do |feature|
+          define_method(:m) { feature }
+        end
+        registry.enable([:foo_0, :foo_1, :foo_2, :bar_0, :bar_1])
+        registry.enable(:bar_0, [:bar_0_0, :bar_0_1, :bar_0_2, :bar_0_3])
+      end
+
+      context '無引数で呼び出した場合' do
+        it '全フィーチャーを無効化する' do
+          registry.disable
+          expect(registry.build_factories).to be_empty
+        end
+      end
+
+      context 'フィーチャー名を指定した場合' do
+        it '指定されたフィーチャーを無効化する' do
+          registry.disable(:foo_0)
+          registry.disable([:foo_1, :bar_1])
+          registry.disable(:bar_0, :bar_0_0)
+          registry.disable(:bar_0, [:bar_0_1, :bar_0_2])
+
+          factories = registry.build_factories
+          expect(factories.keys).to match([:foo_2, :bar_0])
+
+          feature = factories[:foo_2].create(component)
+          expect(feature.m).to eq :foo_2
+
+          [:bar_0_0, :bar_0_1, :bar_0_2, :bar_0_3].each do |feature_name|
+            feature = factories[:bar_0].create(component, feature_name)
+            expect(feature.m).to eq(feature_name == :bar_0_3 ? :bar_0_3 : :bar_0)
+          end
+        end
+      end
+
+      specify '無効化したフィーチャーは最有効化できる' do
+        registry.disable
+        registry.enable([:foo_0, :bar_0])
+        registry.enable(:bar_0, :bar_0_0)
+
+        factories = registry.build_factories
+        expect(factories.keys).to match([:foo_0, :bar_0])
+
+        feature = factories[:foo_0].create(component)
+        expect(feature.m).to eq :foo_0
+
+        feature = factories[:bar_0].create(component, :bar_0_0)
+        expect(feature.m).to eq :bar_0_0
+      end
+    end
+
     describe '#delete' do
       before do
         registry.define_simple_feature([:foo, :bar, :baz]) do |feature|
@@ -278,6 +336,7 @@ module RgGen::Core::Builder
         registry.define_list_item_feature(:qux_1, [:qux_1_0, :qux_1_1, :qux_1_2, :qux_1_3]) do |feature|
           define_method(:m) { feature }
         end
+
         registry.enable([:foo, :bar, :baz, :qux_0, :qux_1])
         registry.enable(:qux_0, [:qux_0_0, :qux_0_1, :qux_0_2, :qux_0_3])
         registry.enable(:qux_1, [:qux_1_0, :qux_1_1, :qux_1_2, :qux_1_3])
@@ -314,7 +373,7 @@ module RgGen::Core::Builder
     describe "#feature?" do
       before do
         registry.define_simple_feature(:foo_0)
-        registry.define_simple_feature( :foo_1)
+        registry.define_simple_feature(:foo_1)
         registry.define_list_feature(:bar_0)
         registry.define_list_item_feature(:bar_0, :bar_0_0)
         registry.define_list_item_feature(:bar_0, :bar_0_1)

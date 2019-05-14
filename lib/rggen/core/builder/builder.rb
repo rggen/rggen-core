@@ -55,6 +55,14 @@ module RgGen
           @categories[category].enable(*args)
         end
 
+        def disable_all
+          @categories.each_value(&:disable)
+        end
+
+        def disable(category, *args)
+          @categories.key?(category) && @categories[category].disable(*args)
+        end
+
         def build_factory(type, component)
           @component_registries[type][component].build_factory
         end

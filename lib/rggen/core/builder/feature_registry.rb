@@ -40,6 +40,18 @@ module RgGen
           end
         end
 
+        def disable(feature_or_list_names = nil, feature_names = nil)
+          if feature_names
+            @enabled_features[feature_or_list_names]
+              &.delete_if { |key, _| Array(feature_names).include?(key) }
+          elsif feature_or_list_names
+            Array(feature_or_list_names)
+              .each(&@enabled_features.method(:delete))
+          else
+            @enabled_features.clear
+          end
+        end
+
         def delete(feature_or_list_names = nil, feature_names = nil)
           if feature_names
             @feature_entries[feature_or_list_names]&.delete(feature_names)

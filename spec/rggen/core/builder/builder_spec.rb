@@ -475,6 +475,82 @@ module RgGen::Core::Builder
       end
     end
 
+    describe '#disable_all' do
+      before do
+        default_component_registration
+      end
+
+      it '全フィーチャーを無効化する' do
+        categories.each_value do |category|
+          expect(category).to receive(:disable).with(no_args)
+        end
+        builder.disable_all
+      end
+    end
+
+    describe '#disable' do
+      before do
+        default_component_registration
+      end
+
+      let(:target_category) do
+        [:global, :register_block, :register, :bit_field].sample
+      end
+
+      let(:category) { categories[target_category] }
+
+      context 'カテゴリ名のみ指定された場合' do
+        it '指定されたカテゴリのフィーチャーを全て無効化する' do
+          expect(category).to receive(:disable).with(no_args)
+          builder.disable(target_category)
+        end
+      end
+
+      context 'カテゴリ名とフィーチャー名が指定された場合' do
+        it '指定されたカテゴリの、指定されたフィーチャーを無効化する' do
+          expect(category).to receive(:disable).with(:fizz_0)
+          builder.disable(target_category, :fizz_0)
+
+          expect(category).to receive(:disable).with(match([:fizz_1, :fizz_2]))
+          builder.disable(target_category, [:fizz_1, :fizz_2])
+
+          expect(category).to receive(:disable).with(:buzz, :buzz_0)
+          builder.disable(target_category, :buzz, :buzz_0)
+
+          expect(category).to receive(:disable).with(:buzz, match([:buzz_1, :buzz_2]))
+          builder.disable(target_category, :buzz, [:buzz_1, :buzz_2])
+        end
+      end
+
+      context '未定義のカテゴリが指定された場合' do
+        it 'エラーを起こさない' do
+          expect {
+            builder.disable(:foo)
+          }.not_to raise_error
+
+          expect {
+            builder.disable(:foo, :foo)
+          }.not_to raise_error
+
+          expect {
+            builder.disable(:foo, [:foo_0, :foo_1])
+          }.not_to raise_error
+
+          expect {
+            builder.disable(:foo, [:foo_0, :foo_1])
+          }.not_to raise_error
+
+          expect {
+            builder.disable(:foo, :foo, :foo_0)
+          }.not_to raise_error
+
+          expect {
+            builder.disable(:foo, :foo, [:foo_0, :foo_1])
+          }.not_to raise_error
+        end
+      end
+    end
+
     describe "#build_factory" do
       before do
         default_component_registration
