@@ -48,7 +48,7 @@ module RgGen::Core::InputBase
 
       context '正規表現が複数個与えられた場合' do
         it '一致長が最長の結果を返す' do
-          match_data, index = create_matcher([/(foo)/, /(foobar)/]).match('foobar')
+          match_data, index = create_matcher([/(foo)/, /(foobar)/], match_wholly: false).match('foobar')
           expect(match_data.captures[0]).to eq 'foobar'
           expect(index).to eq 1
         end
