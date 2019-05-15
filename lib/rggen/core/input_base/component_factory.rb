@@ -51,14 +51,14 @@ module RgGen
           end
         end
 
-        def post_create_features(component)
-          component.verify(:component)
-        end
-
         def create_children(component, *sources)
           sources.last.children.each do |child_data|
             create_child(component, *sources[0..-2], child_data)
           end
+        end
+
+        def post_build(component)
+          component.verify(:component)
         end
 
         def finalize(component)

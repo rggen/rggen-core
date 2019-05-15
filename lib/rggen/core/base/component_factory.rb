@@ -22,6 +22,7 @@ module RgGen
           sources = preprocess((root_factory? && args) || args[1..-1])
           create_component(parent, *sources) do |component|
             build_component(parent, component, sources)
+            finalize(component) if root_factory?
           end
         end
 
@@ -33,22 +34,18 @@ module RgGen
 
         def build_component(parent, component, sources)
           do_create_features(component, sources)
-          parent&.add_child(component)
           do_create_children(component, sources)
-          finalize(component) if root_factory?
+          post_build(component)
+          parent&.add_child(component)
         end
 
         def do_create_features(component, sources)
           return unless create_features?
           create_features(component, *sources)
-          post_create_features(component)
         end
 
         def create_features?
           @feature_factories
-        end
-
-        def post_create_features(_component)
         end
 
         def do_create_children(component, sources)
@@ -64,7 +61,10 @@ module RgGen
           args
         end
 
-        def finalize(component)
+        def post_build(_component)
+        end
+
+        def finalize(_component)
         end
 
         def create_feature(component, factory, *args)

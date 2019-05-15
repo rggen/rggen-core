@@ -227,8 +227,8 @@ module RgGen::Core::InputBase
 
           it "生成後に、配下のフィーチャー、コンポーネントの統合検証を行う" do
             expect(component).to receive(:add_feature).exactly(3).times.ordered.and_call_original
-            expect(component).to receive(:verify).with(:component).ordered.and_call_original
             expect(component).to receive(:add_child).twice.ordered.and_call_original
+            expect(component).to receive(:verify).with(:component).ordered.and_call_original
             expect(component).to receive(:verify).with(:all).ordered.and_call_original
 
             foo_factory.create(['foo.rb'])

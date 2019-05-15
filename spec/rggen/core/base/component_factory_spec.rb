@@ -19,6 +19,32 @@ module RgGen::Core::Base
 
     let(:component_class) { Class.new(Component) }
 
+    let(:child_component_class) { Class.new(Component) }
+
+    let(:child_factory) do
+      define_factory.new { |f| f.target_component child_component_class }
+    end
+
+    let(:feature_factory_class) do
+      Class.new(FeatureFactory) do
+        def create(component, *args)
+          create_feature(component, *args)
+        end
+      end
+    end
+
+    let(:foo_feature) { Class.new(Feature) }
+
+    let(:foo_feature_factory) do
+      feature_factory_class.new(:foo) { |f| f.target_feature foo_feature }
+    end
+
+    let(:bar_feature) { Class.new(Feature) }
+
+    let(:bar_feature_factory) do
+      feature_factory_class.new(:bar) { |f| f.target_feature bar_feature }
+    end
+
     let(:parent) { Class.new(Component).new }
 
     let(:arguments) { [2, 1] }
@@ -77,8 +103,6 @@ module RgGen::Core::Base
       end
 
       context "子コンポーネントファクトリが登録されているとき" do
-        let(:child_component_class) { Class.new(Component) }
-
         let(:factory) do
           define_factory {
             def create_children(component, *args)
@@ -88,10 +112,6 @@ module RgGen::Core::Base
             f.target_component component_class
             f.child_factory child_factory
           }
-        end
-
-        let(:child_factory) do
-          define_factory.new { |f| f.target_component child_component_class }
         end
 
         it "子コンポーネントを含むコンポーネントオブジェクトを生成する" do
@@ -115,26 +135,6 @@ module RgGen::Core::Base
       end
 
       context "フィーチャーファクトリが登録されているとき" do
-        let(:foo_feature) { Class.new(Feature) }
-
-        let(:bar_feature) { Class.new(Feature) }
-
-        let(:feature_factory_class) do
-          Class.new(FeatureFactory) do
-            def create(component, *args)
-              create_feature(component, *args)
-            end
-          end
-        end
-
-        let(:foo_feature_factory) do
-          feature_factory_class.new(:foo) { |f| f.target_feature foo_feature }
-        end
-
-        let(:bar_feature_factory) do
-          feature_factory_class.new(:bar) { |f| f.target_feature bar_feature }
-        end
-
         let(:factory) do
           define_factory {
             def create_features(component, *args)
@@ -152,13 +152,31 @@ module RgGen::Core::Base
             be_instance_of(foo_feature), be_instance_of(bar_feature)
           ]
         end
+      end
 
-        it 'フィーチャー生成後に#post_create_featuresを呼び出す' do
-          expect(factory).to receive(:create_features).ordered.and_call_original
-          expect(factory).to receive(:post_create_features).ordered.and_call_original
-          expect(parent).to receive(:add_child).ordered.and_call_original
-          factory.create(parent)
+      it 'フィーチャー、及び、子コンポーネント生成後に #post_build を呼び出す' do
+        captured_values = []
+
+        factory = define_factory {
+          def create_features(component, *args)
+            @feature_factories.each_value { |f| create_feature(component, f, *args) }
+          end
+          def create_children(component, *args)
+            2.times { create_child(component, *args) }
+          end
+          define_method(:post_build) do |component|
+            captured_values << component.parent.children.size
+            captured_values << component.children.size
+            captured_values << component.features.size
+          end
+        }.new do |f|
+          f.target_component Class.new(Component)
+          f.feature_factories(foo: foo_feature_factory, bar: bar_feature_factory)
+          f.child_factory(child_factory)
         end
+
+        factory.create(parent)
+        expect(captured_values).to match([0, 2, 2])
       end
     end
   end
