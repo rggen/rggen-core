@@ -14,21 +14,43 @@ module RgGen::Core::InputBase
         expect(create_matcher(/foo/).match(:foo )).to be_truthy
         expect(create_matcher(/foo/).match('bar')).to be_falsey
         expect(create_matcher(/1/  ).match(1    )).to be_truthy
+
+        expect(create_matcher([/foo/, /bar/]).match('foo')).to be_truthy
+        expect(create_matcher([/foo/, /bar/]).match('bar')).to be_truthy
+        expect(create_matcher([/foo/, /bar/]).match('baz')).to be_falsey
+
+        expect(create_matcher(foo: /foo/, bar: /bar/).match('foo')).to be_truthy
+        expect(create_matcher(foo: /foo/, bar: /bar/).match('bar')).to be_truthy
+        expect(create_matcher(foo: /foo/, bar: /bar/).match('baz')).to be_falsey
       end
 
-      context '正規表現が複数個与えられた場合' do
-        specify '与えられた正規表現のどれかに一致すれば、一致となる' do
-          expect(create_matcher([/foo/, /bar/]).match('foo')).to be_truthy
-          expect(create_matcher([/foo/, /bar/]).match('bar')).to be_truthy
-          expect(create_matcher([/foo/, /bar/]).match('baz')).to be_falsey
+      context '入力がマッチした場合' do
+        it 'MatchDataと一致したパターンのインデックスを返す' do
+          match_data, index = create_matcher(/(foo)/).match('foo')
+          expect(match_data)
+            .to be_instance_of(MatchData)
+            .and have_attributes(captures: match(['foo']))
+          expect(index).to eq 0
+
+          match_data, index = create_matcher([/(bar)/, /(foo)/]).match('foo')
+          expect(match_data)
+            .to be_instance_of(MatchData)
+            .and have_attributes(captures: match(['foo']))
+          expect(index).to eq 1
+
+          match_data, index = create_matcher(foo: /(foo)/, bar: /(bar)/).match('foo')
+          expect(match_data)
+            .to be_instance_of(MatchData)
+            .and have_attributes(captures: match(['foo']))
+          expect(index).to eq :foo
         end
       end
 
-      context "入力がマッチした場合" do
-        it "MatchDataを返す" do
-          match_data = create_matcher(/(foo)/).match('foo')
-          expect(match_data).to be_instance_of(MatchData)
-          expect(match_data.captures).to match(['foo'])
+      context '正規表現が複数個与えられた場合' do
+        it '一致長が最長の結果を返す' do
+          match_data, index = create_matcher([/(foo)/, /(foobar)/]).match('foobar')
+          expect(match_data.captures[0]).to eq 'foobar'
+          expect(index).to eq 1
         end
       end
 
@@ -40,9 +62,8 @@ module RgGen::Core::InputBase
         end
 
         it "ブロックの評価結果を返す" do
-          expect(
-            create_matcher(/(foo)(bar)/) { |m| m.captures.map(&:upcase) }.match('foobar')
-          ).to match ['FOO', 'BAR']
+          match_data, = create_matcher(/(foo)(bar)/) { |m| m.captures.map(&:upcase) }.match('foobar')
+          expect(match_data).to match ['FOO', 'BAR']
         end
       end
 

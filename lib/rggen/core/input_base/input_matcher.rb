@@ -7,13 +7,13 @@ module RgGen
         def initialize(pattern_or_patterns, options, &converter)
           @options = options
           @converter = converter
-          @pattern = unite_patterns(Array(pattern_or_patterns))
+          @patterns = format_patterns(pattern_or_patterns)
         end
 
         def match(rhs)
           rhs = rhs.to_s
           rhs = delete_blanks(rhs) if ignore_blanks?
-          @pattern.match(rhs, &@converter)
+          match_patterns(rhs)
         end
 
         def match_automatically?
@@ -22,12 +22,23 @@ module RgGen
 
         private
 
-        def unite_patterns(patterns)
-          united_pattern = Regexp.union(*patterns)
+        def format_patterns(patterns)
           if @options.fetch(:match_wholly, true)
-            /\A#{united_pattern}\z/
+            patterns_hash(patterns)
+              .map { |i, pattern| [i, /\A#{pattern}\z/] }
+              .to_h
           else
-            united_pattern
+            patterns_hash(patterns)
+          end
+        end
+
+        def patterns_hash(patterns)
+          if patterns.is_a?(Hash)
+            patterns
+          else
+            Array(patterns)
+              .map.with_index { |pattern, i| [i, pattern] }
+              .to_h
           end
         end
 
@@ -48,6 +59,19 @@ module RgGen
             .strip
             .gsub(DELETE_BLANK_PATTERN, '')
             .gsub(COMPRESS_BLANK_PATTERN) { Regexp.last_match[1] }
+        end
+
+        def match_patterns(rhs)
+          match_data, index =
+            @patterns
+              .map { |i, pattern| pattern.match(rhs) { |m| [m, i] } }
+              .compact
+              .max { |m| m[0].length }
+          match_data && [convert_match_data(match_data), index]
+        end
+
+        def convert_match_data(match_data)
+          @converter&.call(match_data) || match_data
         end
       end
     end

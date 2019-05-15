@@ -105,10 +105,11 @@ module RgGen
 
         def match_pattern(rhs)
           matcher = self.class.input_matcher
-          @match_data = matcher&.match(rhs)
+          @match_data, @match_index = matcher&.match(rhs)
         end
 
         attr_reader :match_data
+        attr_reader :match_index
 
         def pattern_matched?
           !match_data.nil?
