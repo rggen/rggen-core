@@ -18,11 +18,15 @@ module RgGen
         end
 
         def create(*args)
-          parent = root_factory? ? nil : args.first
-          sources = preprocess((root_factory? && args) || args[1..-1])
+          parent, sources =
+            if root_factory?
+              [nil, preprocess(args)]
+            else
+              [args.first, preprocess(args[1..-1])]
+            end
           create_component(parent, *sources) do |component|
             build_component(parent, component, sources)
-            finalize(component) if root_factory?
+            root_factory? && finalize(component)
           end
         end
 
