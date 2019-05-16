@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/rggen/rggen-core.svg?branch=master)](https://travis-ci.org/rggen/rggen-core)
 [![Maintainability](https://api.codeclimate.com/v1/badges/53c8e6654c2b5ecb9142/maintainability)](https://codeclimate.com/github/rggen/rggen-core/maintainability)
-[![codecov](https://codecov.io/gh/rggen/rggen-core/branch/master/graph/badge.svg)](https://codecov.io/gh/rggen/rggen-core)
+[![codecov](https://codecov.io/gh/rggen/rggen-core/branch/master/graph/badge.svg)](https://codecov.io/gh/rggen/rggen-core)[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=rggen_rggen-core&metric=alert_status)](https://sonarcloud.io/dashboard?id=rggen_rggen-core)
 
 # Rggen::Core
 
