@@ -14,6 +14,7 @@ module RgGen
         :define_loader,
         :define_simple_feature,
         :define_list_feature,
+        :define_list_item_feature,
         :enable,
         :disable_all,
         :disable,
