@@ -36,6 +36,10 @@ module RgGen
 
         def post_initialize
         end
+
+        def helper
+          self.class
+        end
       end
     end
   end

@@ -28,14 +28,19 @@ module RgGen::Core::Base
       before do
         feature_class.class_exec do
           define_helpers do
-            def foo ; end
-            def bar ; end
+            def foo ; :foo; end
+            def bar ; :bar; end
           end
         end
       end
 
       it "特異クラスにヘルパーメソッドを追加する" do
         expect(feature_class.singleton_methods(false)).to contain_exactly :foo, :bar
+      end
+
+      specify "#helperヘルパーメソッドを参照できる" do
+        expect(feature.instance_eval { helper.foo }).to eq :foo
+        expect(feature.instance_eval { helper.bar }).to eq :bar
       end
     end
 
