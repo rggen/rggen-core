@@ -101,11 +101,11 @@ module RgGen::Core::InputBase
 
       describe "ignore_blanksオプション" do
         let(:inputs) do
-          ['foo-bar baz', 'foo-bar  baz', " foo -\tbar baz\t", " foo -\nbar baz\t"]
+          ['foo-bar baz _qux', 'foo-bar  baz   _qux', " foo -\tbar baz\t_qux\t", " foo -\nbar baz\n_qux"]
         end
 
         context "trueが設定された場合" do
-          let(:matcher) { create_matcher(/foo-bar baz/, ignore_blanks: true) }
+          let(:matcher) { create_matcher(/foo-bar baz _qux/, ignore_blanks: true) }
 
           it "単語間の空白を圧縮し、改行を除く空白を無視して、一致比較を行う" do
             expect(matcher.match(inputs[0])).to be_truthy
@@ -116,7 +116,7 @@ module RgGen::Core::InputBase
         end
 
         context "falseが設定された場合" do
-          let(:matcher) { create_matcher(/foo-bar baz/, ignore_blanks: false) }
+          let(:matcher) { create_matcher(/foo-bar baz _qux/, ignore_blanks: false) }
 
           it "空白の無視はせず、一致比較を行う" do
             expect(matcher.match(inputs[0])).to be_truthy
@@ -127,7 +127,7 @@ module RgGen::Core::InputBase
         end
 
         context "無指定の場合" do
-          let(:matcher) { create_matcher(/foo-bar baz/) }
+          let(:matcher) { create_matcher(/foo-bar baz _qux/) }
 
           it "trueが設定された場合と同じマッチングを行う" do
             expect(matcher.match(inputs[0])).to be_truthy

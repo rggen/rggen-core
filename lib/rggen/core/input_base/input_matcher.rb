@@ -48,17 +48,17 @@ module RgGen
 
         DELETE_BLANK_PATTERN =
           Regexp.union(
-            /(?<=\w)[[:blank:]]+(?=[[:punct:]])/,
-            /(?<=[[:punct:]])[[:blank:]]+(?=\w)/
+            /(?<=\w)[[:blank:]]+(?=[[:punct:]&&[^_]])/,
+            /(?<=[[:punct:]&&[^_]])[[:blank:]]+(?=\w)/
           ).freeze
 
-        COMPRESS_BLANK_PATTERN = /([[:blank:]])[[:blank:]]*/.freeze
+        COMPRESS_BLANK_PATTERN = /[[:blank:]]+/.freeze
 
         def delete_blanks(rhs)
           rhs
             .strip
             .gsub(DELETE_BLANK_PATTERN, '')
-            .gsub(COMPRESS_BLANK_PATTERN) { Regexp.last_match[1] }
+            .gsub(COMPRESS_BLANK_PATTERN, ' ')
         end
 
         def match_patterns(rhs)
