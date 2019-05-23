@@ -17,13 +17,15 @@ module RgGen::Core::InputBase
 
     let(:nil_value) { InputValue.new(nil, position) }
 
-    let(:empty_string_value) { InputValue.new('', position) }
+    let(:empty_string_values) do
+      [InputValue.new('', position), InputValue.new(" \t\n", position)]
+    end
 
     let(:empty_symbol_value) { InputValue.new(:'', position) }
 
     it "入力値を保持する" do
-      expect(string_value.value).to be string
-      expect(symbol_value.value).to be symbol
+      expect(string_value.value).to eq string
+      expect(symbol_value.value).to eq symbol
       expect(object_value.value).to be object
     end
 
@@ -33,13 +35,24 @@ module RgGen::Core::InputBase
       expect(object_value.position).to be position
     end
 
+    context '入力値が文字列の場合' do
+      let(:string_value_with_white_speces) do
+        InputValue.new(" \n#{string}\t ", position)
+      end
+
+      specify '両端の空白を削除した値を入力値とする' do
+        expect(string_value_with_white_speces.value).to eq string
+      end
+    end
+
     describe "#empty_value?" do
       specify "#nil?が真を返す入力値は空の入力値" do
         expect(nil_value).to be_empty_value
       end
 
       specify "#empty?が真を返す入力値は空の入力値" do
-        expect(empty_string_value).to be_empty_value
+        expect(empty_string_values[0]).to be_empty_value
+        expect(empty_string_values[1]).to be_empty_value
         expect(empty_symbol_value).to be_empty_value
       end
 

@@ -5,7 +5,7 @@ module RgGen
     module InputBase
       class InputValue
         def initialize(value, position)
-          @value = value
+          @value = (value.is_a?(String) && value.strip) || value
           @position = position
         end
 
