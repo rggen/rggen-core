@@ -262,6 +262,29 @@ module RgGen::Core::Builder
       end
     end
 
+    describe '#enabled_features' do
+      before do
+        registry.enable([:foo, :bar, :baz])
+        registry.enable(:baz, [:baz_0, :baz_1, :baz_2])
+      end
+
+      it '有効になったフィーチャー一覧を返す' do
+        expect(registry.enabled_features).to match([:foo, :bar, :baz])
+      end
+
+      context '有効になったリスト名が指定された場合' do
+        it '指定されたリスト内で有効になったフィーチャー一覧を返す' do
+          expect(registry.enabled_features(:baz)).to match([:baz_0, :baz_1, :baz_2])
+        end
+      end
+
+      context '有効になっていないリスト名が指定されt場合' do
+        it '空の配列を返す' do
+          expect(registry.enabled_features(:qux)).to be_empty
+        end
+      end
+    end
+
     describe '#disable' do
       before do
         registry.define_simple_feature([:foo_0, :foo_1, :foo_2]) do |feature|

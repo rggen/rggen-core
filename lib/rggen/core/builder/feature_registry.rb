@@ -40,6 +40,14 @@ module RgGen
           end
         end
 
+        def enabled_features(list_name = nil)
+          if list_name
+            @enabled_features[list_name] || []
+          else
+            @enabled_features.keys
+          end
+        end
+
         def disable(feature_or_list_names = nil, feature_names = nil)
           if feature_names
             @enabled_features[feature_or_list_names]
