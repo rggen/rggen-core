@@ -4,6 +4,8 @@ module RgGen
   module Core
     module Builder
       class ListFeatureEntry
+        include Base::SharedContext
+
         def initialize(registry, name)
           @registry = registry
           @name = name
@@ -16,7 +18,7 @@ module RgGen
         def setup(base_feature, base_factory, context, body)
           @base_feature = Class.new(base_feature)
           @factory = Class.new(base_factory)
-          context && apply_shared_context(context)
+          context && attach_shared_context(context)
           body && Docile.dsl_eval(self, @name, &body)
         end
 
@@ -47,10 +49,10 @@ module RgGen
           @features[feature_name] ||= Class.new(@base_feature)
           feature = @features[feature_name]
           if context
-            feature.private_method_defined?(:shared_context) && (
+            feature.method_defined?(:shared_context) && (
               raise BuilderError.new('shared context has already been set')
             )
-            feature.shared_context(context)
+            feature.attach_context(context)
           end
           body && feature.class_exec(feature_name, &body)
         end
@@ -78,12 +80,9 @@ module RgGen
 
         private
 
-        def apply_shared_context(context)
-          @factory.shared_context(context)
-          @base_feature.shared_context(context)
-          singleton_exec do
-            include Base::SharedContext
-            shared_context(context)
+        def attach_shared_context(context)
+          [@factory, @base_feature, self].each do |target|
+            target.attach_context(context)
           end
         end
 

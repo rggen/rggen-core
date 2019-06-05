@@ -232,16 +232,16 @@ module RgGen::Core::Builder
         factories = registry.build_factories
 
         feature = factories[:foo].create(component)
-        expect(feature.send(:shared_context)).to be context
+        expect(feature.shared_context).to be context
 
         feature = factories[:bar].create(component, :bar_0)
-        expect(feature.send(:shared_context)).to be context
+        expect(feature.shared_context).to be context
 
         feature = factories[:bar].create(component, :bar_1)
-        expect(feature.send(:shared_context)).to be context
+        expect(feature.shared_context).to be context
 
         feature = factories[:baz].create(component, :baz_0)
-        expect(feature.send(:shared_context)).to be context
+        expect(feature.shared_context).to be context
       end
     end
 

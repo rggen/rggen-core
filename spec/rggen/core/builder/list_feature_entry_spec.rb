@@ -201,10 +201,10 @@ module RgGen::Core::Builder
           factory = entry.build_factory([:foo])
           features = [factory.create(component, :foo), factory.create(component, :bar)]
 
-          expect(entry.send(:shared_context)).to be shared_context
-          expect(factory.send(:shared_context)).to be shared_context
-          expect(features[0].send(:shared_context)).to be shared_context
-          expect(features[1].send(:shared_context)).to be shared_context
+          expect(entry.shared_context).to be shared_context
+          expect(factory.shared_context).to be shared_context
+          expect(features[0].shared_context).to be shared_context
+          expect(features[1].shared_context).to be shared_context
         end
       end
 
@@ -224,7 +224,7 @@ module RgGen::Core::Builder
           features[:bar] = factory.create(component, :bar)
 
           features.each do |feature_name, feature|
-            expect(feature.send(:shared_context)).to be shared_contexts[feature_name]
+            expect(feature.shared_context).to be shared_contexts[feature_name]
           end
         end
 

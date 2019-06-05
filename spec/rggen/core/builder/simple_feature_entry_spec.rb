@@ -55,7 +55,7 @@ module RgGen::Core::Builder
       specify "生成されるフィーチャーは共有コンテキストを持つ" do
         entry = create_entry(shared_context)
         feature = entry.build_factory([]).create(component)
-        expect(feature.send(:shared_context)).to be shared_context
+        expect(feature.shared_context).to be shared_context
       end
     end
   end

@@ -4,7 +4,7 @@ module RgGen
   module Core
     module Base
       class FeatureFactory
-        include SharedContext
+        extend SharedContext
 
         def initialize(feature_name)
           @feature_name = feature_name
