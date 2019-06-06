@@ -10,6 +10,11 @@ module RgGen
           end
 
           attr_reader :value_converter
+
+          def default_value(&block)
+            @default_value = block if block_given?
+            @default_value
+          end
         end
 
         def create(component, *args)
@@ -31,24 +36,38 @@ module RgGen
         private
 
         def preprocess(input_value)
-          return input_value if passive_feature_factory?
-          return input_value if input_value.empty_value?
-          return input_value unless value_converter
-          InputValue.new(convert(input_value.value), input_value.position)
+          converted_value =
+            active_feature_factory? && convert_value(input_value)
+          converted_value || input_value
         end
 
-        def value_converter
-          self.class.value_converter
+        def convert_value(input_value)
+          new_value =
+            if input_value.empty_value?
+              evaluate_defalt_value(input_value.position)
+            else
+              convert(input_value.value, input_value.position)
+            end
+          new_value && InputValue.new(new_value, input_value.position)
         end
 
-        def convert(value)
-          instance_exec(value, &value_converter)
+        def evaluate_defalt_value(position)
+          block = self.class.default_value
+          block && instance_exec(position, &block)
+        end
+
+        def convert(value, position)
+          block = self.class.value_converter
+          block && instance_exec(value, position, &block)
         end
 
         def build_feature(feature, input_value)
-          return if passive_feature_factory?
-          return if ignore_empty_value?(feature, input_value)
-          feature.build(input_value)
+          build?(feature, input_value) && feature.build(input_value)
+        end
+
+        def build?(feature, input_value)
+          active_feature_factory? &&
+            !ignore_empty_value?(feature, input_value)
         end
 
         def ignore_empty_value?(feature, input_value)

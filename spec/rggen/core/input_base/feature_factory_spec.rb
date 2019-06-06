@@ -103,6 +103,51 @@ module RgGen::Core::InputBase
         end
       end
 
+      describe '既定値の設定' do
+        let(:feature_class) do
+          Class.new(Feature) do
+            property :value
+            build { |value| @value = value }
+          end
+        end
+
+        let(:factory_class) do
+          Class.new(FeatureFactory) do
+            default_value { default_value }
+            def default_value; :foo; end
+          end
+        end
+
+        let(:active_factory) do
+          factory_class.new(feature_name) { |f| f.target_feature feature_class }
+        end
+
+        let(:passive_factory) do
+          factory_class.new(feature_name) { |f| f.target_feature passive_feature }
+        end
+
+        let(:feature) { active_factory.create(component, input_value) }
+
+        def create_feature(factory, value = NilValue)
+          factory.create(component, value)
+        end
+
+        it '.default_valueで登録されたブロックを実行し、入力が空白の場合の既定値とする' do
+          expect(active_factory).to receive(:default_value).and_call_original
+          expect(create_feature(active_factory).value).to eq :foo
+        end
+
+        it '入力が空データではない場合、規定値の設定を行わない' do
+          expect(active_factory).not_to receive(:default_value)
+          create_feature(active_factory, input_value)
+        end
+
+        it '対象フィーチャーが受動フィーチャーの場合は、入力値の変換を行わない' do
+          expect(passive_factory).not_to receive(:default_value)
+          create_feature(passive_factory)
+        end
+      end
+
       describe "入力値の変換" do
         let(:feature_class) do
           Class.new(Feature) do
