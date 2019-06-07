@@ -82,6 +82,24 @@ module RgGen
           RegisterMap.setup(self)
         end
 
+        def setup(library_name, library_module)
+          library_versions[library_name] = library_module.__send__(:version)
+          library_module.__send__(:setup, self)
+        end
+
+        def library_versions
+          @library_versions ||= {}
+        end
+
+        def load_setup_file(file)
+          (file.nil? || file.empty?) &&
+            (raise Core::LoadError.new('no setup file is given'))
+          File.readable?(file) ||
+            (raise Core::LoadError.new("cannot load such setup file: #{file}"))
+          RgGen.builder(self)
+          load(file)
+        end
+
         private
 
         def initialize_component_registries

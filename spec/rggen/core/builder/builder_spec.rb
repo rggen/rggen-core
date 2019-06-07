@@ -811,5 +811,99 @@ module RgGen::Core::Builder
         expect(register_map.bit_fields.first.name).to eq 'foo_bit_field_0'
       end
     end
+
+    describe '#setup' do
+      let(:foo_module) do
+        Module.new do
+          def self.version; '0.0.1'; end
+          def self.setup(_builder); end
+        end
+      end
+
+      let(:bar_module) do
+        Module.new do
+          def self.version; '0.0.2'; end
+          def self.setup(_builder); end
+        end
+      end
+
+      let(:baz_module) do
+        Module.new do
+          def self.version; '0.0.3'; end
+          def self.setup(_builder); end
+        end
+      end
+
+      it '指定されたモジュールの .setup を実行して、ライブラリのセットアップを行う' do
+        expect(foo_module).to receive(:setup).with(equal(builder))
+        expect(bar_module).to receive(:setup).with(equal(builder))
+        expect(baz_module).to receive(:setup).with(equal(builder))
+
+        builder.setup(:foo, foo_module)
+        builder.setup(:bar, bar_module)
+        builder.setup(:baz, baz_module)
+      end
+
+      it 'ライブラリモジュールの.versionを呼び出して、バージョン情報を収集する' do
+        expect(foo_module).to receive(:version).with(no_args).and_call_original
+        expect(bar_module).to receive(:version).with(no_args).and_call_original
+        expect(baz_module).to receive(:version).with(no_args).and_call_original
+
+        builder.setup(:foo, foo_module)
+        builder.setup(:bar, bar_module)
+        builder.setup(:baz, baz_module)
+
+        expect(builder.library_versions).to match(
+          foo: '0.0.1', bar: '0.0.2', baz: '0.0.3'
+        )
+      end
+    end
+
+    describe '#load_setup_file' do
+      before { RgGen.builder(nil) }
+
+      after { RgGen.builder(nil) }
+
+      it '指定されたセットアップファイルを読み込む' do
+        foo_module = Module.new do
+          def self.version; '0.0.1'; end
+          def self.setup(builder)
+            builder.input_component_registry(:foo) {}
+          end
+        end
+
+        allow(File).to receive(:readable?).with('setup.rb').and_return(true)
+        allow(builder).to receive(:load).with('setup.rb') do
+          RgGen.setup(:foo, foo_module)
+          RgGen.input_component_registry(:bar) {}
+        end
+
+        expect(builder).to receive(:input_component_registry).with(:foo)
+        expect(builder).to receive(:input_component_registry).with(:bar)
+
+        builder.load_setup_file('setup.rb')
+      end
+
+      context 'セットアップファイルが未指定の場合' do
+        it 'LoadErrorを起こす' do
+          expect {
+            builder.load_setup_file(nil)
+          }.to raise_rggen_error RgGen::Core::LoadError, 'no setup file is given'
+
+          expect {
+            builder.load_setup_file('')
+          }.to raise_rggen_error RgGen::Core::LoadError, 'no setup file is given'
+        end
+      end
+
+      context '指定したファイルが読めない場合' do
+        it 'LoadErrorを起こす' do
+          allow(File).to receive(:readable?).with('setup.rb').and_return(false)
+          expect {
+            builder.load_setup_file('setup.rb')
+          }.to raise_rggen_error RgGen::Core::LoadError, 'cannot load such setup file: setup.rb'
+        end
+      end
+    end
   end
 end
