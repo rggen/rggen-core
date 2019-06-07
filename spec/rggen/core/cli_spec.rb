@@ -11,35 +11,43 @@ module RgGen::Core
     let(:setup) do
       proc do
         [:foo, :bar].each do |component|
-          RgGen.output_component_registry(component) do
-            register_component :register_map do
-              component(
-                RgGen::Core::OutputBase::Component,
-                RgGen::Core::OutputBase::ComponentFactory
-              )
-            end
-            register_component [:register_block, :register, :bit_field] do
-              component(
-                RgGen::Core::OutputBase::Component,
-                RgGen::Core::OutputBase::ComponentFactory
-              )
-              feature(
-                RgGen::Core::OutputBase::Feature,
-                RgGen::Core::OutputBase::FeatureFactory
-              )
+          library_module = Module.new do
+            singleton_exec do
+              define_method(:version) do
+                { foo: '0.0.1', bar: '0.0.2'}[component]
+              end
+              define_method(:setup) do |builder|
+                builder.output_component_registry(component) do
+                  register_component :register_map do
+                    component(
+                      RgGen::Core::OutputBase::Component,
+                      RgGen::Core::OutputBase::ComponentFactory
+                    )
+                  end
+                  register_component [:register_block, :register, :bit_field] do
+                    component(
+                      RgGen::Core::OutputBase::Component,
+                      RgGen::Core::OutputBase::ComponentFactory
+                    )
+                    feature(
+                      RgGen::Core::OutputBase::Feature,
+                      RgGen::Core::OutputBase::FeatureFactory
+                    )
+                  end
+                end
+              end
             end
           end
+          RgGen.setup(component, library_module)
         end
 
-        RgGen.build do |builder|
-          builder.define_simple_feature(:global, :prefix) do
-            configuration do
-              property :prefix, default: 'fizz'
-              build { |v| @prefix = v }
-            end
+        RgGen.define_simple_feature(:global, :prefix) do
+          configuration do
+            property :prefix, default: 'fizz'
+            build { |v| @prefix = v }
           end
-          builder.enable(:global, :prefix)
         end
+        RgGen.enable(:global, :prefix)
 
         [:register_block, :register, :bit_field].each do |category|
           RgGen.define_simple_feature(category, :name) do
@@ -65,18 +73,16 @@ module RgGen::Core
           end
         end
 
-        RgGen.setup do |builder|
-          builder.define_simple_feature(:register_block, :sample_writer) do
-            bar do
-              write_file 'bar_<%= register_block.name %>.txt' do |code|
-                code << [configuration.prefix, 'bar', register_block.name].join('_') << "\n"
-                code << [configuration.prefix, 'bar', register_map.registers.first.name].join('_') << "\n"
-                code << [configuration.prefix, 'bar', register_map.bit_fields.first.name].join('_') << "\n"
-              end
+        RgGen.define_simple_feature(:register_block, :sample_writer) do
+          bar do
+            write_file 'bar_<%= register_block.name %>.txt' do |code|
+              code << [configuration.prefix, 'bar', register_block.name].join('_') << "\n"
+              code << [configuration.prefix, 'bar', register_map.registers.first.name].join('_') << "\n"
+              code << [configuration.prefix, 'bar', register_map.bit_fields.first.name].join('_') << "\n"
+            end
 
-              def create_blank_file(_)
-                +''
-              end
+            def create_blank_file(_)
+              +''
             end
           end
         end
@@ -131,7 +137,7 @@ module RgGen::Core
 
     before do
       allow(File).to receive(:readable?).with(setup_file).and_return(true)
-      allow(cli).to receive(:load).with(setup_file, &setup)
+      allow(builder).to receive(:load).with(setup_file, &setup)
     end
 
     before do
@@ -145,34 +151,103 @@ module RgGen::Core
       allow(File).to receive(:binwrite)
     end
 
-    describe "セットアップファイルの読み込み" do
-      context "存在するセットアップファイルが指定された場合" do
-        it "指定されたファイルを読み込んで、セットアップを実行する" do
-          expect(builder).to receive(:output_component_registry).with(:foo).and_call_original
-          expect(builder).to receive(:output_component_registry).with(:bar).and_call_original
-          cli.run(['--setup', setup_file, *register_map_files])
+    describe '--help/-hオプション' do
+      let(:help_message) do
+        <<~'HELP'
+          Usage: rggen [options] register_map_files
+                  --setup FILE                 Specify a Ruby file to set up RgGen tool
+              -c, --configuration FILE         Specify a configuration file
+              -o, --output DIRECTORY           Specify the directory where generated file(s) will be written
+                  --load-only                  Load setup, configuration and register map files only; write no files
+                  --except WRITER1[,WRITER2,...]
+                                               Disable the given file writer(s)
+              -v, --version                    Display version
+                  --verbose-version            Load a setup Ruby file and display verbose version
+              -h, --help                       Display this message
+        HELP
+      end
+
+      it 'ヘルプを出力する' do
+        expect {
+          cli.run(['--help'])
+        }.to output(help_message).to_stdout
+
+        expect {
+          cli.run(['-h'])
+        }.to output(help_message).to_stdout
+      end
+    end
+
+    describe '--version/-vオプション' do
+      let(:version) do
+        "RgGen #{RgGen::Core::MAJOR}.#{RgGen::Core::MINOR}\n"
+      end
+
+      it 'バージョン情報を出力する' do
+        expect {
+          cli.run(['--version'])
+        }.to output(version).to_stdout
+
+        expect {
+          cli.run(['-v'])
+        }.to output(version).to_stdout
+      end
+    end
+
+    describe '--verbose-version/-Vオプション' do
+      context 'セットアップファイルが読める場合' do
+        let(:version) do
+          <<~VERSION
+            RgGen #{RgGen::Core::MAJOR}.#{RgGen::Core::MINOR}
+              - rggen-core #{RgGen::Core::VERSION}
+              - rggen-foo 0.0.1
+              - rggen-bar 0.0.2
+          VERSION
+        end
+
+        it 'セットアップファイルを読んだ上で、詳細なバージョン情報を出力する' do
+          expect(builder).to receive(:load_setup_file).with(setup_file).and_call_original
+          expect {
+            cli.run(['--verbose-version', '--setup', setup_file])
+          }.to output(version).to_stdout
         end
       end
 
-      context "存在しないセットアップファイルが指定された場合" do
+      context 'セットアップファイルの指定がない場合' do
+        let(:version) do
+          <<~VERSION
+            RgGen #{RgGen::Core::MAJOR}.#{RgGen::Core::MINOR}
+              - rggen-core #{RgGen::Core::VERSION}
+          VERSION
+        end
+
+        it 'コアライブラリのバージョンのみを表示する' do
+          expect {
+            cli.run(['--verbose-version'])
+          }.to output(version).to_stdout
+        end
+      end
+
+      context 'セットアップファイルが読めない場合' do
         let(:invalid_setup_file) { 'invalid_setup_file.rb' }
 
         before do
           allow(File).to receive(:readable?).with(invalid_setup_file).and_return(false)
         end
 
-        it "LoadErrorを起こす" do
+        it 'Loaderエラーを起こす' do
           expect {
-            cli.run(['--setup', invalid_setup_file])
-          }.to raise_rggen_error RgGen::Core::LoadError, 'cannot load such file', invalid_setup_file
+            cli.run(['--verbose-version', '--setup', invalid_setup_file])
+          }.to raise_error RgGen::Core::LoadError
         end
       end
+    end
 
-      context "セットアップフィアルの指定がない場合" do
-        it "LoadErrorを起こす" do
-          expect {
-            cli.run([])
-          }.to raise_rggen_error RgGen::Core::LoadError, 'no setup file is given'
+    describe "セットアップファイルの読み込み" do
+      context "存在するセットアップファイルが指定された場合" do
+        it "指定されたファイルを読み込んで、セットアップを実行する" do
+          expect(builder).to receive(:load_setup_file).with(setup_file).and_call_original
+          cli.run(['--setup', setup_file, *register_map_files])
         end
       end
     end

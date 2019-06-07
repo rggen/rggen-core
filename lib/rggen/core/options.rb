@@ -155,25 +155,27 @@ module RgGen
     Options.add_option(:version) do |option|
       option.short_option '-v'
       option.long_option '--version'
-      option.action { |*_, parser| display_version(parser) }
-      option.description 'Display the version'
-
-      def option.display_version(parser)
-        puts parser.ver
-        exit
+      option.action do |_value, options|
+        options[:runner] = VersionPrinter.new(false)
       end
+      option.description 'Display version'
+    end
+
+    Options.add_option(:verbose_version) do |option|
+      option.long_option '--verbose-version'
+      option.action do |_value, options|
+        options[:runner] = VersionPrinter.new(true)
+      end
+      option.description 'Load a setup Ruby file and display verbose version'
     end
 
     Options.add_option(:help) do |option|
       option.short_option '-h'
       option.long_option '--help'
-      option.action { |*_, parser| display_help(parser) }
-      option.description 'Display this message'
-
-      def option.display_help(parser)
-        puts parser.help
-        exit
+      option.action do |_value, options, _name, parser|
+        options[:runner] = HelpPrinter.new(parser)
       end
+      option.description 'Display this message'
     end
   end
 end

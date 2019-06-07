@@ -93,6 +93,8 @@ require_relative 'core/builder/category'
 require_relative 'core/builder/builder'
 require_relative 'core/builder'
 
+require_relative 'core/printers'
 require_relative 'core/options'
 require_relative 'core/dsl'
+require_relative 'core/generator'
 require_relative 'core/cli'

@@ -165,48 +165,5 @@ module RgGen::Core
         end
       end
     end
-
-    describe "versionオプション" do
-      context "-v/--versionが引数で指定された場合" do
-        let(:message) { "rggen #{RgGen::Core::VERSION}\n" }
-
-        it "バージョン情報を出力し、終了する" do
-          expect {
-            options.parse(['-v'])
-          }.to exit_with_code(0).and output(message).to_stdout
-          expect {
-            options.parse(['--version'])
-          }.to exit_with_code(0).and output(message).to_stdout
-        end
-      end
-    end
-
-    describe "helpオプション" do
-      context "-h/--helpが引数で指定された場合" do
-        let(:message) do
-          <<~'HELP'
-            Usage: rggen [options] register_map_files
-                    --setup FILE                 Specify a Ruby file to set up RgGen tool
-                -c, --configuration FILE         Specify a configuration file
-                -o, --output DIRECTORY           Specify the directory where generated file(s) will be written
-                    --load-only                  Load setup, configuration and register map files only; write no files
-                    --except WRITER1[,WRITER2,...]
-                                                 Disable the given file writer(s)
-                -v, --version                    Display the version
-                -h, --help                       Display this message
-          HELP
-        end
-
-        it "ヘルプ情報を出力し、終了する" do
-          expect {
-            options.parse(['-h'])
-          }.to exit_with_code(0).and output(message).to_stdout
-
-          expect {
-            options.parse(['--help'])
-          }.to exit_with_code(0).and output(message).to_stdout
-        end
-      end
-    end
   end
 end
