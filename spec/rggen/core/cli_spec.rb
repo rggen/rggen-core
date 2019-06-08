@@ -4,9 +4,12 @@ require 'spec_helper'
 
 module RgGen::Core
   describe CLI do
-    let!(:cli) { CLI.new }
+    let(:cli) { CLI.new }
 
-    let(:builder) { ::RgGen.builder }
+    let(:builder) do
+      cli
+      RgGen.builder
+    end
 
     let(:setup) do
       proc do
@@ -149,6 +152,32 @@ module RgGen::Core
 
     before do
       allow(File).to receive(:binwrite)
+    end
+
+    describe 'Builderの初期化' do
+      before { RgGen.builder(nil) }
+
+      context 'Builderが未指定の場合' do
+        it 'Builderを生成し、RgGen.builderに設定する' do
+          builder = nil
+          expect(Builder).to receive(:create).and_wrap_original do |m|
+            m.call.tap { |b| builder = b }
+          end
+
+          CLI.new
+          expect(RgGen.builder).to be builder
+        end
+      end
+
+      context 'Builderが指定された場合' do
+        it '指定されたBuilderをRgGen.builderに設定する' do
+          builder = Builder.create
+          expect(Builder).not_to receive(:create)
+
+          CLI.new(builder)
+          expect(RgGen.builder).to be builder
+        end
+      end
     end
 
     describe '--help/-hオプション' do
