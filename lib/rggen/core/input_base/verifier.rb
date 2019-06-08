@@ -4,12 +4,16 @@ module RgGen
   module Core
     module InputBase
       class Verifier
-        def initialize(block)
+        def initialize(&block)
           instance_eval(&block)
         end
 
+        def check_error(&block)
+          @error_checker = block
+        end
+
         def error_condition(&block)
-          @error_condition = block
+          @condition = block
         end
 
         def message(&block)
@@ -17,18 +21,18 @@ module RgGen
         end
 
         def verify(feature)
-          error?(feature) && raise_error(feature)
+          if @error_checker
+            feature.instance_eval(&@error_checker)
+          else
+            default_error_check(feature)
+          end
         end
 
         private
 
-        def error?(feature)
-          feature.instance_eval(&@error_condition)
-        end
-
-        def raise_error(feature)
-          feature.instance_exec(@message) do |message|
-            error(instance_eval(&message))
+        def default_error_check(feature)
+          feature.instance_exec(@condition, @message) do |condition, message|
+            instance_eval(&condition) && error(instance_eval(&message))
           end
         end
       end

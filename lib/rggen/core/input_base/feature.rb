@@ -51,7 +51,7 @@ module RgGen
 
           def verify(scope, &block)
             @verifiers ||= {}
-            (@verifiers[scope] ||= []) << Verifier.new(block)
+            (@verifiers[scope] ||= []) << Verifier.new(&block)
           end
 
           attr_reader :verifiers
