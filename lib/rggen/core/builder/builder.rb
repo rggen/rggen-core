@@ -83,8 +83,15 @@ module RgGen
         end
 
         def setup(library_name, library_module)
-          library_versions[library_name] = library_module.__send__(:version)
-          library_module.__send__(:setup, self)
+          library_versions[library_name] =
+            if library_module.const_defined?(:VERSION)
+              library_module.const_get(:VERSION)
+            elsif library_module.respond_to?(:version)
+              library_module.version
+            else
+              '0.0.0'
+            end
+          library_module.setup(self)
         end
 
         def library_versions

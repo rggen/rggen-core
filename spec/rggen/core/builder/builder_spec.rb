@@ -813,48 +813,45 @@ module RgGen::Core::Builder
     end
 
     describe '#setup' do
-      let(:foo_module) do
-        Module.new do
-          def self.version; '0.0.1'; end
+      before(:all) do
+        module Foo
+          VERSION = '0.0.1'
           def self.setup(_builder); end
         end
-      end
 
-      let(:bar_module) do
-        Module.new do
+        module Bar
           def self.version; '0.0.2'; end
           def self.setup(_builder); end
         end
-      end
 
-      let(:baz_module) do
-        Module.new do
-          def self.version; '0.0.3'; end
+        module Baz
           def self.setup(_builder); end
         end
       end
 
-      it '指定されたモジュールの .setup を実行して、ライブラリのセットアップを行う' do
-        expect(foo_module).to receive(:setup).with(equal(builder))
-        expect(bar_module).to receive(:setup).with(equal(builder))
-        expect(baz_module).to receive(:setup).with(equal(builder))
-
-        builder.setup(:foo, foo_module)
-        builder.setup(:bar, bar_module)
-        builder.setup(:baz, baz_module)
+      after(:all) do
+        RgGen::Core::Builder.send(:remove_const, :Foo)
+        RgGen::Core::Builder.send(:remove_const, :Bar)
+        RgGen::Core::Builder.send(:remove_const, :Baz)
       end
 
-      it 'ライブラリモジュールの.versionを呼び出して、バージョン情報を収集する' do
-        expect(foo_module).to receive(:version).with(no_args).and_call_original
-        expect(bar_module).to receive(:version).with(no_args).and_call_original
-        expect(baz_module).to receive(:version).with(no_args).and_call_original
+      it '指定されたモジュールの .setup を実行して、ライブラリのセットアップを行う' do
+        expect(Foo).to receive(:setup).with(equal(builder))
+        expect(Bar).to receive(:setup).with(equal(builder))
+        expect(Baz).to receive(:setup).with(equal(builder))
 
-        builder.setup(:foo, foo_module)
-        builder.setup(:bar, bar_module)
-        builder.setup(:baz, baz_module)
+        builder.setup(:foo, Foo)
+        builder.setup(:bar, Bar)
+        builder.setup(:baz, Baz)
+      end
+
+      it 'ライブラリモジュールのバージョン情報を収集する' do
+        builder.setup(:foo, Foo)
+        builder.setup(:bar, Bar)
+        builder.setup(:baz, Baz)
 
         expect(builder.library_versions).to match(
-          foo: '0.0.1', bar: '0.0.2', baz: '0.0.3'
+          foo: '0.0.1', bar: '0.0.2', baz: '0.0.0'
         )
       end
     end
