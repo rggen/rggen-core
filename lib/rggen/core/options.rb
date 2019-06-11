@@ -111,7 +111,7 @@ module RgGen
       end
 
       def option.define_setup_file_from_const
-        require 'lib/rggen/default_setup_file'
+        require 'rggen/default_setup_file'
         RgGen::DEFAULT_SETUP_FILE
       rescue ::LoadError
         nil

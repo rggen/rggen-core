@@ -7,7 +7,7 @@ module RgGen::Core
     let(:options) { Options.new }
 
     before do
-      allow_any_instance_of(Options::Option).to receive(:require).with('lib/rggen/default_setup_file').and_raise(::LoadError)
+      allow_any_instance_of(Options::Option).to receive(:require).with('rggen/default_setup_file').and_raise(::LoadError)
       allow(ENV).to receive(:[]).with('RGGEN_DEFAULT_SETUP_FILE').and_return(nil)
       allow(ENV).to receive(:[]).with('RGGEN_DEFAULT_CONFIGURATION_FILE').and_return(nil)
     end
@@ -44,10 +44,10 @@ module RgGen::Core
           end
         end
 
-        context "lib/rggen/default_setup_fileがrequireできる場合" do
+        context "rggen/default_setup_fileがrequireできる場合" do
           before do
             file = setup_file
-            allow_any_instance_of(Options::Option).to receive(:require).with('lib/rggen/default_setup_file') do
+            allow_any_instance_of(Options::Option).to receive(:require).with('rggen/default_setup_file') do
               ::RgGen.module_eval { const_set(:DEFAULT_SETUP_FILE, file) }
             end
           end
