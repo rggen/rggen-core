@@ -9,7 +9,7 @@ module RgGen
         support_types [:json]
 
         def read_file(file)
-          JSON.parse(File.binread(file))
+          JSON.parse(File.binread(file), symbolize_names: true)
         end
       end
     end

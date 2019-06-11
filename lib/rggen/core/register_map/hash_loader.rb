@@ -25,19 +25,19 @@ module RgGen
         }.freeze
 
         def format_data(hierarchy, input_data, read_data, file)
-          read_data = Hash(read_data).symbolize_keys
+          read_data = Hash(read_data)
           input_data.values(read_data, file)
-          get_child_read_data(hierarchy, read_data).each do |child_read_data|
+          read_data_for_child(hierarchy, read_data).each do |data|
             format_data(
               CHILD_HIERARCHY[hierarchy],
               input_data.child,
-              child_read_data,
+              data,
               file
             )
           end
         end
 
-        def get_child_read_data(hierarchy, read_data)
+        def read_data_for_child(hierarchy, read_data)
           key = CHILD_HIERARCHY_KEY[hierarchy]
           Array(key && read_data[key])
         end

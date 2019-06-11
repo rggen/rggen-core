@@ -55,19 +55,19 @@ module RgGen::Core::RegisterMap
               ]
             },
             {
-              'foo' => 'foo_1',
-              'registers' => [
+              foo: 'foo_1',
+              registers: [
                 {
-                  'bar' => 'bar_1_0',
-                  'bit_fields' => [
-                    { 'baz' => 'baz_1_0_0' }
+                  bar: 'bar_1_0',
+                  bit_fields: [
+                    { baz: 'baz_1_0_0' }
                   ]
                 },
                 {
-                  'bar' => 'bar_1_1',
+                  bar: 'bar_1_1',
                   bit_fields: [
-                    { 'baz' => 'baz_1_1_0' },
-                    { 'baz' => 'baz_1_1_1' }
+                    { baz: 'baz_1_1_0' },
+                    { baz: 'baz_1_1_1' }
                   ]
                 }
               ]
