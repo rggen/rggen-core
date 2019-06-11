@@ -5,13 +5,12 @@ module RgGen
     module RegisterMap
       class YAMLLoader < Loader
         include HashLoader
+        include InputBase::YAMLLoader
 
         support_types [:yaml, :yml]
 
         def read_file(file)
-          YAML.safe_load(
-            File.binread(file), [], [], true, file, symbolize_names: true
-          )
+          load_yaml(file)
         end
       end
     end
