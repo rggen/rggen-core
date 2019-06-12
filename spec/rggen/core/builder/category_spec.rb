@@ -76,7 +76,7 @@ module RgGen::Core::Builder
 
           allow(fizz_feature_registry).to receive(:define_simple_feature).and_call_original
           allow(buzz_feature_registry).to receive(:define_simple_feature).and_call_original
-          category.define_simple_feature(:foo, shared_context: true) do
+          category.define_simple_feature(:foo) do
             fizz {}
             buzz {}
             shared_context { contexts << self }
@@ -86,7 +86,7 @@ module RgGen::Core::Builder
 
           allow(fizz_feature_registry).to receive(:define_list_feature).and_call_original
           allow(buzz_feature_registry).to receive(:define_list_feature).and_call_original
-          category.define_list_feature(:bar, shared_context: true) do
+          category.define_list_feature(:bar) do
             fizz {}
             buzz {}
             shared_context { contexts << self }
@@ -100,7 +100,7 @@ module RgGen::Core::Builder
           end
           allow(fizz_feature_registry).to receive(:define_list_item_feature).and_call_original
           allow(buzz_feature_registry).to receive(:define_list_item_feature).and_call_original
-          category.define_list_item_feature(:baz, :baz_0, shared_context: true) do
+          category.define_list_item_feature(:baz, :baz_0) do
             fizz {}
             buzz {}
             shared_context { contexts << self }
@@ -112,17 +112,17 @@ module RgGen::Core::Builder
         specify "各共有コンテキストは独立している" do
           contexts = []
 
-          category.define_simple_feature([:foo_0, :foo_1], shared_context: true) do
+          category.define_simple_feature([:foo_0, :foo_1]) do
             shared_context { contexts << self }
           end
-          category.define_list_feature([:bar_0, :bar_1], shared_context: true) do
+          category.define_list_feature([:bar_0, :bar_1]) do
             shared_context { contexts << self }
           end
           category.define_list_feature(:baz) do
             fizz {}
             buzz {}
           end
-          category.define_list_item_feature(:baz, [:baz_0, :baz_1], shared_context: true) do
+          category.define_list_item_feature(:baz, [:baz_0, :baz_1]) do
             shared_context { contexts << self }
           end
 

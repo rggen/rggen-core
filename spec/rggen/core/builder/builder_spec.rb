@@ -407,17 +407,17 @@ module RgGen::Core::Builder
 
       it "指定したカテゴリの#define_simple_feature/#define_list_featureを呼び出して、フィーチャーの定義を行う" do
         expect(category).to receive(:define_simple_feature).with(:foo).and_call_original
-        expect(category).to receive(:define_simple_feature).with(:bar, shared_context: true).and_call_original
+        expect(category).to receive(:define_simple_feature).with(:bar).and_call_original
         expect(category).to receive(:define_list_feature).with(:baz).and_call_original
-        expect(category).to receive(:define_list_item_feature).with(:baz, :bar_0, shared_context: true).and_call_original
-        expect(category).to receive(:define_list_feature).with(:qux, shared_context: true).and_call_original
+        expect(category).to receive(:define_list_item_feature).with(:baz, :bar_0).and_call_original
+        expect(category).to receive(:define_list_feature).with(:qux).and_call_original
         expect(category).to receive(:define_list_item_feature).with(:qux, :qux_0).and_call_original
 
         builder.define_simple_feature(target_category, :foo) {}
-        builder.define_simple_feature(target_category, :bar, shared_context: true) {}
+        builder.define_simple_feature(target_category, :bar) {}
         builder.define_list_feature(target_category, :baz) {}
-        builder.define_list_item_feature(target_category, :baz, :bar_0, shared_context: true) {}
-        builder.define_list_feature(target_category, :qux, shared_context: true) {}
+        builder.define_list_item_feature(target_category, :baz, :bar_0) {}
+        builder.define_list_feature(target_category, :qux) {}
         builder.define_list_item_feature(target_category, :qux, :qux_0) {}
       end
 

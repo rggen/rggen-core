@@ -10,17 +10,36 @@ module RgGen
           end
 
           attr_setter :method
-          attr_setter :list_name
           attr_setter :list_names
           attr_setter :feature_names
-          attr_setter :shared_context
-          attr_setter :block
 
-          def execute(feature_registry, args, body)
+          def shared_context(&body)
+            if block_given?
+              @shared_context ||= Object.new
+              @shared_context.instance_eval(&body)
+            end
+            @shared_context
+          end
+
+          def register_execution(registry, args, body)
+            @executions ||= []
+            @executions << { registry: registry, args: args, body: body }
+          end
+
+          def execute(category, body)
+            Docile.dsl_eval(category, &body)
+            Array(@executions).each { |execution| call_execution(execution) }
+          end
+
+          private
+
+          def call_execution(execution)
             send_args = [
-              list_name, list_names, feature_names, shared_context, *args
+              list_names, feature_names, shared_context, *execution[:args]
             ].compact
-            feature_registry.__send__(method, *send_args, &body)
+            execution[:registry].__send__(
+              method, *send_args, &execution[:body]
+            )
           end
         end
 
@@ -35,36 +54,28 @@ module RgGen
         end
 
         def shared_context(&body)
-          return unless block_given?
-          return unless @proxy
-          @proxy.shared_context&.instance_exec(&body)
+          block_given? && @proxy&.shared_context(&body)
         end
 
-        def define_simple_feature(feature_names, **options, &block)
-          do_proxy_call do |proxy|
+        def define_simple_feature(feature_names, &body)
+          do_proxy_call(body) do |proxy|
             proxy.method(__method__)
             proxy.feature_names(feature_names)
-            proxy.shared_context(create_shared_context(options))
-            proxy.block(block)
           end
         end
 
-        def define_list_feature(list_names, **options, &block)
-          do_proxy_call do |proxy|
+        def define_list_feature(list_names, &body)
+          do_proxy_call(body) do |proxy|
             proxy.method(__method__)
             proxy.list_names(list_names)
-            proxy.shared_context(create_shared_context(options))
-            proxy.block(block)
           end
         end
 
-        def define_list_item_feature(list_name, feature_names, **options, &block)
-          do_proxy_call do |proxy|
+        def define_list_item_feature(list_name, feature_names, &body)
+          do_proxy_call(body) do |proxy|
             proxy.method(__method__)
             proxy.list_names(list_name)
             proxy.feature_names(feature_names)
-            proxy.shared_context(create_shared_context(options))
-            proxy.block(block)
           end
         end
 
@@ -90,18 +101,14 @@ module RgGen
 
         def define_proxy_call(name)
           define_singleton_method(name) do |*args, &body|
-            @proxy.execute(@feature_registries[name], args, body)
+            @proxy.register_execution(@feature_registries[name], args, body)
           end
         end
 
-        def do_proxy_call(&proxy_block)
+        def do_proxy_call(body, &proxy_block)
           @proxy = Proxy.new(proxy_block)
-          Docile.dsl_eval(self, &@proxy.block)
+          @proxy.execute(self, body)
           remove_instance_variable(:@proxy)
-        end
-
-        def create_shared_context(options)
-          (options[:shared_context] && Object.new) || nil
         end
       end
     end
