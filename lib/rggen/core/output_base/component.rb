@@ -15,6 +15,11 @@ module RgGen
           @need_children = source.need_children?
           define_hierarchical_accessors
           define_property_accessors
+          define_children_presense_indicator
+        end
+
+        def children?
+          !source.children.empty?
         end
 
         def build
@@ -35,6 +40,18 @@ module RgGen
 
         def define_property_accessors
           def_delegators(:@source, *@source.properties)
+        end
+
+        INDICATOR_NAMES = {
+          register_map: :register_blocks?,
+          register_block: :registers?,
+          register: :bit_fields?
+        }.freeze
+
+        def define_children_presense_indicator
+          indicator_name = INDICATOR_NAMES[hierarchy]
+          indicator_name &&
+            singleton_exec { alias_method indicator_name, :children? }
         end
 
         def build_feature(feature)

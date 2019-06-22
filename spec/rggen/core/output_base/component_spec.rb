@@ -54,6 +54,31 @@ module RgGen::Core::OutputBase
       end
     end
 
+    describe '#register_blocks?/#registers?/#bit_fields?' do
+      let(:children) { [] }
+
+      before do
+        allow(register_map).to receive(:children).and_return(children)
+      end
+
+      it '下位階層を含むかどうかを示す' do
+        components = []
+        components << create_component(nil)
+        components << create_component(components[0])
+        components << create_component(components[1])
+
+        expect(components[0].register_blocks?).to eq false
+        expect(components[1].registers?).to eq false
+        expect(components[2].bit_fields?).to eq false
+
+        children << Object.new
+
+        expect(components[0].register_blocks?).to eq true
+        expect(components[1].registers?).to eq true
+        expect(components[2].bit_fields?).to eq true
+      end
+    end
+
     describe "#build" do
       let(:foo_component) do
         create_component(nil)
