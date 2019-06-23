@@ -36,6 +36,36 @@ module RgGen::Core::OutputBase
       component.baz
     end
 
+    it 'フィーチャーのFeature.export/#exportで指定されたメソッドを呼び出すことができる' do
+      component = create_component(nil)
+
+      foo_feature = define_and_create_feature(component, :foo_feature) do
+        export :foo_0
+        def post_initialize
+          super
+          export :foo_1
+        end
+      end
+
+      bar_feature = define_and_create_feature(component, :bar_feature) do
+        export :bar_0
+        def post_initialize
+          super
+          export :bar_1
+        end
+      end
+
+      expect(foo_feature).to receive(:foo_0)
+      expect(foo_feature).to receive(:foo_1)
+      expect(bar_feature).to receive(:bar_0)
+      expect(bar_feature).to receive(:bar_1)
+
+      component.foo_0
+      component.foo_1
+      component.bar_0
+      component.bar_1
+    end
+
     describe "#need_children?" do
       let(:component) { create_component(nil) }
 
@@ -123,8 +153,8 @@ module RgGen::Core::OutputBase
 
       let(:foo_features) do
         [
-          define_and_create_feature(foo_component, :foo_0) { export :foo_0_0; build { export :foo_0_1 } },
-          define_and_create_feature(foo_component, :foo_1) { export :foo_1_0; build { export :foo_1_1 } }
+          define_and_create_feature(foo_component, :foo_0) {},
+          define_and_create_feature(foo_component, :foo_1) {}
         ]
       end
 
@@ -154,24 +184,6 @@ module RgGen::Core::OutputBase
           expect(feature).to receive(:build).and_call_original
         end
         foo_component.build
-      end
-
-      specify "#build実行後、Feature.export/#exportで指定されたメソッドを、自身をレシーバとして呼び出すことができる" do
-        expect { foo_component.foo_0_0 }.to raise_error NoMethodError
-        expect { foo_component.foo_0_1 }.to raise_error NoMethodError
-        expect { foo_component.foo_1_0 }.to raise_error NoMethodError
-        expect { foo_component.foo_1_1 }.to raise_error NoMethodError
-
-        expect(foo_features[0]).to receive(:foo_0_0)
-        expect(foo_features[0]).to receive(:foo_0_1)
-        expect(foo_features[1]).to receive(:foo_1_0)
-        expect(foo_features[1]).to receive(:foo_1_1)
-        foo_component.build
-
-        foo_component.foo_0_0
-        foo_component.foo_0_1
-        foo_component.foo_1_0
-        foo_component.foo_1_1
       end
     end
 
