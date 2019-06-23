@@ -7,6 +7,7 @@ module RgGen
         include Base::HierarchicalFeatureAccessors
 
         class << self
+          attr_reader :pre_builders
           attr_reader :builders
 
           def code_generators
@@ -25,6 +26,11 @@ module RgGen
           end
 
           private
+
+          def pre_build(&body)
+            @pre_builders ||= []
+            @pre_builders << body
+          end
 
           def build(&body)
             @builders ||= []
@@ -64,6 +70,7 @@ module RgGen
 
         class << self
           def inherited(subclass)
+            export_instance_variable(:@pre_builders, subclass, &:dup)
             export_instance_variable(:@builders, subclass, &:dup)
             export_instance_variable(:@template_engine, subclass)
             export_instance_variable(:@file_writer, subclass)
@@ -82,9 +89,16 @@ module RgGen
           define_hierarchical_accessors
         end
 
+        def pre_build
+          helper
+            .pre_builders
+            &.each { |body| instance_exec(&body) }
+        end
+
         def build
-          builders = self.class.builders
-          builders&.each { |body| instance_exec(&body) }
+          helper
+            .builders
+            &.each { |body| instance_exec(&body) }
         end
 
         def export(*methods)

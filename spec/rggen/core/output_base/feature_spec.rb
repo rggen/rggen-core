@@ -24,6 +24,49 @@ module RgGen::Core::OutputBase
       define_feature(super_class, &block).new(component, :feature)
     end
 
+    describe "#pre_build" do
+      it ".pre_buildで登録されたブロックを実行し、フィーチャーの事前組み立てを行う" do
+        feature = define_and_create_feature do
+          pre_build { @foo = component.foo }
+          pre_build { @bar = component.bar }
+        end
+
+        allow(component).to receive(:foo).and_return('foo')
+        allow(component).to receive(:bar).and_return('bar')
+        feature.pre_build
+
+        expect(feature.instance_variable_get(:@foo)).to be component.foo
+        expect(feature.instance_variable_get(:@bar)).to be component.bar
+      end
+
+      context "継承された場合" do
+        specify "親クラスの組み立てブロックは継承される" do
+          parent_feature = define_feature do
+            pre_build { @foo = component.foo }
+          end
+          feature = define_and_create_feature(parent_feature) do
+            pre_build { @bar = component.bar }
+          end
+
+          allow(component).to receive(:foo).and_return('foo')
+          allow(component).to receive(:bar).and_return('bar')
+          feature.pre_build
+
+          expect(feature.instance_variable_get(:@foo)).to be component.foo
+          expect(feature.instance_variable_get(:@bar)).to be component.bar
+        end
+      end
+
+      context "組み立てブロックが未登録の場合" do
+        it "エラーなく実行できる" do
+          feature = define_and_create_feature
+          expect {
+            feature.pre_build
+          }.to_not raise_error
+        end
+      end
+    end
+
     describe "#build" do
       it ".buildで登録されたブロックを実行し、フィーチャーの組み立てを行う" do
         feature = define_and_create_feature do

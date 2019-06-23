@@ -22,6 +22,10 @@ module RgGen
           !source.children.empty?
         end
 
+        def pre_build
+          @features.each_value(&:pre_build)
+        end
+
         def build
           @features.each_value(&method(:build_feature))
           @children.each(&:build)

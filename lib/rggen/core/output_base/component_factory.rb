@@ -4,6 +4,8 @@ module RgGen
   module Core
     module OutputBase
       class ComponentFactory < Base::ComponentFactory
+        private
+
         def create_component(parent, configuration, register_map, &block)
           target_component.new(parent, configuration, register_map, &block)
         end
@@ -18,6 +20,10 @@ module RgGen
           register_map.children.each do |child|
             create_child(component, configuration, child)
           end
+        end
+
+        def post_build(component)
+          component.pre_build
         end
 
         def finalize(component)

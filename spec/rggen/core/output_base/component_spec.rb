@@ -79,6 +79,33 @@ module RgGen::Core::OutputBase
       end
     end
 
+    describe '#pre_build' do
+      let(:component) do
+        create_component(nil)
+      end
+
+      let(:child_component) do
+        create_component(component)
+      end
+
+      let(:features) do
+        [
+          define_and_create_feature(component, :foo_0) {},
+          define_and_create_feature(component, :foo_1) {},
+          define_and_create_feature(child_component, :bar_0) {},
+          define_and_create_feature(child_component, :bar_1) {}
+        ]
+      end
+
+      it '自身に属するフィーチャーの#pre_buildを呼び出して、事前組み立てを行う' do
+        expect(features[0]).to receive(:pre_build)
+        expect(features[1]).to receive(:pre_build)
+        expect(features[2]).not_to receive(:pre_build)
+        expect(features[3]).not_to receive(:pre_build)
+        component.pre_build
+      end
+    end
+
     describe "#build" do
       let(:foo_component) do
         create_component(nil)
