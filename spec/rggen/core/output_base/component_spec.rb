@@ -20,7 +20,6 @@ module RgGen::Core::OutputBase
 
     def define_and_create_feature(component, feature_name, super_class = nil, &body)
       feature = Class.new(super_class || Feature, &body).new(component, feature_name)
-      feature.build
       component.add_feature(feature)
       feature
     end
@@ -36,31 +35,6 @@ module RgGen::Core::OutputBase
       component.bar
       component.baz
     end
-
-    it 'フィーチャーのFeature.export/#exportで指定されたメソッドを呼び出すことができる' do
-      component = create_component(nil)
-
-      foo_feature = define_and_create_feature(component, :foo_feature) do
-        export :foo_0
-        build { export :foo_1 }
-      end
-
-      bar_feature = define_and_create_feature(component, :bar_feature) do
-        export :bar_0
-        build { export :bar_1 }
-      end
-
-      expect(foo_feature).to receive(:foo_0)
-      expect(foo_feature).to receive(:foo_1)
-      expect(bar_feature).to receive(:bar_0)
-      expect(bar_feature).to receive(:bar_1)
-
-      component.foo_0
-      component.foo_1
-      component.bar_0
-      component.bar_1
-    end
-
 
     describe "#need_children?" do
       let(:component) { create_component(nil) }
@@ -102,6 +76,75 @@ module RgGen::Core::OutputBase
         expect(components[0].register_blocks?).to eq true
         expect(components[1].registers?).to eq true
         expect(components[2].bit_fields?).to eq true
+      end
+    end
+
+    describe "#build" do
+      let(:foo_component) do
+        create_component(nil)
+      end
+
+      let(:bar_components) do
+        Array.new(2) { create_component(foo_component) }
+      end
+
+      let(:baz_components) do
+        bar_components.flat_map do |bar_component|
+          Array.new(2) { create_component(bar_component) }
+        end
+      end
+
+      let(:foo_features) do
+        [
+          define_and_create_feature(foo_component, :foo_0) { export :foo_0_0; build { export :foo_0_1 } },
+          define_and_create_feature(foo_component, :foo_1) { export :foo_1_0; build { export :foo_1_1 } }
+        ]
+      end
+
+      let(:bar_features) do
+        bar_components.flat_map do |bar_component|
+          [
+            define_and_create_feature(bar_component, :bar_0),
+            define_and_create_feature(bar_component, :bar_1)
+          ]
+        end
+      end
+
+      let(:baz_features) do
+        baz_components.flat_map do |baz_component|
+          [
+            define_and_create_feature(baz_component, :baz_0),
+            define_and_create_feature(baz_component, :baz_1)
+          ]
+        end
+      end
+
+      it "配下の全コンポーネント/フィーチャーの#buildを呼び出して、自身の組み立てを行う" do
+        [*bar_components, *baz_components].each do |component|
+          expect(component).to receive(:build).and_call_original
+        end
+        [*foo_features, *bar_features, *baz_features].each do |feature|
+          expect(feature).to receive(:build).and_call_original
+        end
+        foo_component.build
+      end
+
+      specify "#build実行後、Feature.export/#exportで指定されたメソッドを、自身をレシーバとして呼び出すことができる" do
+        expect { foo_component.foo_0_0 }.to raise_error NoMethodError
+        expect { foo_component.foo_0_1 }.to raise_error NoMethodError
+        expect { foo_component.foo_1_0 }.to raise_error NoMethodError
+        expect { foo_component.foo_1_1 }.to raise_error NoMethodError
+
+        expect(foo_features[0]).to receive(:foo_0_0)
+        expect(foo_features[0]).to receive(:foo_0_1)
+        expect(foo_features[1]).to receive(:foo_1_0)
+        expect(foo_features[1]).to receive(:foo_1_1)
+        foo_component.build
+
+        foo_component.foo_0_0
+        foo_component.foo_0_1
+        foo_component.foo_1_0
+        foo_component.foo_1_1
       end
     end
 

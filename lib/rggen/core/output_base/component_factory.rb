@@ -19,6 +19,10 @@ module RgGen
             create_child(component, configuration, child)
           end
         end
+
+        def finalize(component)
+          component.build
+        end
       end
     end
   end

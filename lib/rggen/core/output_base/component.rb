@@ -22,10 +22,9 @@ module RgGen
           !source.children.empty?
         end
 
-        def add_feature(feature)
-          super
-          receiver = "@features[:#{feature.feature_name}]"
-          def_delegators(receiver, *feature.exported_methods)
+        def build
+          @features.each_value(&method(:build_feature))
+          @children.each(&:build)
         end
 
         def generate_code(kind, mode, code = nil)
@@ -53,6 +52,12 @@ module RgGen
           indicator_name = INDICATOR_NAMES[hierarchy]
           indicator_name &&
             singleton_exec { alias_method indicator_name, :children? }
+        end
+
+        def build_feature(feature)
+          feature.build
+          receiver = "@features[:#{feature.feature_name}]"
+          def_delegators(receiver, *feature.exported_methods)
         end
 
         def code_generators(kind, mode)
