@@ -22,17 +22,12 @@ module RgGen
           !source.children.empty?
         end
 
-        def add_feature(feature)
-          super
-          define_exported_method_accessors(feature)
-        end
-
         def pre_build
           @features.each_value(&:pre_build)
         end
 
         def build
-          @features.each_value(&:build)
+          @features.each_value(&method(:build_feature))
           @children.each(&:build)
         end
 
@@ -63,7 +58,8 @@ module RgGen
             singleton_exec { alias_method indicator_name, :children? }
         end
 
-        def define_exported_method_accessors(feature)
+        def build_feature(feature)
+          feature.build
           receiver = "@features[:#{feature.feature_name}]"
           def_delegators(receiver, *feature.exported_methods)
         end
