@@ -12,7 +12,8 @@ module RgGen
 
         def define_struct(name, members, &body)
           struct = Struct.new(*members, &body)
-          define_private_method(name) { struct }
+          define_method(name) { struct }
+          private name
         end
       end
     end

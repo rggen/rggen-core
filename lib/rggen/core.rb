@@ -16,7 +16,6 @@ require_relative 'core/facets'
 require_relative 'core/core_extensions/casecmp'
 require_relative 'core/core_extensions/object'
 require_relative 'core/core_extensions/forwardable'
-require_relative 'core/core_extensions/module'
 
 require_relative 'core/utility/attribute_setter'
 require_relative 'core/utility/code_utility/line'
