@@ -67,6 +67,7 @@ module RgGen
 
         def build?(feature, input_value)
           active_feature_factory? &&
+            input_value.available? &&
             !ignore_empty_value?(feature, input_value)
         end
 

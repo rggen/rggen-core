@@ -198,9 +198,9 @@ module RgGen::Core::InputBase
         end
 
         context "空のファイルリストを与えた場合" do
-          it "空の入力データを使って、自身の組み立てを行う" do
-            expect(foo_feature_factories[:foo_0]).to receive(:create).with(anything, equal(NilValue))
-            expect(foo_feature_factories[:foo_1]).to receive(:create).with(anything, equal(NilValue))
+          it "欠損値使って、自身の組み立てを行う" do
+            expect(foo_feature_factories[:foo_0]).to receive(:create).with(anything, equal(NAValue))
+            expect(foo_feature_factories[:foo_1]).to receive(:create).with(anything, equal(NAValue))
             expect(bar_factory).not_to receive(:create)
             foo_factory.create(other_input_data, [])
           end

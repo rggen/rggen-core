@@ -65,8 +65,8 @@ module RgGen::Core::InputBase
       let(:foo_data) { InputData.new(valid_value_list) }
 
       context "存在しない入力値を指定した場合" do
-        it "NilValueを返す" do
-          expect(foo_data[:bar_0]).to be NilValue
+        it "欠損値を返す" do
+          expect(foo_data[:bar_0]).to be NAValue
         end
       end
     end

@@ -17,9 +17,18 @@ module RgGen
           return true if @value.respond_to?(:empty?) && @value.empty?
           false
         end
+
+        def available?
+          true
+        end
       end
 
-      NilValue = InputValue.new(nil, nil).freeze
+      NAValue = InputValue.new(nil, nil).instance_eval do
+        def available?
+          false
+        end
+        freeze
+      end
     end
   end
 end

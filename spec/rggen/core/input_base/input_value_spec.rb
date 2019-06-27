@@ -64,9 +64,13 @@ module RgGen::Core::InputBase
     end
   end
 
-  describe NilValue do
+  describe NAValue do
     it "空の入力値である" do
-      expect(NilValue).to be_empty_value
+      expect(NAValue).to be_empty_value
+    end
+
+    it '無効な値である' do
+      expect(NAValue).not_to be_available
     end
   end
 end

@@ -6,7 +6,7 @@ module RgGen
       class InputData
         def initialize(valid_value_lists)
           @valid_value_lists = valid_value_lists
-          @values = Hash.new(NilValue)
+          @values = Hash.new(NAValue)
           @children = []
           define_setter_methods
           block_given? && yield(self)
