@@ -62,9 +62,11 @@ module RgGen
           end
 
           def export(*methods)
-            exported_methods.concat(
-              methods.reject(&exported_methods.method(:include?))
-            )
+            methods.each do |method|
+              exported_methods.include?(method) || (
+                exported_methods << method
+              )
+            end
           end
         end
 
@@ -102,13 +104,20 @@ module RgGen
         end
 
         def export(*methods)
-          exported_methods.concat(
-            methods.reject(&exported_methods.method(:include?))
-          )
+          methods.each do |method|
+            unless exported_methods(:class).include?(method) ||
+                   exported_methods(:object).include?(method)
+              exported_methods(:object) << method
+            end
+          end
         end
 
-        def exported_methods
-          @exported_methods ||= Array.new(self.class.exported_methods)
+        def exported_methods(scope)
+          if scope == :class
+            self.class.exported_methods
+          else
+            @exported_methods ||= []
+          end
         end
 
         def generate_code(phase, kind, code = nil)

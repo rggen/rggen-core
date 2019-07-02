@@ -22,6 +22,11 @@ module RgGen
           !source.children.empty?
         end
 
+        def add_feature(feature)
+          super
+          import_feature_methods(feature, :class)
+        end
+
         def pre_build
           @features.each_value(&:pre_build)
         end
@@ -60,8 +65,13 @@ module RgGen
 
         def build_feature(feature)
           feature.build
+          import_feature_methods(feature, :object)
+        end
+
+        def import_feature_methods(feature, scope)
           receiver = "@features[:#{feature.feature_name}]"
-          def_delegators(receiver, *feature.exported_methods)
+          methods = feature.exported_methods(scope)
+          def_delegators(receiver, *methods)
         end
 
         def code_generators(kind, mode)

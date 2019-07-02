@@ -360,7 +360,8 @@ module RgGen::Core::OutputBase
         end
         feature.build
 
-        expect(feature.exported_methods).to match [:foo, :bar, :baz, :fizz, :buzz, :fizzbuzz]
+        expect(feature.exported_methods(:class)).to match [:foo, :bar, :baz]
+        expect(feature.exported_methods(:object)).to match [:fizz, :buzz, :fizzbuzz]
       end
 
       context "継承された場合" do
@@ -375,9 +376,9 @@ module RgGen::Core::OutputBase
             export :baz
           end
 
-          expect(foo_feature.exported_methods).to match [:foo]
-          expect(bar_feature.exported_methods).to match [:foo, :bar]
-          expect(baz_feature.exported_methods).to match [:foo, :bar, :baz]
+          expect(foo_feature.exported_methods(:class)).to match [:foo]
+          expect(bar_feature.exported_methods(:class)).to match [:foo, :bar]
+          expect(baz_feature.exported_methods(:class)).to match [:foo, :bar, :baz]
         end
       end
     end
