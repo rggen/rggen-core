@@ -31,7 +31,7 @@ module RgGen::Core::RegisterMap
 
       let(:input_data) { RegisterMapData.new(valid_value_lists) }
 
-      let(:file_contents) do
+      let(:file_content) do
         <<~'RUBY'
           register_block {
             foo 'foo_0'
@@ -69,7 +69,7 @@ module RgGen::Core::RegisterMap
 
       before do
         allow(File).to receive(:readable?).and_return(true)
-        allow(File).to receive(:binread).and_return(file_contents)
+        allow(File).to receive(:binread).and_return(file_content)
       end
 
       it "入力したフィアルを元に、入力データを組み立てる" do

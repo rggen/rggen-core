@@ -115,7 +115,7 @@ module RgGen::Core::RegisterMap
         }
       end
 
-      let(:file_contents) { JSON.dump(feature_values) }
+      let(:file_content) { JSON.dump(feature_values) }
 
       let(:file) { 'foo.json' }
 
@@ -123,7 +123,7 @@ module RgGen::Core::RegisterMap
 
       before do
         allow(File).to receive(:readable?).with(file).and_return(true)
-        allow(File).to receive(:binread).with(file).and_return(file_contents)
+        allow(File).to receive(:binread).with(file).and_return(file_content)
       end
 
       it "レジスタマップコンポーネントの生成と組み立てを行う" do

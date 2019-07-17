@@ -38,13 +38,13 @@ module RgGen::Core::Configuration
         { foo: rand(99), bar: rand(99), baz: rand(99) }
       end
 
-      let(:file_contents) { JSON.dump(feature_values) }
+      let(:file_content) { JSON.dump(feature_values) }
 
       let(:file) { 'foo.json' }
 
       before do
         allow(File).to receive(:readable?).with(file).and_return(true)
-        allow(File).to receive(:binread).with(file).and_return(file_contents)
+        allow(File).to receive(:binread).with(file).and_return(file_content)
       end
 
       it "コンフィグレーションコンポーネントの生成と組み立てを行う" do

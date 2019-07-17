@@ -29,19 +29,19 @@ module RgGen::Core::Configuration
 
       let(:input_data) { RgGen::Core::InputBase::InputData.new(valid_value_lists) }
 
-      let(:file_contents) do
-        <<'JSON'
-{
-  "foo": 0,
-  "bar": 1,
-  "baz": 2
-}
-JSON
+      let(:file_content) do
+        <<~'JSON'
+          {
+            "foo": 0,
+            "bar": 1,
+            "baz": 2
+          }
+        JSON
       end
 
       before do
         allow(File).to receive(:readable?).and_return(true)
-        allow(File).to receive(:binread).and_return(file_contents)
+        allow(File).to receive(:binread).and_return(file_content)
       end
 
       it "入力ファイルを元に、入力データを組み立てる" do

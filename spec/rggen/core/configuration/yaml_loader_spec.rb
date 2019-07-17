@@ -34,17 +34,17 @@ module RgGen::Core::Configuration
 
       let(:file) { files.sample }
 
-      let(:file_contents) do
-        <<'YAML'
-foo: 0
-bar: 1
-baz: 2
-YAML
+      let(:file_content) do
+        <<~'YAML'
+          foo: 0
+          bar: 1
+          baz: 2
+        YAML
       end
 
       before do
         allow(File).to receive(:readable?).and_return(true)
-        allow(File).to receive(:binread).and_return(file_contents)
+        allow(File).to receive(:binread).and_return(file_content)
       end
 
       it "入力ファイルを元に、入力データを組み立てる" do

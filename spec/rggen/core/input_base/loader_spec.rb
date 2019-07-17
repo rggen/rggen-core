@@ -79,19 +79,19 @@ module RgGen::Core::InputBase
 
       let(:valid_value_lists) { [[:foo_0, :foo_1], [:bar_0, :bar_1]] }
 
-      let(:file_contents) do
-        <<'FILE'
-[
-  [0, 1], [2, 3]
-]
-FILE
+      let(:file_content) do
+        <<~'FILE'
+          [
+            [0, 1], [2, 3]
+          ]
+        FILE
       end
 
       let(:file_name) { 'foo_bar.rb' }
 
       before do
         allow(File).to receive(:readable?).with(file_name).and_return(true)
-        allow(File).to receive(:read).with(file_name).and_return(file_contents)
+        allow(File).to receive(:read).with(file_name).and_return(file_content)
       end
 
       it "指定されたファイルを読み出す" do

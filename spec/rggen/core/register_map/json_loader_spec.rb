@@ -33,7 +33,7 @@ module RgGen::Core::RegisterMap
         RegisterMapData.new(valid_value_lists)
       end
 
-      let(:file_contents) do
+      let(:file_content) do
         <<~'JSON'
           {
             "register_blocks": [
@@ -86,7 +86,7 @@ module RgGen::Core::RegisterMap
 
       before do
         allow(File).to receive(:readable?).and_return(true)
-        allow(File).to receive(:binread).and_return(file_contents)
+        allow(File).to receive(:binread).and_return(file_content)
       end
 
       it "入力したJSONファイルを元に、入力データを組み立てる" do

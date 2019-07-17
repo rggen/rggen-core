@@ -342,7 +342,7 @@ module RgGen::Core
     end
 
     describe "ファイルの書き出し" do
-      let(:foo_file_contents) do
+      let(:foo_file_content) do
         [
           'fizz_foo_register_block_0',
           'fizz_foo_register_0_0',
@@ -351,7 +351,7 @@ module RgGen::Core
         ].join("\n")
       end
 
-      let(:bar_file_contents) do
+      let(:bar_file_content) do
         [
           'fizz_bar_register_block_0',
           'fizz_bar_register_0_0',
@@ -362,23 +362,23 @@ module RgGen::Core
 
       context "出力ディレクトリの指定がない場合" do
         it "カレントディレクトリにファイルを書き出す" do
-          expect(File).to receive(:binwrite).with(match_string('./foo_register_block_0.txt'), foo_file_contents)
-          expect(File).to receive(:binwrite).with(match_string('./bar_register_block_0.txt'), bar_file_contents)
+          expect(File).to receive(:binwrite).with(match_string('./foo_register_block_0.txt'), foo_file_content)
+          expect(File).to receive(:binwrite).with(match_string('./bar_register_block_0.txt'), bar_file_content)
           cli.run(['--setup', setup_file, register_map_files[0]])
         end
       end
 
       context "出力ディレクトリの指定がある場合" do
         it "指定されたディレクトリにファイルを書き出す" do
-          expect(File).to receive(:binwrite).with(match_string('out/foo_register_block_0.txt'), foo_file_contents)
-          expect(File).to receive(:binwrite).with(match_string('out/bar_register_block_0.txt'), bar_file_contents)
+          expect(File).to receive(:binwrite).with(match_string('out/foo_register_block_0.txt'), foo_file_content)
+          expect(File).to receive(:binwrite).with(match_string('out/bar_register_block_0.txt'), bar_file_content)
           cli.run(['--setup', setup_file, '-o', 'out', register_map_files[0]])
         end
       end
 
       context "除外指定がある場合" do
         it "除外されたファイル形式は書き出さない" do
-          expect(File).to receive(:binwrite).with(match_string('./foo_register_block_0.txt'), foo_file_contents)
+          expect(File).to receive(:binwrite).with(match_string('./foo_register_block_0.txt'), foo_file_content)
           expect(File).not_to receive(:binwrite).with(match_string('./bar_register_block_0.txt'), any_args)
           cli.run(['--setup', setup_file, '--except', 'bar', register_map_files[0]])
         end

@@ -699,7 +699,7 @@ module RgGen::Core::Builder
         }[configuration_file_format]
       end
 
-      let(:configuration_file_contents) do
+      let(:configuration_file_content) do
         {
           yaml: 'prefix: foo',
           json: '{"prefix": "foo"}',
@@ -719,7 +719,7 @@ module RgGen::Core::Builder
         }[register_map_file_format]
       end
 
-      let(:register_map_file_yaml_contents) do
+      let(:register_map_file_yaml_content) do
         <<~REGISTER_MAP
           register_blocks:
           - name: register_block_0
@@ -730,7 +730,7 @@ module RgGen::Core::Builder
         REGISTER_MAP
       end
 
-      let(:register_map_file_json_contents) do
+      let(:register_map_file_json_content) do
         <<~'REGISTER_MAP'
           {
             "register_blocks": [
@@ -752,7 +752,7 @@ module RgGen::Core::Builder
         REGISTER_MAP
       end
 
-      let(:register_map_file_ruby_contents) do
+      let(:register_map_file_ruby_content) do
         <<~REGISTER_MAP
           register_block {
             name 'register_block_0'
@@ -766,11 +766,11 @@ module RgGen::Core::Builder
         REGISTER_MAP
       end
 
-      let(:register_map_file_contents) do
+      let(:register_map_file_content) do
         {
-          yaml: register_map_file_yaml_contents,
-          json: register_map_file_json_contents,
-          ruby: register_map_file_ruby_contents
+          yaml: register_map_file_yaml_content,
+          json: register_map_file_json_content,
+          ruby: register_map_file_ruby_content
         }[register_map_file_format]
       end
 
@@ -796,12 +796,12 @@ module RgGen::Core::Builder
         end
 
         allow(File).to receive(:readable?).with(configuration_file).and_return(true)
-        allow(File).to receive(:binread).with(configuration_file).and_return(configuration_file_contents)
+        allow(File).to receive(:binread).with(configuration_file).and_return(configuration_file_content)
         factory = builder.build_factory(:input, :configuration)
         configuration = factory.create([configuration_file])
 
         allow(File).to receive(:readable?).with(register_map_file).and_return(true)
-        allow(File).to receive(:binread).with(register_map_file).and_return(register_map_file_contents)
+        allow(File).to receive(:binread).with(register_map_file).and_return(register_map_file_content)
         factory = builder.build_factory(:input, :register_map)
         register_map = factory.create(configuration, [register_map_file])
 

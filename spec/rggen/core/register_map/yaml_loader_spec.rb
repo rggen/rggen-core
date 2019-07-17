@@ -40,7 +40,7 @@ module RgGen::Core::RegisterMap
 
       let(:file) { files.sample }
 
-      let(:file_contents) do
+      let(:file_content) do
         <<~'YAML'
           register_blocks:
           - foo: foo_0
@@ -72,7 +72,7 @@ module RgGen::Core::RegisterMap
 
       before do
         allow(File).to receive(:readable?).and_return(true)
-        allow(File).to receive(:binread).and_return(file_contents)
+        allow(File).to receive(:binread).and_return(file_content)
       end
 
       it "入力したYAMLファイルを元に、入力データを組み立てる" do

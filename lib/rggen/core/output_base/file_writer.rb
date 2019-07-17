@@ -11,9 +11,9 @@ module RgGen
 
         def write_file(context, directory = nil)
           path = generate_path(context, directory)
-          contents = generate_contents(context, path)
+          content = generate_content(context, path)
           create_directory(path)
-          File.binwrite(path, contents)
+          File.binwrite(path, content)
         end
 
         private
@@ -24,10 +24,10 @@ module RgGen
           ].map(&:to_s).reject(&:empty?).to_path
         end
 
-        def generate_contents(context, path)
-          contents = context.create_blank_file(path)
-          @body && context.instance_exec(contents, &@body)
-          contents
+        def generate_content(context, path)
+          content = context.create_blank_file(path)
+          @body && context.instance_exec(content, &@body)
+          content
         end
 
         def create_directory(path)

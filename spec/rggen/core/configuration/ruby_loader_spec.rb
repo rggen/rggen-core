@@ -29,17 +29,17 @@ module RgGen::Core::Configuration
 
       let(:input_data) { RgGen::Core::InputBase::InputData.new(valid_value_lists) }
 
-      let(:file_contents) do
-        <<'RUBY'
-foo 0
-bar 1
-baz 2
-RUBY
+      let(:file_content) do
+        <<~'RUBY'
+          foo 0
+          bar 1
+          baz 2
+        RUBY
       end
 
       before do
         allow(File).to receive(:readable?).and_return(true)
-        allow(File).to receive(:binread).and_return(file_contents)
+        allow(File).to receive(:binread).and_return(file_content)
       end
 
       it "入力したファイルを元に、入力データを組み立てる" do

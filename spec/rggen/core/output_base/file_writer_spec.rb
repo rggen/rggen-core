@@ -18,20 +18,20 @@ module RgGen::Core::OutputBase
     describe "#write_file" do
       let(:foo_context) do
         create_context do
-          def contents; 'foo!'.dup; end
+          def content; 'foo!'.dup; end
           def file_name; 'foo'.dup; end
         end
       end
 
       let(:bar_context) do
         create_context do
-          def contents; 'bar!'.dup; end
+          def content; 'bar!'.dup; end
           def file_name; 'bar/bar'.dup; end
         end
       end
 
       it "コード生成ブロックをコンテキスト上で実行し、その結果をファイルに書き出す" do
-        writer = create_file_writer('test.txt') { |code| code << contents }
+        writer = create_file_writer('test.txt') { |code| code << content }
 
         expect(File).to receive(:binwrite).with(match_string('test.txt'), match_string('foo!'))
         writer.write_file(foo_context)

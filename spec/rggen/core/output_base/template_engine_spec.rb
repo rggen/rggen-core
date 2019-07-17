@@ -35,8 +35,8 @@ module RgGen::Core::OutputBase
     end
 
     def set_teamplate_contents(contents)
-      contents.each do |path, template_contents|
-        expect(File).to receive(:binread).with(path).once.and_return(template_contents)
+      contents.each do |path, content|
+        expect(File).to receive(:binread).with(path).once.and_return(content)
       end
     end
 
