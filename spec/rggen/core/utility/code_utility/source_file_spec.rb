@@ -13,7 +13,7 @@ module RgGen::Core::Utility::CodeUtility
         define_keyword  :'`define'
         include_keyword :'`include'
       end
-      klass.new(file, &block).to_code
+      klass.new(file, &block).to_s
     end
 
     let(:file) { 'foo/bar.sv' }

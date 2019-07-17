@@ -54,6 +54,10 @@ module RgGen
             end
           end
 
+          def to_s
+            to_code.to_s
+          end
+
           private
 
           def code_blocks
