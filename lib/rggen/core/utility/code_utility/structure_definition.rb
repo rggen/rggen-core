@@ -7,8 +7,8 @@ module RgGen
         class StructureDefinition
           include CodeUtility
 
-          def initialize(&block)
-            block_given? && Docile.dsl_eval(self, &block)
+          def initialize
+            block_given? && yield(self)
           end
 
           def body(&block)

@@ -14,25 +14,24 @@ module RgGen
             attr_setter :include_keyword
           end
 
-          def initialize(file_path, &block)
+          def initialize(file_path)
             @file_path = file_path
-            block_given? && Docile.dsl_eval(self, &block)
+            block_given? && yield(self)
           end
 
           attr_reader :file_path
 
-          def file_header(&block)
-            @file_header = block
+          def header(&block)
+            @file_header = -> { block.call(@file_path) }
           end
 
-          def include_guard(&block)
-            @guard_macro = CodeBlock.new do |macro|
-              execute_code_block(macro, block || default_include_guard, false)
-            end
-          end
-
-          def default_guard_macro
-            File.basename(file_path).upcase.gsub(/\W/, '_')
+          def include_guard
+            @guard_macro =
+              if block_given?
+                yield(default_guard_macro)
+              else
+                default_guard_macro
+              end
           end
 
           def include_files(files)
@@ -68,16 +67,12 @@ module RgGen
           end
 
           def execute_code_block(code, code_block, insert_newline)
-            if code_block.arity.zero?
-              code << Docile.dsl_eval_with_block_return(self, &code_block)
-            else
-              Docile.dsl_eval(self, code, &code_block)
-            end
+            code.eval_block(&code_block)
             code << nl if insert_newline && !code.last_line_empty?
           end
 
-          def default_include_guard
-            -> { default_guard_macro }
+          def default_guard_macro
+            File.basename(file_path).upcase.gsub(/\W/, '_')
           end
 
           def include_guard_header
