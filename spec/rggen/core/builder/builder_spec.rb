@@ -594,7 +594,7 @@ module RgGen::Core::Builder
         default_component_registration
       end
 
-      it '指定した種類のコンポーネントファクトリを生成する' do
+      it 'コンポーネントファクトリを生成する' do
         factories = []
         [:configuration, :register_map, :foo, :bar, :baz].each do |component|
           allow(component_registries[component]).to receive(:build_factory).and_wrap_original do |m|
@@ -606,21 +606,21 @@ module RgGen::Core::Builder
         expect(builder.build_factories(:output, [])).to match([equal(factories[2]), equal(factories[3]), equal(factories[4])])
       end
 
-      context '除外指定がある場合' do
-        let(:exceptions) do
+      context '種別の指定がある場合' do
+        let(:targets) do
           [:foo, :bar, :baz].sample([1, 2, 3].sample)
         end
 
-        it '除外していされていないコンポーネントのファクトリを生成する' do
+        it '指定されたコンポーネントのファクトリを生成する' do
           [:foo, :bar, :baz].each do |component|
-            if exceptions.include?(component)
-              expect(component_registries[component]).not_to receive(:build_factory)
-            else
+            if targets.include?(component)
               expect(component_registries[component]).to receive(:build_factory).and_call_original
+            else
+              expect(component_registries[component]).not_to receive(:build_factory)
             end
           end
 
-          builder.build_factories(:output, [*exceptions, :qux, :fizz])
+          builder.build_factories(:output, [*targets, :qux, :fizz])
         end
       end
     end

@@ -140,14 +140,14 @@ module RgGen
                          'files only; write no files'
     end
 
-    Options.add_option(:exceptions) do |option|
-      option.long_option '--except WRITER1[,WRITER2,...]'
+    Options.add_option(:enable) do |option|
+      option.long_option '--enable WRITER1[,WRITER2,...]'
       option.option_class Array
       option.default { [] }
-      option.action { |v, o, n| merge_exceptions(v, o, n) }
-      option.description 'Disable the given file writer(s)'
+      option.action { |v, o, n| merge_enabled_writers(v, o, n) }
+      option.description 'Enable only the given writer(s) to write files'
 
-      def option.merge_exceptions(value, options, option_name)
+      def option.merge_enabled_writers(value, options, option_name)
         options[option_name].concat(value.map(&:to_sym))
       end
     end

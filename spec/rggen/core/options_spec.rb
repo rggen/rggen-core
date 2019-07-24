@@ -148,20 +148,20 @@ module RgGen::Core
       end
     end
 
-    describe "exceptionsオプション" do
-      context "--exceptが引数で指定された場合" do
-        let(:exceptions) { ['foo', 'bar', 'baz'] }
+    describe "enableオプション" do
+      context "--enableが引数で指定された場合" do
+        let(:targets) { ['foo', 'bar', 'baz'] }
 
-        it "指定された除外生成物を配列で返す" do
-          options.parse(['--except', exceptions[0], '--except', "#{exceptions[1]},#{exceptions[2]}"])
-          expect(options[:exceptions]).to match(exceptions.map(&:to_sym))
+        it "指定された対象生成物を配列で返す" do
+          options.parse(['--enable', targets[0], '--enable', "#{targets[1]},#{targets[2]}"])
+          expect(options[:enable]).to match(targets.map(&:to_sym))
         end
       end
 
-      context "--exceptが未指定の場合" do
+      context "--enableが未指定の場合" do
         it "空の配列を返す" do
           options.parse([])
-          expect(options[:exceptions]).to be_instance_of(Array).and be_empty
+          expect(options[:enable]).to be_instance_of(Array).and be_empty
         end
       end
     end

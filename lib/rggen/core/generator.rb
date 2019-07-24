@@ -37,13 +37,13 @@ module RgGen
 
       def write_files(builder, options)
         options[:load_only] ||
-          file_writers(builder, options[:exceptions])
+          file_writers(builder, options[:enable])
             .each { |writer| writer.write_file(options[:output]) }
       end
 
-      def file_writers(builder, exceptions)
+      def file_writers(builder, targets)
         builder
-          .build_factories(:output, exceptions)
+          .build_factories(:output, targets)
           .map { |factory| factory.create(configuration, register_map) }
       end
     end

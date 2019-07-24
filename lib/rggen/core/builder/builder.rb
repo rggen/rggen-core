@@ -67,10 +67,15 @@ module RgGen
           @component_registries[type][component].build_factory
         end
 
-        def build_factories(type, exceptions)
-          @component_registries[type]
-            .reject { |name, _| exceptions.include?(name) }
-            .map { |_, registry| registry.build_factory }
+        def build_factories(type, targets)
+          registries =
+            if targets.empty?
+              @component_registries[type]
+            else
+              @component_registries[type]
+                .select { |name, _| targets.include?(name) }
+            end
+          registries.each_value.map(&:build_factory)
         end
 
         def delete(category, *args)

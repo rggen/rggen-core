@@ -188,8 +188,8 @@ module RgGen::Core
               -c, --configuration FILE         Specify a configuration file
               -o, --output DIRECTORY           Specify the directory where generated file(s) will be written
                   --load-only                  Load setup, configuration and register map files only; write no files
-                  --except WRITER1[,WRITER2,...]
-                                               Disable the given file writer(s)
+                  --enable WRITER1[,WRITER2,...]
+                                               Enable only the given writer(s) to write files
               -v, --version                    Display version
                   --verbose-version            Load a setup Ruby file and display verbose version
               -h, --help                       Display this message
@@ -376,11 +376,11 @@ module RgGen::Core
         end
       end
 
-      context "除外指定がある場合" do
-        it "除外されたファイル形式は書き出さない" do
+      context "対象指定がある場合" do
+        it "指定外のファイル形式は書き出さない" do
           expect(File).to receive(:binwrite).with(match_string('./foo_register_block_0.txt'), foo_file_content)
           expect(File).not_to receive(:binwrite).with(match_string('./bar_register_block_0.txt'), any_args)
-          cli.run(['--setup', setup_file, '--except', 'bar', register_map_files[0]])
+          cli.run(['--setup', setup_file, '--enable', 'foo', register_map_files[0]])
         end
       end
 
