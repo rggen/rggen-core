@@ -13,9 +13,15 @@ Gem::Specification.new do |spec|
   spec.homepage = 'https://github.com/rggen/rggen-core'
 
   spec.summary = "rggen-core-#{RgGen::Core::VERSION}"
-  spec.description = 'Core components for RgGen tool.'
+  spec.description = 'Core library of RgGen tool.'
 
-  spec.files = `git ls-files exe lib LICENSE README.md`.split($RS)
+  spec.metadata = {
+    'bug_tracker_uri' => 'https://github.com/rggen/rggen-core/issues',
+    'source_code_uri' => 'https://github.com/rggen/rggen-core',
+    'wiki_uri' => 'https://github.com/rggen/rggen/wiki'
+  }
+
+  spec.files = `git ls-files exe lib LICENSE CODE_OF_CONDUCT.md README.md`.split($RS)
   spec.bindir = 'exe'
   spec.executables = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
