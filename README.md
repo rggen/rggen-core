@@ -8,6 +8,10 @@
 RgGen::Core is a core library of RgGen tool and provides features listed below:
 
 * Structure and APIs for defining properties, parsers and error checkers of configuration file and register map documents
+* Basic loaders for configuration file and register map documents
+    * Ruby with APIs for description
+    * YAML
+    * JSON
 * Structure and APIs for defining output file writers
 * Building RgGen tool up by linking defined above features
 * The `rggen` executable command
