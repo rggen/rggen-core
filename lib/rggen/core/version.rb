@@ -3,7 +3,7 @@
 module RgGen
   module Core
     MAJOR = 0
-    MINOR = 1
+    MINOR = 9
     PATCH = 0
     VERSION = "#{MAJOR}.#{MINOR}.#{PATCH}"
   end
