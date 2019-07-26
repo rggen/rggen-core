@@ -1,40 +1,42 @@
 [![Build Status](https://travis-ci.org/rggen/rggen-core.svg?branch=master)](https://travis-ci.org/rggen/rggen-core)
 [![Maintainability](https://api.codeclimate.com/v1/badges/53c8e6654c2b5ecb9142/maintainability)](https://codeclimate.com/github/rggen/rggen-core/maintainability)
-[![codecov](https://codecov.io/gh/rggen/rggen-core/branch/master/graph/badge.svg)](https://codecov.io/gh/rggen/rggen-core)[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=rggen_rggen-core&metric=alert_status)](https://sonarcloud.io/dashboard?id=rggen_rggen-core)
+[![codecov](https://codecov.io/gh/rggen/rggen-core/branch/master/graph/badge.svg)](https://codecov.io/gh/rggen/rggen-core)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=rggen_rggen-core&metric=alert_status)](https://sonarcloud.io/dashboard?id=rggen_rggen-core)
 
-# Rggen::Core
+# RgGen::Core
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/rggen/core`. To experiment with that code, run `bin/console` for an interactive prompt.
+RgGen::Core is a core library of RgGen tool and provides features listed below:
 
-TODO: Delete this and the text above, and describe your gem
+* Structure and APIs for defining properties, parsers and error checkers of configuration file and register map documents
+* Structure and APIs for defining output file writers
+* Building RgGen tool up by linking defined above features
+* The `rggen` executable command
 
 ## Installation
 
-Add this line to your application's Gemfile:
+During RgGen installation, RgGen::Core will also be installed automatically.
 
-```ruby
-gem 'rggen-core'
+```
+$ gem install rggen
 ```
 
-And then execute:
+If you want to install RgGen::Core only, use the command bewlo:
 
-    $ bundle
+```
+$ gem install rggen-core
+```
 
-Or install it yourself as:
+## Contact
 
-    $ gem install rggen-core
+Feedbacks, bug reports, questions and etc. are wellcome! You can post them by using following ways:
 
-## Usage
+* [GitHub Issue Tracker](https://github.com/rggen/rggen-core/issues)
+* [Mail](mailto:taichi730@gmail.com)
 
-TODO: Write usage instructions here
+## Copyright & License
 
-## Development
+Copyright &copy; 2017-2019 Taichi Ishitani. RgGen::Core is licensed under the [MIT License](https://opensource.org/licenses/MIT), see [LICENSE](LICENSE) for futher details.
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+## Code of Conduct
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/rggen-core.
-
+Everyone interacting in the RgGen project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/rggen/rggen-core/blob/master/CODE_OF_CONDUCT.md).
