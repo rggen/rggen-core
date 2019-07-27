@@ -1,7 +1,9 @@
+[![Gem Version](https://badge.fury.io/rb/rggen-core.svg)](https://badge.fury.io/rb/rggen-core)
 [![Build Status](https://travis-ci.org/rggen/rggen-core.svg?branch=master)](https://travis-ci.org/rggen/rggen-core)
 [![Maintainability](https://api.codeclimate.com/v1/badges/53c8e6654c2b5ecb9142/maintainability)](https://codeclimate.com/github/rggen/rggen-core/maintainability)
 [![codecov](https://codecov.io/gh/rggen/rggen-core/branch/master/graph/badge.svg)](https://codecov.io/gh/rggen/rggen-core)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=rggen_rggen-core&metric=alert_status)](https://sonarcloud.io/dashboard?id=rggen_rggen-core)
+[![Gitter](https://badges.gitter.im/rggen/rggen.svg)](https://gitter.im/rggen/rggen?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # RgGen::Core
 
@@ -35,6 +37,7 @@ $ gem install rggen-core
 Feedbacks, bug reports, questions and etc. are wellcome! You can post them by using following ways:
 
 * [GitHub Issue Tracker](https://github.com/rggen/rggen-core/issues)
+* [Chat Room](https://gitter.im/rggen/rggen)
 * [Mail](mailto:taichi730@gmail.com)
 
 ## Copyright & License
