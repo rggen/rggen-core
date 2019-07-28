@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
 
   spec.metadata = {
     'bug_tracker_uri' => 'https://github.com/rggen/rggen-core/issues',
-    'mailing_list_uri' => 'https://groups.google.com/forum/#!forum/rggen',
+    'mailing_list_uri' => 'https://groups.google.com/d/forum/rggen',
     'source_code_uri' => 'https://github.com/rggen/rggen-core',
     'wiki_uri' => 'https://github.com/rggen/rggen/wiki'
   }
