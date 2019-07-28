@@ -8,15 +8,16 @@ Gem::Specification.new do |spec|
   spec.name = 'rggen-core'
   spec.version = RgGen::Core::VERSION
   spec.authors = ['Taichi Ishitani']
-  spec.email = ['taichi730@gmail.com']
-  spec.license = 'MIT'
-  spec.homepage = 'https://github.com/rggen/rggen-core'
+  spec.email = ['rggen@googlegroups.com']
 
   spec.summary = "rggen-core-#{RgGen::Core::VERSION}"
   spec.description = 'Core library of RgGen tool.'
+  spec.homepage = 'https://github.com/rggen/rggen-core'
+  spec.license = 'MIT'
 
   spec.metadata = {
     'bug_tracker_uri' => 'https://github.com/rggen/rggen-core/issues',
+    'mailing_list_uri' => 'https://groups.google.com/forum/#!forum/rggen',
     'source_code_uri' => 'https://github.com/rggen/rggen-core',
     'wiki_uri' => 'https://github.com/rggen/rggen/wiki'
   }
