@@ -26,7 +26,7 @@ During RgGen installation, RgGen::Core will also be installed automatically.
 $ gem install rggen
 ```
 
-If you want to install RgGen::Core only, use the command bewlo:
+If you want to install RgGen::Core only, use the command below:
 
 ```
 $ gem install rggen-core
