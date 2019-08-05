@@ -74,9 +74,10 @@ module RgGen
           end
         end
 
-        delegate_to_class [
-          :properties, :active_feature?, :passive_feature?, :ignore_empty_value?
-        ]
+        def_delegator :'self.class', :properties
+        def_delegator :'self.class', :active_feature?
+        def_delegator :'self.class', :passive_feature?
+        def_delegator :'self.class', :ignore_empty_value?
 
         def build(*args)
           self.class.builders && do_build(args)

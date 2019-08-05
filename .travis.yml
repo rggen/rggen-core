@@ -20,9 +20,6 @@ language:
 
 matrix:
   include:
-    - rvm: 2.3.1
-    - rvm: 2.3.2
-    - rvm: 2.3.3
     - rvm: 2.3.8
     - rvm: 2.4.6
       env: RUBYOPT=--enable-frozen-string-literal USE_FIXED_GEMS=yes

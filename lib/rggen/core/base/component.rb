@@ -4,8 +4,6 @@ module RgGen
   module Core
     module Base
       class Component
-        include SingleForwardable
-
         def initialize(*args)
           @parent = args.first
           @children = []
@@ -47,6 +45,20 @@ module RgGen
         private
 
         def post_initialize(*argv)
+        end
+
+        def define_proxy_calls(receiver, methods)
+          Array(methods)
+            .map(&:to_sym)
+            .each { |method| define_proxy_call(receiver, method) }
+        end
+
+        def define_proxy_call(receiver, method)
+          @proxy_calls ||= {}
+          @proxy_calls[method] = ProxyCall.new(receiver, method)
+          define_singleton_method(method) do |*args, &block|
+            @proxy_calls[__method__].call(*args, &block)
+          end
         end
       end
     end

@@ -15,7 +15,6 @@ require_relative 'core/version'
 require_relative 'core/facets'
 require_relative 'core/core_extensions/casecmp'
 require_relative 'core/core_extensions/object'
-require_relative 'core/core_extensions/forwardable'
 
 require_relative 'core/utility/attribute_setter'
 require_relative 'core/utility/code_utility/line'
@@ -27,6 +26,7 @@ require_relative 'core/utility/regexp_patterns'
 
 require_relative 'core/exceptions'
 
+require_relative 'core/base/proxy_call'
 require_relative 'core/base/internal_struct'
 require_relative 'core/base/shared_context'
 require_relative 'core/base/component'

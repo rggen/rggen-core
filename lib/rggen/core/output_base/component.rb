@@ -14,8 +14,8 @@ module RgGen
           @source = source
           @need_children = source.need_children?
           define_hierarchical_accessors
-          define_property_accessors
           define_children_presense_indicator
+          define_proxy_calls(@source, @source.properties)
         end
 
         def children?
@@ -47,10 +47,6 @@ module RgGen
 
         private
 
-        def define_property_accessors
-          def_delegators(:@source, *@source.properties)
-        end
-
         INDICATOR_NAMES = {
           register_map: :register_blocks?,
           register_block: :registers?,
@@ -69,9 +65,8 @@ module RgGen
         end
 
         def import_feature_methods(feature, scope)
-          receiver = "@features[:#{feature.feature_name}]"
           methods = feature.exported_methods(scope)
-          def_delegators(receiver, *methods)
+          define_proxy_calls(feature, methods)
         end
 
         def code_generators(kind, mode)
