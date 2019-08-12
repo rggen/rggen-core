@@ -28,9 +28,18 @@ module RgGen
           def available?(&body)
             define_method(:available?, &body)
           end
+
+          def printable(&body)
+            body && define_method(:printable, &body)
+            body && define_method(:printable?) { true }
+          end
         end
 
         available? { true }
+
+        def printable?
+          false
+        end
 
         private
 

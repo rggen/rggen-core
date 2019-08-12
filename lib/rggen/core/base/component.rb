@@ -42,6 +42,13 @@ module RgGen
           @features[key]
         end
 
+        def printables
+          @features
+            .select { |_key, feature| feature.printable? }
+            .map { |key, feature| [key, feature.printable] }
+            .to_h
+        end
+
         private
 
         def post_initialize(*argv)

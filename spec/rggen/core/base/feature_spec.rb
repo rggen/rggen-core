@@ -63,5 +63,52 @@ module RgGen::Core::Base
         end
       end
     end
+
+    describe '#printable' do
+      before do
+        feature_class.class_exec do
+          printable { [@foo, @bar] }
+          def initialize(component, name)
+            super(component, name)
+            @foo = 1
+            @bar = 2
+          end
+        end
+      end
+
+      it '.printableで指定されたブロックを評価し、表示可能オブジェクトとして返す' do
+        expect(feature.printable).to match([1, 2])
+      end
+
+      specify '.printableで指定されたブロックは子クラスに引き継がれる' do
+        child_feature = Class.new(feature_class).new(component, feature_name)
+        expect(child_feature.printable).to match([1, 2])
+      end
+
+      specify '子クラスでのブロックの再指定は、親クラスに影響しない' do
+        Class.new(feature_class) do
+          printable { [@baz, @qux] }
+        end
+        expect(feature.printable).to match([1, 2])
+      end
+    end
+
+    describe '#printable?' do
+      context '.printableでブロックが指定されている場合' do
+        before do
+          feature_class.class_exec { printable { 'foo' } }
+        end
+
+        it '真を返す' do
+          expect(feature).to be_printable
+        end
+      end
+
+      context '.printableでブロックが指定されていない場合' do
+        it '偽を返す' do
+          expect(feature).not_to be_printable
+        end
+      end
+    end
   end
 end

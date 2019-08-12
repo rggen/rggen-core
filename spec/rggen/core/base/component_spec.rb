@@ -93,5 +93,33 @@ module RgGen::Core::Base
         expect(component.feature(:bar)).to equal features[:bar]
       end
     end
+
+    describe '#printables' do
+      def create_feature(component, feature_name, &body)
+        feature = Class.new(Feature, &body).new(component, feature_name)
+        component.add_feature(feature)
+        feature
+      end
+
+      let(:component) { Component.new }
+
+      let(:child_component) do
+        Component.new(component).tap { |child| component.add_child(child) }
+      end
+
+      before do
+        create_feature(component, :foo) { printable { 'foo' } }
+        create_feature(component, :bar)
+        create_feature(component, :baz) { printable { 'baz' } }
+
+        create_feature(child_component, :foo) { printable { 'child foo' } }
+        create_feature(child_component, :bar) { printable { 'child bar' } }
+        create_feature(child_component, :baz) { printable { 'child baz' } }
+      end
+
+      it '自身に属するフィーチャーの表示可能オブジェクト一覧を返す' do
+        expect(component.printables).to match(foo: 'foo', baz: 'baz')
+      end
+    end
   end
 end
