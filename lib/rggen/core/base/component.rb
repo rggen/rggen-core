@@ -43,9 +43,9 @@ module RgGen
         end
 
         def printables
-          @features
-            .select { |_key, feature| feature.printable? }
-            .map { |key, feature| [key, feature.printable] }
+          features
+            .select(&:printable?)
+            .flat_map(&:printables)
             .to_h
         end
 

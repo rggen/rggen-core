@@ -72,6 +72,7 @@ module RgGen
 
         class << self
           def inherited(subclass)
+            super
             export_instance_variable(:@pre_builders, subclass, &:dup)
             export_instance_variable(:@builders, subclass, &:dup)
             export_instance_variable(:@template_engine, subclass)

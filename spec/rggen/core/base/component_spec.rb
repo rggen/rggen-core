@@ -108,17 +108,23 @@ module RgGen::Core::Base
       end
 
       before do
-        create_feature(component, :foo) { printable { 'foo' } }
+        create_feature(component, :foo) do
+          printable(:foo_0) { 'foo_0' }
+          printable(:foo_1) { 'foo_1' }
+        end
         create_feature(component, :bar)
-        create_feature(component, :baz) { printable { 'baz' } }
+        create_feature(component, :baz) do
+          printable(:baz_0) { 'baz_0' }
+          printable(:baz_1) { 'baz_1' }
+        end
 
-        create_feature(child_component, :foo) { printable { 'child foo' } }
-        create_feature(child_component, :bar) { printable { 'child bar' } }
-        create_feature(child_component, :baz) { printable { 'child baz' } }
+        create_feature(child_component, :foo) { printable(:foo_0) { 'child foo_0' } }
+        create_feature(child_component, :bar) { printable(:bar_0) { 'child bar_0' } }
+        create_feature(child_component, :baz) { printable(:baz_0) { 'child baz_0' } }
       end
 
       it '自身に属するフィーチャーの表示可能オブジェクト一覧を返す' do
-        expect(component.printables).to match(foo: 'foo', baz: 'baz')
+        expect(component.printables).to match(foo_0: 'foo_0', foo_1: 'foo_1', baz_0: 'baz_0', baz_1: 'baz_1')
       end
     end
   end

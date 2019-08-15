@@ -19,6 +19,8 @@ module RgGen
         attr_reader :feature_name
 
         class << self
+          attr_reader :printables
+
           private
 
           def define_helpers(&body)
@@ -29,16 +31,26 @@ module RgGen
             define_method(:available?, &body)
           end
 
-          def printable(&body)
-            body && define_method(:printable, &body)
-            body && define_method(:printable?) { true }
+          def printable(name, &body)
+            @printables ||= {}
+            @printables[name] = body
+          end
+
+          def inherited(subclass)
+            export_instance_variable(:@printables, subclass, &:dup)
           end
         end
 
         available? { true }
 
+        def printables
+          helper
+            .printables
+            &.map { |name, body| [name, instance_exec(&body)] }
+        end
+
         def printable?
-          false
+          !helper.printables.nil?
         end
 
         private
