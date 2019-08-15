@@ -46,7 +46,7 @@ module RgGen
         def printables
           helper
             .printables
-            &.map { |name, body| [name, instance_exec(&body)] }
+            &.map { |name, body| [name, printable(name, body)] }
         end
 
         def printable?
@@ -60,6 +60,10 @@ module RgGen
 
         def helper
           self.class
+        end
+
+        def printable(name, body)
+          body ? instance_exec(&body) : __send__(name)
         end
       end
     end

@@ -65,34 +65,58 @@ module RgGen::Core::Base
     end
 
     describe '#printables' do
-      before do
-        feature_class.class_exec do
-          printable(:foo_bar) { [@foo, @bar] }
-          printable(:baz) { @baz }
-          def initialize(component, name)
-            super(component, name)
-            @foo = 1
-            @bar = 2
-            @baz = 3
+      context '.printableに表示可能オブジェクト名のみ与えられた場合' do
+        before do
+          feature_class.class_exec do
+            printable :foo
+            printable :bar
+            def foo; 1; end
+            def bar; 2; end
           end
         end
-      end
 
-      it '.printableで指定されたブロックを評価し、表示可能オブジェクトとして返す' do
-        expect(feature.printables).to match([[:foo_bar, [1, 2]], [:baz, 3]])
-      end
-
-      specify '.printableで指定されたブロックは子クラスに引き継がれる' do
-        child_feature = Class.new(feature_class).new(component, feature_name)
-        expect(child_feature.printables).to match([[:foo_bar, [1, 2]], [:baz, 3]])
-      end
-
-      specify '子クラスでのブロックの再指定は、親クラスに影響しない' do
-        Class.new(feature_class) do
-          printable(:foo_bar) { [2 * @foo, 2 * @bar] }
-          printable(:baz) { 2 * @baz }
+        it '同名のメソッドの戻り値を表示可能オブジェクトとして返す' do
+          expect(feature.printables).to match([[:foo, 1], [:bar, 2]])
         end
-        expect(feature.printables).to match([[:foo_bar, [1, 2]], [:baz, 3]])
+      end
+
+      context '.printableにブロックも与えられた場合' do
+        before do
+          feature_class.class_exec do
+            printable(:foo) { 2 * foo }
+            printable(:bar) { 2 * bar }
+            def foo; 1; end
+            def bar; 2; end
+          end
+        end
+
+        it 'ブロックを評価し、表示可能オブジェクトとして返す' do
+          expect(feature.printables).to match([[:foo, 2], [:bar, 4]])
+        end
+      end
+
+      context '継承された場合' do
+        before do
+          feature_class.class_exec do
+            printable(:foo)
+            printable(:bar) { 2 * bar }
+            def foo; 1; end
+            def bar; 2; end
+          end
+        end
+
+        specify '.printableで指定された表示可能オブジェクトは子クラスに引き継がれる' do
+          child_feature = Class.new(feature_class).new(component, feature_name)
+          expect(child_feature.printables).to match([[:foo, 1], [:bar, 4]])
+        end
+
+        specify '子クラスでのブロックの再指定は、親クラスに影響しない' do
+          Class.new(feature_class) do
+            printable(:foo) { 3 * foo }
+            printable(:bar) { 3 * bar }
+          end
+          expect(feature.printables).to match([[:foo, 1], [:bar, 4]])
+        end
       end
     end
 
