@@ -59,6 +59,13 @@ module RgGen::Core::OutputBase
       component.bar_1
     end
 
+    describe '#printables' do
+      it 'レジスタマップオブジェクトの#printablesを呼び出す' do
+        expect(register_map).to receive(:printables).and_call_original
+        create_component(nil).printables
+      end
+    end
+
     describe "#need_children?" do
       let(:component) { create_component(nil) }
 

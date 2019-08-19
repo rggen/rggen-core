@@ -56,12 +56,20 @@ module RgGen
 
           attr_reader :verifiers
 
+          def printable(name, &body)
+            @printables ||= {}
+            @printables[name] = body
+          end
+
+          attr_reader :printables
+
           def inherited(subclass)
             super
             export_instance_variable(:@properties, subclass, &:dup)
             export_instance_variable(:@ignore_empty_value, subclass)
             export_instance_variable(:@builders, subclass, &:dup)
             export_instance_variable(:@input_matcher, subclass)
+            export_instance_variable(:@printables, subclass, &:dup)
             export_verifiers(subclass) if @verifiers
           end
 
@@ -85,6 +93,16 @@ module RgGen
 
         def verify(scope)
           verified?(scope) || do_verify(scope)
+        end
+
+        def printables
+          helper
+            .printables
+            &.map { |name, body| [name, printable(name, body)] }
+        end
+
+        def printable?
+          !helper.printables.nil?
         end
 
         private
@@ -124,6 +142,10 @@ module RgGen
           Array(self.class.verifiers&.at(scope))
             .each { |verifier| verifier.verify(self) }
           (@verified ||= {})[scope] = true
+        end
+
+        def printable(name, body)
+          body ? instance_exec(&body) : __send__(name)
         end
       end
     end

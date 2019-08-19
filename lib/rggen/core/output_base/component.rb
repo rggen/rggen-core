@@ -27,6 +27,10 @@ module RgGen
           import_feature_methods(feature, :class)
         end
 
+        def printables
+          @source.printables
+        end
+
         def pre_build
           @features.each_value(&:pre_build)
         end

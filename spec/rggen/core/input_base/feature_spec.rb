@@ -389,5 +389,83 @@ module RgGen::Core::InputBase
         }.not_to raise_error
       end
     end
+
+    describe '#printables' do
+      context '.printableに表示可能オブジェクト名のみ与えられた場合' do
+        let(:feature) do
+          create_feature do
+            printable(:foo)
+            printable(:bar)
+            def foo; 1; end
+            def bar; 2; end
+          end
+        end
+
+        it '同名のメソッドの戻り値を表示可能オブジェクトとして返す' do
+          expect(feature.printables).to match([[:foo, 1], [:bar, 2]])
+        end
+      end
+
+      context '.printableにブロックも与えられた場合' do
+        let(:feature) do
+          create_feature do
+            printable(:foo) { 2 * foo }
+            printable(:bar) { 2 * bar }
+            def foo; 1; end
+            def bar; 2; end
+          end
+        end
+
+        it 'ブロックを評価し、表示可能オブジェクトとして返す' do
+          expect(feature.printables).to match([[:foo, 2], [:bar, 4]])
+        end
+      end
+
+      context '継承された場合' do
+        let(:feature) do
+          create_feature do
+            printable(:foo)
+            printable(:bar) { 2 * bar }
+            def foo; 1; end
+            def bar; 2; end
+          end
+        end
+
+        specify '.printableで指定された表示可能オブジェクトは子クラスに引き継がれる' do
+          child_feature = create_feature(feature.class)
+          expect(child_feature.printables).to match([[:foo, 1], [:bar, 4]])
+        end
+
+        specify '子クラスでのブロックの再指定は、親クラスに影響しない' do
+          create_feature(feature.class) do
+            printable(:foo) { 3 * foo }
+            printable(:bar) { 3 * bar }
+          end
+          expect(feature.printables).to match([[:foo, 1], [:bar, 4]])
+        end
+      end
+    end
+
+    describe '#printable?' do
+      context '.printableでブロックが指定されている場合' do
+        let(:feature) do
+          create_feature { printable(:foo) { 'foo' } }
+        end
+
+        it '真を返す' do
+          expect(feature).to be_printable
+        end
+      end
+
+      context '.printableでブロックが指定されていない場合' do
+        let(:feature) do
+          create_feature
+        end
+
+        it '偽を返す' do
+          expect(feature).not_to be_printable
+        end
+      end
+    end
   end
 end

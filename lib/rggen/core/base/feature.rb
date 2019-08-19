@@ -30,28 +30,9 @@ module RgGen
           def available?(&body)
             define_method(:available?, &body)
           end
-
-          def printable(name, &body)
-            @printables ||= {}
-            @printables[name] = body
-          end
-
-          def inherited(subclass)
-            export_instance_variable(:@printables, subclass, &:dup)
-          end
         end
 
         available? { true }
-
-        def printables
-          helper
-            .printables
-            &.map { |name, body| [name, printable(name, body)] }
-        end
-
-        def printable?
-          !helper.printables.nil?
-        end
 
         private
 
@@ -60,10 +41,6 @@ module RgGen
 
         def helper
           self.class
-        end
-
-        def printable(name, body)
-          body ? instance_exec(&body) : __send__(name)
         end
       end
     end

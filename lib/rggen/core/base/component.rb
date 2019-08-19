@@ -42,13 +42,6 @@ module RgGen
           @features[key]
         end
 
-        def printables
-          features
-            .select(&:printable?)
-            .flat_map(&:printables)
-            .to_h
-        end
-
         private
 
         def post_initialize(*argv)

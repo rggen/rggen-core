@@ -10,12 +10,16 @@ module RgGen
         end
 
         def properties
-          @features.each_value.flat_map(&:properties)
+          features.flat_map(&:properties)
         end
 
         def verify(scope)
-          @features.each_value { |feature| feature.verify(scope) }
-          @children.each { |child| child.verify(scope) } if scope == :all
+          features.each { |feature| feature.verify(scope) }
+          children.each { |child| child.verify(scope) } if scope == :all
+        end
+
+        def printables
+          features.select(&:printable?).flat_map(&:printables).to_h
         end
       end
     end
