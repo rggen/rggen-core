@@ -88,6 +88,8 @@ module RgGen::Core::InputBase
           create_feature do
             def set_foo; @foo = 1; end
             def set_bar; @bar = true; end
+            def default_foo_value; 2; end
+            def default_bar_value; false; end
           end
         end
 
@@ -96,18 +98,14 @@ module RgGen::Core::InputBase
             define_property(feature, :foo, default: -> { default_foo_value } )
             define_property(feature, :bar?, default: -> { default_bar_value } )
 
-            expect(feature).to receive(:default_foo_value).once.and_return(2)
             expect(feature.foo).to eq 2
-            expect(feature.foo).to eq 2
+            expect(feature.bar?).to eq false
+            expect(feature.instance_variables).not_to include(:@foo)
+            expect(feature.instance_variables).not_to include(:@bar)
 
             feature.set_foo
-            expect(feature.foo).to eq 1
-
-            expect(feature).to receive(:default_bar_value).once.and_return(false)
-            expect(feature.bar?).to eq false
-            expect(feature.bar?).to eq false
-
             feature.set_bar
+            expect(feature.foo).to eq 1
             expect(feature.bar?).to eq true
           end
         end
@@ -118,11 +116,13 @@ module RgGen::Core::InputBase
             define_property(feature, :bar?, default: false)
 
             expect(feature.foo).to eq 0
-            feature.set_foo
-            expect(feature.foo).to eq 1
-
             expect(feature.bar?).to eq false
+            expect(feature.instance_variables).not_to include(:@foo)
+            expect(feature.instance_variables).not_to include(:@bar)
+
+            feature.set_foo
             feature.set_bar
+            expect(feature.foo).to eq 1
             expect(feature.bar?).to eq true
           end
         end
@@ -132,34 +132,44 @@ module RgGen::Core::InputBase
         let(:feature) do
           create_feature do
             def set_foo; @foo = 1; end
-            def set_bar; @bar = 2; end
-            def set_baz; @baz = true; end
-            def set_qux; @qux = false; end
-            def initial_bar_value; 3; end
-            def initial_qux_value; true; end
+            def set_bar; @bar = true; end
+            def initial_foo_value; 2; end
+            def initial_bar_value; false; end
           end
         end
 
-        it 'defaultオプションの糖衣構文として振る舞う' do
-          define_property(feature, :foo, initial: 0)
-          define_property(feature, :bar, initial: -> { initial_bar_value })
-          define_property(feature, :baz?, initial: false)
-          define_property(feature, :qux?, initial: -> { initial_qux_value })
+        context 'ブロックが指定された場合' do
+          it 'ブロックの評価結果を、プロパティの初期値とする' do
+            define_property(feature, :foo, initial: -> { initial_foo_value })
+            define_property(feature, :bar?, initial: -> { initial_bar_value })
 
-          expect(feature.foo).to eq 0
-          expect(feature.bar).to eq 3
-          expect(feature.baz?).to eq false
-          expect(feature.qux?).to eq true
+            expect(feature.foo).to eq 2
+            expect(feature.bar?).to eq false
+            expect(feature.instance_variables).to include(:@foo)
+            expect(feature.instance_variables).to include(:@bar)
 
-          feature.set_foo
-          feature.set_bar
-          feature.set_baz
-          feature.set_qux
+            feature.set_foo
+            feature.set_bar
+            expect(feature.foo).to eq 1
+            expect(feature.bar?).to eq true
+          end
+        end
 
-          expect(feature.foo).to eq 1
-          expect(feature.bar).to eq 2
-          expect(feature.baz?).to eq true
-          expect(feature.qux?).to eq false
+        context 'ブロック以外が指定された場合' do
+          it '指定された値を、プロパティの初期値とする' do
+            define_property(feature, :foo, initial: 0)
+            define_property(feature, :bar?, initial: false)
+
+            expect(feature.foo).to eq 0
+            expect(feature.bar?).to eq false
+            expect(feature.instance_variables).to include(:@foo)
+            expect(feature.instance_variables).to include(:@bar)
+
+            feature.set_foo
+            feature.set_bar
+            expect(feature.foo).to eq 1
+            expect(feature.bar?).to eq true
+          end
         end
       end
 
