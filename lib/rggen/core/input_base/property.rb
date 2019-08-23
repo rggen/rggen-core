@@ -64,11 +64,19 @@ module RgGen
 
         def default_property(feature)
           varible_name = "@#{@name[-1] == '?' ? @name[0..-2] : @name}"
-          if feature.instance_variable_defined?(varible_name)
-            feature.instance_variable_get(varible_name)
-          else
-            @options[:default]
-          end
+          set_default_value?(feature, varible_name) &&
+            feature.instance_variable_set(varible_name, default_value(feature))
+          feature.instance_variable_get(varible_name)
+        end
+
+        def set_default_value?(feature, variable_name)
+          !feature.instance_variable_defined?(variable_name) &&
+            (@options.key?(:default) || @options.key?(:initial))
+        end
+
+        def default_value(feature)
+          value = @options.fetch(:default, @options[:initial])
+          value.is_a?(Proc) ? feature.instance_exec(&value) : value
         end
       end
     end
