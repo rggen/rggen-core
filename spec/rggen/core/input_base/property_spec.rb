@@ -91,16 +91,75 @@ module RgGen::Core::InputBase
           end
         end
 
-        it 'プロパティの既定値を指定する' do
-          define_property(feature, :foo, default: 0)
-          expect(feature.foo).to eq 0
-          feature.set_foo
-          expect(feature.foo).to eq 1
+        context 'ブロックを与えた場合' do
+          it 'ブロックの評価結果を、プロパティの既定値とする' do
+            define_property(feature, :foo, default: -> { default_foo_value } )
+            define_property(feature, :bar?, default: -> { default_bar_value } )
 
-          define_property(feature, :bar?, default: false)
-          expect(feature.bar?).to be false
+            expect(feature).to receive(:default_foo_value).once.and_return(2)
+            expect(feature.foo).to eq 2
+            expect(feature.foo).to eq 2
+
+            feature.set_foo
+            expect(feature.foo).to eq 1
+
+            expect(feature).to receive(:default_bar_value).once.and_return(false)
+            expect(feature.bar?).to eq false
+            expect(feature.bar?).to eq false
+
+            feature.set_bar
+            expect(feature.bar?).to eq true
+          end
+        end
+
+        context 'ブロック以外を与えた場合' do
+          it '指定された値を、プロパティの既定値とする' do
+            define_property(feature, :foo, default: 0)
+            define_property(feature, :bar?, default: false)
+
+            expect(feature.foo).to eq 0
+            feature.set_foo
+            expect(feature.foo).to eq 1
+
+            expect(feature.bar?).to eq false
+            feature.set_bar
+            expect(feature.bar?).to eq true
+          end
+        end
+      end
+
+      describe 'initialオプション' do
+        let(:feature) do
+          create_feature do
+            def set_foo; @foo = 1; end
+            def set_bar; @bar = 2; end
+            def set_baz; @baz = true; end
+            def set_qux; @qux = false; end
+            def initial_bar_value; 3; end
+            def initial_qux_value; true; end
+          end
+        end
+
+        it 'defaultオプションの糖衣構文として振る舞う' do
+          define_property(feature, :foo, initial: 0)
+          define_property(feature, :bar, initial: -> { initial_bar_value })
+          define_property(feature, :baz?, initial: false)
+          define_property(feature, :qux?, initial: -> { initial_qux_value })
+
+          expect(feature.foo).to eq 0
+          expect(feature.bar).to eq 3
+          expect(feature.baz?).to eq false
+          expect(feature.qux?).to eq true
+
+          feature.set_foo
           feature.set_bar
-          expect(feature.bar?).to be true
+          feature.set_baz
+          feature.set_qux
+
+          expect(feature.foo).to eq 1
+          expect(feature.bar).to eq 2
+          expect(feature.baz?).to eq true
+          expect(feature.qux?).to eq false
         end
       end
 
