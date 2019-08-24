@@ -152,6 +152,12 @@ module RgGen
       end
     end
 
+    Options.add_option(:print_backtrace) do |option|
+      option.long_option '--print-backtrace'
+      option.default false
+      option.description 'Print backtrace when an error occurs'
+    end
+
     Options.add_option(:version) do |option|
       option.short_option '-v'
       option.long_option '--version'

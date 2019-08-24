@@ -165,5 +165,21 @@ module RgGen::Core
         end
       end
     end
+
+    describe '--print-backtraceオプション' do
+      context '--print-backtraceが指定された場合' do
+        it 'trueを返す' do
+          options.parse(['--print-backtrace'])
+          expect(options[:print_backtrace]).to be true
+        end
+      end
+
+      context '未指定の場合' do
+        it 'falseを返す' do
+          options.parse([])
+          expect(options[:print_backtrace]).to be false
+        end
+      end
+    end
   end
 end
