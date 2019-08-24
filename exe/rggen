@@ -3,11 +3,11 @@
 
 $LOAD_PATH.unshift(File.expand_path('../lib', __dir__))
 require 'rggen/core'
-require 'facets/module/lastname'
 
 begin
   cli = RgGen::Core::CLI.new
   cli.run(ARGV)
-rescue OptionParser::ParseError, RgGen::Core::RuntimeError => e
-  abort "[#{e.class.lastname}] #{e.message}"
+rescue ScriptError, StandardError => e
+  abort RgGen::Core::Utility::ErrorUtility
+          .compose_error_message(e, cli.options[:print_backtrace])
 end

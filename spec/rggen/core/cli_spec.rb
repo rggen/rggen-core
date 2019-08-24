@@ -6,10 +6,7 @@ module RgGen::Core
   describe CLI do
     let(:cli) { CLI.new }
 
-    let(:builder) do
-      cli
-      RgGen.builder
-    end
+    let(:builder) { cli.builder }
 
     let(:setup) do
       proc do
@@ -133,7 +130,7 @@ module RgGen::Core
     end
 
     before do
-      allow_any_instance_of(Options::Option).to receive(:require).with('rggen/default_setup_file').and_raise(::LoadError)
+      allow(cli.options).to receive(:require).with('rggen/default_setup_file').and_raise(::LoadError)
       allow(ENV).to receive(:[]).with('RGGEN_DEFAULT_SETUP_FILE').and_return(nil)
       allow(ENV).to receive(:[]).with('RGGEN_DEFAULT_CONFIGURATION_FILE').and_return(nil)
     end
@@ -158,14 +155,14 @@ module RgGen::Core
       before { RgGen.builder(nil) }
 
       context 'Builderが未指定の場合' do
-        it 'Builderを生成し、RgGen.builderに設定する' do
+        it 'Builderを生成し、CLI#builderに設定する' do
           builder = nil
           expect(Builder).to receive(:create).and_wrap_original do |m|
             m.call.tap { |b| builder = b }
           end
 
-          CLI.new
-          expect(RgGen.builder).to be builder
+          cli = CLI.new
+          expect(cli.builder).to be builder
         end
       end
 
@@ -174,8 +171,8 @@ module RgGen::Core
           builder = Builder.create
           expect(Builder).not_to receive(:create)
 
-          CLI.new(builder)
-          expect(RgGen.builder).to be builder
+          cli = CLI.new(builder)
+          expect(cli.builder).to be builder
         end
       end
     end
@@ -190,6 +187,7 @@ module RgGen::Core
                   --load-only                  Load setup, configuration and register map files only; write no files
                   --enable WRITER1[,WRITER2,...]
                                                Enable only the given writer(s) to write files
+                  --print-backtrace            Print backtrace when an error occurs
               -v, --version                    Display version
                   --verbose-version            Load a setup Ruby file and display verbose version
               -h, --help                       Display this message

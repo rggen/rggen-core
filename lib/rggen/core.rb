@@ -22,6 +22,7 @@ require_relative 'core/utility/code_utility/code_block'
 require_relative 'core/utility/code_utility/source_file'
 require_relative 'core/utility/code_utility/structure_definition'
 require_relative 'core/utility/code_utility'
+require_relative 'core/utility/error_utility'
 require_relative 'core/utility/regexp_patterns'
 
 require_relative 'core/exceptions'

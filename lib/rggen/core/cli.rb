@@ -4,24 +4,21 @@ module RgGen
   module Core
     class CLI
       def initialize(builder = nil)
-        RgGen.builder(builder || Builder.create)
+        @builder = builder || Builder.create
+        @options = Options.new
       end
 
+      attr_reader :builder
+      attr_reader :options
+
       def run(args)
-        options = parse_options(args)
-        builder = RgGen.builder
-        runner(options).run(builder, options)
+        options.parse(args)
+        runner.run(builder, options)
       end
 
       private
 
-      def parse_options(args)
-        options = Options.new
-        options.parse(args)
-        options
-      end
-
-      def runner(options)
+      def runner
         options[:runner] || Generator.new
       end
     end
