@@ -16,7 +16,7 @@ module RgGen::Core
               define_method(:version) do
                 { foo: '0.0.1', bar: '0.0.2'}[component]
               end
-              define_method(:setup) do |builder|
+              define_method(:default_setup) do |builder|
                 builder.output_component_registry(component) do
                   register_component :register_map do
                     component(
