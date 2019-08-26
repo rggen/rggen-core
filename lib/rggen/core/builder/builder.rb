@@ -87,7 +87,14 @@ module RgGen
           RegisterMap.setup(self)
         end
 
-        def setup(library_name, library_module)
+        def setup(library_name, library_module, &block)
+          extract_library_version(library_name, library_module)
+          library_module.respond_to?(:default_setup) &&
+            library_module.default_setup(self)
+          block_given? && library_module.instance_exec(self, &block)
+        end
+
+        def extract_library_version(library_name, library_module)
           library_versions[library_name] =
             if library_module.const_defined?(:VERSION)
               library_module.const_get(:VERSION)
@@ -96,7 +103,6 @@ module RgGen
             else
               '0.0.0'
             end
-          library_module.setup(self)
         end
 
         def library_versions
@@ -136,7 +142,7 @@ module RgGen
 
         COMPONENT_REGISTRIES = {
           input: InputComponentRegistry, output: OutputComponentRegistry
-        }
+        }.freeze
 
         def component_registry(type, name, body)
           registries = @component_registries[type]

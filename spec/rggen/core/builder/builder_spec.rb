@@ -816,16 +816,15 @@ module RgGen::Core::Builder
       before(:all) do
         module Foo
           VERSION = '0.0.1'
-          def self.setup(_builder); end
+          def self.default_setup(_builder); end
         end
 
         module Bar
           def self.version; '0.0.2'; end
-          def self.setup(_builder); end
+          def self.default_setup(_builder); end
         end
 
         module Baz
-          def self.setup(_builder); end
         end
       end
 
@@ -835,14 +834,26 @@ module RgGen::Core::Builder
         RgGen::Core::Builder.send(:remove_const, :Baz)
       end
 
-      it '指定されたモジュールの .setup を実行して、ライブラリのセットアップを行う' do
-        expect(Foo).to receive(:setup).with(equal(builder))
-        expect(Bar).to receive(:setup).with(equal(builder))
-        expect(Baz).to receive(:setup).with(equal(builder))
+      context '指定されたモジュールに.default_setupが実装されている場合' do
+        it '.default_setupを実行して、既定のセットアップを行う' do
+          expect(Foo).to receive(:default_setup).with(equal(builder))
+          expect(Bar).to receive(:default_setup).with(equal(builder))
+          builder.setup(:foo, Foo)
+          builder.setup(:foo, Bar)
+        end
+      end
 
-        builder.setup(:foo, Foo)
-        builder.setup(:bar, Bar)
-        builder.setup(:baz, Baz)
+      context '指定されたモジュールに.default_setupが実装されていない場合' do
+        it 'エラーにはならない' do
+          expect { builder.setup(:baz, Baz) }.not_to raise_error
+        end
+      end
+
+      context 'ブロックが与えられた場合' do
+        it '指定されたモジュール上で、ブロックを実行する' do
+          expect(Foo).to receive(:do_setup).with(equal(builder))
+          builder.setup(:foo, Foo) { |b| do_setup(b) }
+        end
       end
 
       it 'ライブラリモジュールのバージョン情報を収集する' do
@@ -864,7 +875,7 @@ module RgGen::Core::Builder
       it '指定されたセットアップファイルを読み込む' do
         foo_module = Module.new do
           def self.version; '0.0.1'; end
-          def self.setup(builder)
+          def self.default_setup(builder)
             builder.input_component_registry(:foo) {}
           end
         end
