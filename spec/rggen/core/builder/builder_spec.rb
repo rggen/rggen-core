@@ -835,24 +835,37 @@ module RgGen::Core::Builder
       end
 
       context '指定されたモジュールに.default_setupが実装されている場合' do
-        it '.default_setupを実行して、既定のセットアップを行う' do
+        it '#activate_plugins実行時に、.default_setupを実行して、既定のセットアップを行う' do
           expect(Foo).to receive(:default_setup).with(equal(builder))
           expect(Bar).to receive(:default_setup).with(equal(builder))
           builder.setup(:foo, Foo)
           builder.setup(:foo, Bar)
+          builder.activate_plugins
         end
       end
 
       context '指定されたモジュールに.default_setupが実装されていない場合' do
         it 'エラーにはならない' do
-          expect { builder.setup(:baz, Baz) }.not_to raise_error
+          expect {
+            builder.setup(:baz, Baz)
+            builder.activate_plugins
+          }.not_to raise_error
         end
       end
 
       context 'ブロックが与えられた場合' do
-        it '指定されたモジュール上で、ブロックを実行する' do
-          expect(Foo).to receive(:do_setup).with(equal(builder))
+        it '#activate_plugins実行時に、指定されたモジュール上で、ブロックを実行する' do
           builder.setup(:foo, Foo) { |b| do_setup(b) }
+          builder.setup(:bar, Bar)
+
+          allow(Foo).to receive(:default_setup)
+          allow(Bar).to receive(:default_setup)
+
+          expect(Foo).to receive(:do_setup).with(equal(builder)) do
+            expect(Foo).to have_received(:default_setup)
+            expect(Bar).to have_received(:default_setup)
+          end
+          builder.activate_plugins
         end
       end
 
@@ -861,7 +874,7 @@ module RgGen::Core::Builder
         builder.setup(:bar, Bar)
         builder.setup(:baz, Baz)
 
-        expect(builder.library_versions).to match(
+        expect(builder.plugins.plugin_versions).to match(
           foo: '0.0.1', bar: '0.0.2', baz: '0.0.0'
         )
       end
@@ -872,24 +885,54 @@ module RgGen::Core::Builder
 
       after { RgGen.builder(nil) }
 
-      it '指定されたセットアップファイルを読み込む' do
-        foo_module = Module.new do
+      let(:foo_module) do
+        Module.new do
           def self.version; '0.0.1'; end
           def self.default_setup(builder)
             builder.input_component_registry(:foo) {}
           end
         end
+      end
 
+      let(:bar_module) do
+        Module.new do
+          def self.version; '0.0.2'; end
+          def self.default_setup(builder)
+            builder.input_component_registry(:bar) {}
+          end
+        end
+      end
+
+      it '指定されたセットアップファイルを読み込み、プラグインの有効化を行う' do
         allow(File).to receive(:readable?).with('setup.rb').and_return(true)
         allow(builder).to receive(:load).with('setup.rb') do
           RgGen.setup(:foo, foo_module)
-          RgGen.input_component_registry(:bar) {}
+          RgGen.setup(:bar, bar_module)
         end
 
+        expect(RgGen).to receive(:setup).with(:foo, equal(foo_module)).and_call_original
+        expect(RgGen).to receive(:setup).with(:bar, equal(bar_module)).and_call_original
         expect(builder).to receive(:input_component_registry).with(:foo)
         expect(builder).to receive(:input_component_registry).with(:bar)
 
         builder.load_setup_file('setup.rb')
+      end
+
+      context 'activationにfalseが指定された場合' do
+        it 'プラグインの有効化は行わない' do
+          allow(File).to receive(:readable?).with('setup.rb').and_return(true)
+          allow(builder).to receive(:load).with('setup.rb') do
+            RgGen.setup(:foo, foo_module)
+            RgGen.setup(:bar, bar_module)
+          end
+
+          expect(RgGen).to receive(:setup).with(:foo, equal(foo_module)).and_call_original
+          expect(RgGen).to receive(:setup).with(:bar, equal(bar_module)).and_call_original
+          expect(builder).not_to receive(:input_component_registry)
+          expect(builder).not_to receive(:input_component_registry)
+
+          builder.load_setup_file('setup.rb', false)
+        end
       end
 
       context 'セットアップファイルが未指定の場合' do

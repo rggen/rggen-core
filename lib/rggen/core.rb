@@ -92,6 +92,7 @@ require_relative 'core/builder/simple_feature_entry'
 require_relative 'core/builder/list_feature_entry'
 require_relative 'core/builder/feature_registry'
 require_relative 'core/builder/category'
+require_relative 'core/builder/plugins'
 require_relative 'core/builder/builder'
 require_relative 'core/builder'
 

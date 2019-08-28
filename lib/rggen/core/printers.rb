@@ -29,7 +29,7 @@ module RgGen
       end
 
       def load_setup_file(builder, file)
-        file.nil? || file.empty? || builder.load_setup_file(file)
+        file.nil? || file.empty? || builder.load_setup_file(file, false)
       end
 
       def help_message(builder)
@@ -45,8 +45,8 @@ module RgGen
 
       def verbose_version(builder)
         { core: Core::VERSION }
-          .merge(builder.library_versions)
-          .map { |(lib, version)| "  - rggen-#{lib} #{version}" }
+          .merge(builder.plugins.plugin_versions)
+          .map { |(name, version)| "  - rggen-#{name} #{version}" }
       end
     end
   end

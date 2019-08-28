@@ -7,7 +7,10 @@ module RgGen
         def initialize
           initialize_component_registries
           initialize_categories
+          @plugins = Plugins.new
         end
+
+        attr_reader :plugins
 
         def input_component_registry(name, &body)
           component_registry(:input, name, body)
@@ -87,35 +90,22 @@ module RgGen
           RegisterMap.setup(self)
         end
 
-        def setup(library_name, library_module, &block)
-          extract_library_version(library_name, library_module)
-          library_module.respond_to?(:default_setup) &&
-            library_module.default_setup(self)
-          block_given? && library_module.instance_exec(self, &block)
+        def setup(name, plugin_module, &block)
+          plugins.add(name, plugin_module, block)
         end
 
-        def extract_library_version(library_name, library_module)
-          library_versions[library_name] =
-            if library_module.const_defined?(:VERSION)
-              library_module.const_get(:VERSION)
-            elsif library_module.respond_to?(:version)
-              library_module.version
-            else
-              '0.0.0'
-            end
+        def activate_plugins
+          plugins.activate(self)
         end
 
-        def library_versions
-          @library_versions ||= {}
-        end
-
-        def load_setup_file(file)
+        def load_setup_file(file, activation = true)
           (file.nil? || file.empty?) &&
             (raise Core::LoadError.new('no setup file is given'))
           File.readable?(file) ||
             (raise Core::LoadError.new("cannot load such setup file: #{file}"))
           RgGen.builder(self)
           load(file)
+          activation && activate_plugins
         end
 
         private
