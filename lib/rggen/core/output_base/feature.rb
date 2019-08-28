@@ -5,6 +5,7 @@ module RgGen
     module OutputBase
       class Feature < Base::Feature
         include Base::HierarchicalFeatureAccessors
+        include RaiseError
 
         class << self
           attr_reader :pre_builders

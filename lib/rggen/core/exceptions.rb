@@ -25,5 +25,8 @@ module RgGen
 
     class LoadError < Core::RuntimeError
     end
+
+    class GeneratorError < Core::RuntimeError
+    end
   end
 end
