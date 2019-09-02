@@ -90,8 +90,8 @@ module RgGen
           RegisterMap.setup(self)
         end
 
-        def setup(name, plugin_module, &block)
-          plugins.add(name, plugin_module, block)
+        def setup(name, module_or_version = nil, &block)
+          plugins.add(name, module_or_version, &block)
         end
 
         def activate_plugins

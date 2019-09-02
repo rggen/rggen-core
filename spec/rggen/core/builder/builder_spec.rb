@@ -834,49 +834,107 @@ module RgGen::Core::Builder
         RgGen::Core::Builder.send(:remove_const, :Baz)
       end
 
-      context '指定されたモジュールに.default_setupが実装されている場合' do
-        it '#activate_plugins実行時に、.default_setupを実行して、既定のセットアップを行う' do
-          expect(Foo).to receive(:default_setup).with(equal(builder))
-          expect(Bar).to receive(:default_setup).with(equal(builder))
-          builder.setup(:foo, Foo)
-          builder.setup(:foo, Bar)
-          builder.activate_plugins
-        end
-      end
-
-      context '指定されたモジュールに.default_setupが実装されていない場合' do
-        it 'エラーにはならない' do
-          expect {
-            builder.setup(:baz, Baz)
+      context 'モジュールが指定されて' do
+        context '.default_setupが実装されている場合' do
+          it '#activate_plugins実行時に、.default_setupを実行して、既定のセットアップを行う' do
+            expect(Foo).to receive(:default_setup).with(equal(builder))
+            expect(Bar).to receive(:default_setup).with(equal(builder))
+            builder.setup(:foo, Foo)
+            builder.setup(:foo, Bar)
             builder.activate_plugins
-          }.not_to raise_error
+          end
+        end
+
+        context '.default_setupが実装されていない場合' do
+          it 'エラーにはならない' do
+            expect {
+              builder.setup(:baz, Baz)
+              builder.activate_plugins
+            }.not_to raise_error
+          end
         end
       end
 
-      context 'ブロックが与えられた場合' do
-        it '#activate_plugins実行時に、指定されたモジュール上で、ブロックを実行する' do
-          builder.setup(:foo, Foo) { |b| do_setup(b) }
-          builder.setup(:bar, Bar)
+      describe 'ブロックの実行' do
+        context 'モジュールが指定されている場合' do
+          it '#activate_plugins実行時に、指定されたモジュール上で、ブロックを実行する' do
+            builder.setup(:foo, Foo) { |b| do_setup(b) }
+            expect(Foo).to receive(:do_setup).with(equal(builder))
+            builder.activate_plugins
+          end
+        end
 
-          allow(Foo).to receive(:default_setup)
-          allow(Bar).to receive(:default_setup)
+        context 'モジュールが未指定の場合' do
+          it '#activate_plugins実行時に、ブロックを実行する' do
+            expect { |b|
+              builder.setup(:foo, &b)
+              builder.activate_plugins
+            }.to yield_with_args(equal(builder))
+          end
+        end
 
-          expect(Foo).to receive(:do_setup).with(equal(builder)) do
+        it 'ブロックは#default_setup実行後に評価される' do
+          test_block = proc do
             expect(Foo).to have_received(:default_setup)
             expect(Bar).to have_received(:default_setup)
           end
+
+          builder.setup(:foo, Foo) { test_block.call }
+          builder.setup(:bar, Bar)
+          builder.setup(:baz, &test_block)
+
+          allow(Foo).to receive(:default_setup)
+          allow(Bar).to receive(:default_setup)
           builder.activate_plugins
         end
       end
 
-      it 'ライブラリモジュールのバージョン情報を収集する' do
-        builder.setup(:foo, Foo)
-        builder.setup(:bar, Bar)
-        builder.setup(:baz, Baz)
+      describe 'バージョンの収集' do
+        context 'モジュールが指定されて、定数VERSIONを持つ場合' do
+          it 'VERSIONで指定されたバージョンがプラグインのバージョンとする' do
+            builder.setup(:foo, Foo)
+            expect(builder.plugins.plugin_versions[:foo]).to eq '0.0.1'
+          end
+        end
 
-        expect(builder.plugins.plugin_versions).to match(
-          foo: '0.0.1', bar: '0.0.2', baz: '0.0.0'
-        )
+        context 'モジュールが指定されて、メソッド.versionを持つ場合' do
+          it '.versionの戻り値がプラグインのバージョンとする' do
+            builder.setup(:bar, Bar)
+            expect(builder.plugins.plugin_versions[:bar]).to eq '0.0.2'
+          end
+        end
+
+        context 'モジュールが指定されて、VERSION定数も.versionメソッドもない場合' do
+          it '既定のバージョンとして、0.0.0を設定する' do
+            builder.setup(:baz, Baz)
+            expect(builder.plugins.plugin_versions[:baz]).to eq '0.0.0'
+          end
+        end
+
+        context 'バージョンが引数として指定された場合' do
+          it '指定されたバージョンがプラグインのバージョンとする' do
+            builder.setup(:qux, '0.0.3')
+            expect(builder.plugins.plugin_versions[:qux]).to eq '0.0.3'
+          end
+        end
+
+        context 'バージョン情報の指定がない場合' do
+          it '既定バージョンとして、0.0.0を設定する' do
+            builder.setup(:quux)
+            expect(builder.plugins.plugin_versions[:quux]).to eq '0.0.0'
+          end
+        end
+
+        specify '#plugin_versionsでプラグインのバージョン一覧を取得できる' do
+          builder.setup(:foo, Foo)
+          builder.setup(:bar, Bar)
+          builder.setup(:baz, Baz)
+          builder.setup(:qux, '0.0.3')
+          builder.setup(:quux)
+          expect(builder.plugins.plugin_versions).to match(
+            foo: '0.0.1', bar: '0.0.2', baz: '0.0.0', qux: '0.0.3', quux: '0.0.0'
+          )
+        end
       end
     end
 

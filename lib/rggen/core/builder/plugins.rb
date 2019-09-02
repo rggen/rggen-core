@@ -4,23 +4,37 @@ module RgGen
   module Core
     module Builder
       class Plugin
-        def initialize(name, plugin_module, block)
+        DEFAULT_PLUGIN_VERSION = '0.0.0'
+
+        def initialize(name, module_or_version, &block)
           @name = name
-          @version = extract_version(plugin_module)
-          @plugin_module = plugin_module
           @block = block
+          @version, @plugin_module =
+            if module_or_version.is_a?(Module)
+              [extract_version(module_or_version), module_or_version]
+            else
+              [module_or_version || DEFAULT_PLUGIN_VERSION]
+            end
         end
 
         attr_reader :name
         attr_reader :version
 
         def default_setup(builder)
-          @plugin_module.respond_to?(:default_setup) &&
-            @plugin_module.default_setup(builder)
+          @plugin_module &&
+            begin
+              @plugin_module.respond_to?(:default_setup) &&
+                @plugin_module.default_setup(builder)
+            end
         end
 
         def optional_setup(builder)
-          @block && @plugin_module.instance_exec(builder, &@block)
+          @block &&
+            if @plugin_module
+              @plugin_module.instance_exec(builder, &@block)
+            else
+              @block.call(builder)
+            end
         end
 
         private
@@ -31,7 +45,7 @@ module RgGen
           elsif plugin_module.respond_to?(:version)
             plugin_module.version
           else
-            '0.0.0'
+            DEFAULT_PLUGIN_VERSION
           end
         end
       end
@@ -41,8 +55,8 @@ module RgGen
           @plugins = []
         end
 
-        def add(name, plugin_module, block)
-          @plugins << Plugin.new(name, plugin_module, block)
+        def add(name, module_or_version, &block)
+          @plugins << Plugin.new(name, module_or_version, &block)
         end
 
         def activate(builder)
