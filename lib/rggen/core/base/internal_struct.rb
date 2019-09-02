@@ -4,10 +4,6 @@ module RgGen
   module Core
     module Base
       module InternalStruct
-        def self.included(klass)
-          klass.extend(self)
-        end
-
         private
 
         def define_struct(name, members, &body)

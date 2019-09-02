@@ -13,7 +13,7 @@ module RgGen::Core::Base
 
     def define_class(parent_class = Object, &body)
       Class.new(parent_class) do
-        include InternalStruct
+        extend InternalStruct
         class_exec(&body)
       end
     end
