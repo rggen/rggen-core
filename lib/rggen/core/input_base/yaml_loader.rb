@@ -7,14 +7,21 @@ module RgGen
         private
 
         def load_yaml(file)
-          yaml = File.binread(file)
-          result =
-            if Psych::VERSION >= '3.1.0'
-              YAML.safe_load(yaml, aliases: true, filename: file)
-            else
-              YAML.safe_load(yaml, [], [], true, file)
-            end
+          result = yaml_safe_load(File.binread(file), file)
           symbolize_key(result)
+        end
+
+        if Psych::VERSION >= '3.1.0'
+          def yaml_safe_load(yaml, file)
+            YAML.safe_load(
+              yaml,
+              whitelist_classes: [Symbol], aliases: true, filename: file
+            )
+          end
+        else
+          def yaml_safe_load(yaml, file)
+            YAML.safe_load(yaml, [Symbol], [], true, file)
+          end
         end
 
         def symbolize_key(result)
