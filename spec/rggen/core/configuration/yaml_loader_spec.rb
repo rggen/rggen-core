@@ -28,7 +28,7 @@ module RgGen::Core::Configuration
     end
 
     describe ".load_file" do
-      let(:valid_value_lists) { [[:foo, :bar, :baz]] }
+      let(:valid_value_lists) { [[:foo, :bar, :baz, :fizz, :buzz]] }
 
       let(:input_data) { RgGen::Core::InputBase::InputData.new(valid_value_lists) }
 
@@ -39,6 +39,8 @@ module RgGen::Core::Configuration
           foo: 0
           bar: 1
           baz: 2
+          fizz: fizz
+          buzz: :buzz
         YAML
       end
 
@@ -49,7 +51,10 @@ module RgGen::Core::Configuration
 
       it "入力ファイルを元に、入力データを組み立てる" do
         loader.load_file(file, input_data, valid_value_lists)
-        expect(input_data).to have_values([:foo, 0, file], [:bar, 1, file], [:baz, 2, file])
+        expect(input_data).to have_values(
+          [:foo, 0, file], [:bar, 1, file], [:baz, 2, file],
+          [:fizz, 'fizz', file], [:buzz, :buzz, file]
+        )
       end
     end
   end
