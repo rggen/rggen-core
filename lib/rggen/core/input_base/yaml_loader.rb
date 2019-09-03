@@ -15,7 +15,7 @@ module RgGen
           def yaml_safe_load(yaml, file)
             YAML.safe_load(
               yaml,
-              whitelist_classes: [Symbol], aliases: true, filename: file
+              permitted_classes: [Symbol], aliases: true, filename: file
             )
           end
         else
