@@ -71,7 +71,7 @@ module RgGen::Core
             end
           end
 
-          RgGen.setup(component_name, plugin_module) do |builder|
+          RgGen.setup(:"rggen-#{component_name}", plugin_module) do |builder|
             builder.enable(:register_block, :sample_writer)
           end
         end

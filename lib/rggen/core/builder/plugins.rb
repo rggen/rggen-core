@@ -37,6 +37,10 @@ module RgGen
             end
         end
 
+        def version_info
+          "#{name} #{version}"
+        end
+
         private
 
         def extract_version(plugin_module)
@@ -64,8 +68,8 @@ module RgGen
           @plugins.each { |plugin| plugin.optional_setup(builder) }
         end
 
-        def plugin_versions
-          @plugins.map { |plugin| [plugin.name, plugin.version] }.to_h
+        def version_info
+          @plugins.map(&:version_info)
         end
       end
     end

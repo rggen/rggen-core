@@ -44,9 +44,8 @@ module RgGen
       end
 
       def verbose_version(builder)
-        { core: Core::VERSION }
-          .merge(builder.plugins.plugin_versions)
-          .map { |(name, version)| "  - rggen-#{name} #{version}" }
+        ["rggen-core #{Core::VERSION}", *builder.plugins.version_info]
+          .map { |version_info| "  - #{version_info}" }
       end
     end
   end

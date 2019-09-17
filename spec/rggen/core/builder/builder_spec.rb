@@ -893,47 +893,47 @@ module RgGen::Core::Builder
         context 'モジュールが指定されて、定数VERSIONを持つ場合' do
           it 'VERSIONで指定されたバージョンがプラグインのバージョンとする' do
             builder.setup(:foo, Foo)
-            expect(builder.plugins.plugin_versions[:foo]).to eq '0.0.1'
+            expect(builder.plugins.version_info[0]).to eq 'foo 0.0.1'
           end
         end
 
         context 'モジュールが指定されて、メソッド.versionを持つ場合' do
           it '.versionの戻り値がプラグインのバージョンとする' do
             builder.setup(:bar, Bar)
-            expect(builder.plugins.plugin_versions[:bar]).to eq '0.0.2'
+            expect(builder.plugins.version_info[0]).to eq 'bar 0.0.2'
           end
         end
 
         context 'モジュールが指定されて、VERSION定数も.versionメソッドもない場合' do
           it '既定のバージョンとして、0.0.0を設定する' do
             builder.setup(:baz, Baz)
-            expect(builder.plugins.plugin_versions[:baz]).to eq '0.0.0'
+            expect(builder.plugins.version_info[0]).to eq 'baz 0.0.0'
           end
         end
 
         context 'バージョンが引数として指定された場合' do
           it '指定されたバージョンがプラグインのバージョンとする' do
             builder.setup(:qux, '0.0.3')
-            expect(builder.plugins.plugin_versions[:qux]).to eq '0.0.3'
+            expect(builder.plugins.version_info[0]).to eq 'qux 0.0.3'
           end
         end
 
         context 'バージョン情報の指定がない場合' do
           it '既定バージョンとして、0.0.0を設定する' do
             builder.setup(:quux)
-            expect(builder.plugins.plugin_versions[:quux]).to eq '0.0.0'
+            expect(builder.plugins.version_info[0]).to eq 'quux 0.0.0'
           end
         end
 
-        specify '#plugin_versionsでプラグインのバージョン一覧を取得できる' do
+        specify '#version_infoでプラグインのバージョン一覧を取得できる' do
           builder.setup(:foo, Foo)
           builder.setup(:bar, Bar)
           builder.setup(:baz, Baz)
           builder.setup(:qux, '0.0.3')
           builder.setup(:quux)
-          expect(builder.plugins.plugin_versions).to match(
-            foo: '0.0.1', bar: '0.0.2', baz: '0.0.0', qux: '0.0.3', quux: '0.0.0'
-          )
+          expect(builder.plugins.version_info).to match([
+            'foo 0.0.1', 'bar 0.0.2', 'baz 0.0.0', 'qux 0.0.3', 'quux 0.0.0'
+          ])
         end
       end
     end
