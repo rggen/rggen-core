@@ -15,6 +15,9 @@ Layout/MultilineMethodCallIndentation:
 Lint/AmbiguousRegexpLiteral:
   Enabled: false
 
+Metrics/LineLength:
+  Max: 90
+
 Style/Alias:
   EnforcedStyle: prefer_alias_method
 
