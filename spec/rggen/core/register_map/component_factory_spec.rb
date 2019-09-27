@@ -22,7 +22,7 @@ module RgGen::Core::RegisterMap
     end
 
     let(:bit_field_component_factory) do
-      ComponentFactory.new do |f|
+      ComponentFactory.new('register_map') do |f|
         f.target_component Component
         f.feature_factories bit_field_feature_factories
       end
@@ -39,7 +39,7 @@ module RgGen::Core::RegisterMap
     end
 
     let(:register_component_factory) do
-      ComponentFactory.new do |f|
+      ComponentFactory.new('register_map') do |f|
         f.target_component Component
         f.feature_factories register_feature_factories
         f.child_factory bit_field_component_factory
@@ -57,7 +57,7 @@ module RgGen::Core::RegisterMap
     end
 
     let(:block_component_factory) do
-      ComponentFactory.new do |f|
+      ComponentFactory.new('register_map') do |f|
         f.target_component Component
         f.feature_factories block_feature_factories
         f.child_factory register_component_factory
@@ -65,7 +65,7 @@ module RgGen::Core::RegisterMap
     end
 
     let(:register_map_component_factory) do
-      ComponentFactory.new do |f|
+      ComponentFactory.new('register_map') do |f|
         f.target_component Component
         f.feature_factories Hash.new
         f.child_factory block_component_factory
@@ -74,7 +74,7 @@ module RgGen::Core::RegisterMap
       end
     end
 
-    describe "#create" do
+    describe '#create' do
       let(:feature_values) do
         {
           register_blocks:  [
@@ -119,14 +119,14 @@ module RgGen::Core::RegisterMap
 
       let(:file) { 'foo.json' }
 
-      let(:configuration) { RgGen::Core::Configuration::Component.new }
+      let(:configuration) { RgGen::Core::Configuration::Component.new('configuration') }
 
       before do
         allow(File).to receive(:readable?).with(file).and_return(true)
         allow(File).to receive(:binread).with(file).and_return(file_content)
       end
 
-      it "レジスタマップコンポーネントの生成と組み立てを行う" do
+      it 'レジスタマップコンポーネントの生成と組み立てを行う' do
         register_map = register_map_component_factory.create(configuration, [file])
 
         expect(register_map.register_blocks[0]).to have_properties({

@@ -9,7 +9,7 @@ module RgGen::Core::InputBase
     end
 
     def create_feature(base = Feature, &body)
-      define_feature(base, &body).new(RgGen::Core::Base::Component.new, :feature)
+      define_feature(base, &body).new(RgGen::Core::Base::Component.new('component'), :feature)
     end
 
     def create_input_value(value, position = nil)

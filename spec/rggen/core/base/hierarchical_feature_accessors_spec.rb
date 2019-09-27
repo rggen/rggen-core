@@ -14,13 +14,13 @@ module RgGen::Core::Base
       end
     end
 
-    let(:register_map) { Component.new }
+    let(:register_map) { Component.new('component') }
 
-    let(:register_block) { Component.new(register_map) }
+    let(:register_block) { Component.new('component', register_map) }
 
-    let(:register) { Component.new(register_block) }
+    let(:register) { Component.new('component', register_block) }
 
-    let(:bit_field) { Component.new(register) }
+    let(:bit_field) { Component.new('component', register) }
 
     context "#componentの#levelが0の場合" do
       let(:feature) { feature_class.new(register_map) }

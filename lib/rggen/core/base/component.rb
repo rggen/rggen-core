@@ -4,7 +4,8 @@ module RgGen
   module Core
     module Base
       class Component
-        def initialize(*args)
+        def initialize(base_name, *args)
+          @base_name = base_name
           @parent = args.first
           @children = []
           @need_children = true
@@ -17,6 +18,15 @@ module RgGen
         attr_reader :parent
         attr_reader :children
         attr_reader :level
+
+        def component_name
+          [hierarchy, @base_name].compact.join('@')
+        end
+
+        def hierarchy
+        end
+
+        alias_method :to_s, :component_name
 
         def need_children?
           @need_children

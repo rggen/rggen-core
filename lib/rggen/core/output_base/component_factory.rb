@@ -6,8 +6,8 @@ module RgGen
       class ComponentFactory < Base::ComponentFactory
         private
 
-        def create_component(parent, configuration, register_map, &block)
-          target_component.new(parent, configuration, register_map, &block)
+        def select_actual_sources(configuration, register_map)
+          [configuration, register_map]
         end
 
         def create_features(component, configuration, register_map)

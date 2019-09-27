@@ -8,7 +8,7 @@ module RgGen::Core::Base
       klass = Class.new(Component) do
         include HierarchicalAccessors
         def initialize(parent = nil)
-          super
+          super('component', parent)
           parent && parent.add_child(self)
           define_hierarchical_accessors
         end

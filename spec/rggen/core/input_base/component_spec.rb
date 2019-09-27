@@ -5,7 +5,7 @@ require 'spec_helper'
 module RgGen::Core::InputBase
   describe Component do
     describe "#add_feature" do
-      let(:component) { Component.new }
+      let(:component) { Component.new('component') }
 
       let(:features) do
         [
@@ -30,7 +30,7 @@ module RgGen::Core::InputBase
     end
 
     describe "#properties" do
-      let(:component) { Component.new }
+      let(:component) { Component.new('component') }
 
       let(:features) do
         [
@@ -49,7 +49,7 @@ module RgGen::Core::InputBase
     end
 
     describe "#verify" do
-      let(:foo_component) { Component.new }
+      let(:foo_component) { Component.new('component') }
 
       let(:bar_components) do
         Array.new(2) do
@@ -113,7 +113,7 @@ module RgGen::Core::InputBase
         feature
       end
 
-      let(:component) { Component.new }
+      let(:component) { Component.new('component') }
 
       let(:child_component) do
         Component.new(component).tap { |child| component.add_child(child) }

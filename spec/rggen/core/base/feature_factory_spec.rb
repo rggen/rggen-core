@@ -43,7 +43,7 @@ module RgGen::Core::Base
 
     let(:factory) { factory_class.new(feature_name) { |f| f.target_feature foo_feature } }
 
-    let(:component) { Component.new }
+    let(:component) { Component.new('component') }
 
     describe "#create_feature" do
       it "対象フィーチャーを生成し、コンポーネントに追加する" do

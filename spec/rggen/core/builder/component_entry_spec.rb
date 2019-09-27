@@ -7,11 +7,7 @@ module RgGen::Core::Builder
     let(:base_component) { RgGen::Core::InputBase::Component }
 
     let(:component_factory) do
-      Class.new(RgGen::Core::InputBase::ComponentFactory) do
-        def create_component(parent, *_, &block)
-          @target_component.new(parent, &block)
-        end
-      end
+      RgGen::Core::InputBase::ComponentFactory
     end
 
     let(:base_feature) do
@@ -25,16 +21,18 @@ module RgGen::Core::Builder
     end
 
     let(:parent) do
-      RgGen::Core::InputBase::Component.new(nil)
+      RgGen::Core::InputBase::Component.new('parent', nil)
     end
 
+    let(:component_name) { 'component' }
+
     def create_entry
-      entry = ComponentEntry.new
+      entry = ComponentEntry.new(component_name)
       block_given? && yield(entry)
       entry
     end
 
-    it "#componentで登録されたコンポーネントを生成するファクトリを生成する" do
+    it '#componentで登録されたコンポーネントを生成するファクトリを生成する' do
       entry = create_entry do |e|
         e.component(base_component, component_factory)
       end
@@ -44,8 +42,18 @@ module RgGen::Core::Builder
       expect(component).to be_kind_of base_component
     end
 
-    context "#featureでフィーチャーが登録されていない場合" do
-      specify "生成されるコンポーネントはフィーチャーを持たない" do
+    specify 'ファクトリから生成されたコンポーネントは、エントリと同じコンポーネント名を持つ' do
+      entry = create_entry do |e|
+        e.component(base_component, component_factory)
+      end
+
+      factroy = entry.build_factory
+      component = factroy.create(parent)
+      expect(component.component_name).to eq component_name
+    end
+
+    context '#featureでフィーチャーが登録されていない場合' do
+      specify '生成されるコンポーネントはフィーチャーを持たない' do
         entry = create_entry do |e|
           e.component(base_component, component_factory)
         end
@@ -56,7 +64,7 @@ module RgGen::Core::Builder
       end
     end
 
-    context "#featureでフィーチャーが登録されている場合" do
+    context '#featureでフィーチャーが登録されている場合' do
       let(:input_data) do
         RgGen::Core::InputBase::InputData.new([[:foo, :bar]]) do |data|
           data.foo(rand(99))
@@ -64,7 +72,7 @@ module RgGen::Core::Builder
         end
       end
 
-      specify "生成されるコンポーネントはフィーチャーを持つ" do
+      specify '生成されるコンポーネントはフィーチャーを持つ' do
         entry = create_entry do |e|
           e.component(base_component, component_factory)
           e.feature(base_feature, feature_factory)

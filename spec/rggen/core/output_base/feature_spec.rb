@@ -5,15 +5,15 @@ require 'spec_helper'
 module RgGen::Core::OutputBase
   describe Feature do
     let(:configuration) do
-      RgGen::Core::Configuration::Component.new(nil)
+      RgGen::Core::Configuration::Component.new('configuration', nil)
     end
 
     let(:register_map) do
-      RgGen::Core::RegisterMap::Component.new(nil, configuration)
+      RgGen::Core::RegisterMap::Component.new('register_map', nil, configuration)
     end
 
     let(:component) do
-      RgGen::Core::OutputBase::Component.new(nil, configuration, register_map)
+      RgGen::Core::OutputBase::Component.new('component', nil, configuration, register_map)
     end
 
     def define_feature(super_class = nil, &block)
@@ -24,8 +24,8 @@ module RgGen::Core::OutputBase
       define_feature(super_class, &block).new(component, :feature)
     end
 
-    describe "#pre_build" do
-      it ".pre_buildで登録されたブロックを実行し、フィーチャーの事前組み立てを行う" do
+    describe '#pre_build' do
+      it '.pre_buildで登録されたブロックを実行し、フィーチャーの事前組み立てを行う' do
         feature = define_and_create_feature do
           pre_build { @foo = component.foo }
           pre_build { @bar = component.bar }
@@ -39,8 +39,8 @@ module RgGen::Core::OutputBase
         expect(feature.instance_variable_get(:@bar)).to be component.bar
       end
 
-      context "継承された場合" do
-        specify "親クラスの組み立てブロックは継承される" do
+      context '継承された場合' do
+        specify '親クラスの組み立てブロックは継承される' do
           parent_feature = define_feature do
             pre_build { @foo = component.foo }
           end
@@ -57,8 +57,8 @@ module RgGen::Core::OutputBase
         end
       end
 
-      context "組み立てブロックが未登録の場合" do
-        it "エラーなく実行できる" do
+      context '組み立てブロックが未登録の場合' do
+        it 'エラーなく実行できる' do
           feature = define_and_create_feature
           expect {
             feature.pre_build
@@ -67,8 +67,8 @@ module RgGen::Core::OutputBase
       end
     end
 
-    describe "#build" do
-      it ".buildで登録されたブロックを実行し、フィーチャーの組み立てを行う" do
+    describe '#build' do
+      it '.buildで登録されたブロックを実行し、フィーチャーの組み立てを行う' do
         feature = define_and_create_feature do
           build { @foo = component.foo }
           build { @bar = component.bar }
@@ -82,8 +82,8 @@ module RgGen::Core::OutputBase
         expect(feature.instance_variable_get(:@bar)).to be component.bar
       end
 
-      context "継承された場合" do
-        specify "親クラスの組み立てブロックは継承される" do
+      context '継承された場合' do
+        specify '親クラスの組み立てブロックは継承される' do
           parent_feature = define_feature do
             build { @foo = component.foo }
           end
@@ -100,8 +100,8 @@ module RgGen::Core::OutputBase
         end
       end
 
-      context "組み立てブロックが未登録の場合" do
-        it "エラーなく実行できる" do
+      context '組み立てブロックが未登録の場合' do
+        it 'エラーなく実行できる' do
           feature = define_and_create_feature
           expect {
             feature.build
@@ -130,7 +130,7 @@ module RgGen::Core::OutputBase
       let(:template) { '<%= object_id %>' }
     end
 
-    shared_examples_for "code_generator" do |phase|
+    shared_examples_for 'code_generator' do |phase|
       it ".#{phase}で登録されたブロックを実行し、コードの生成を行う" do
         feature = define_and_create_feature do
           send(phase, :foo) { |c| c << 'foo' }
@@ -144,7 +144,7 @@ module RgGen::Core::OutputBase
         feature.generate_code(phase, :bar, code)
       end
 
-      specify "同名のコード生成ブロックを複数個登録できる" do
+      specify '同名のコード生成ブロックを複数個登録できる' do
         feature = define_and_create_feature do
           send(phase, :foo) { 'foo_0' }
           send(phase, :foo) { 'foo_1' }
@@ -155,8 +155,8 @@ module RgGen::Core::OutputBase
         feature.generate_code(phase, :foo, code)
       end
 
-      context "未登録のコードの種類が指定された場合" do
-        it "コードの生成は行わない" do
+      context '未登録のコードの種類が指定された場合' do
+        it 'コードの生成は行わない' do
           feature = define_and_create_feature do
             send(phase, :foo) { 'foo' }
           end
@@ -167,7 +167,7 @@ module RgGen::Core::OutputBase
         end
       end
 
-      it "生成したコードオブジェクト、または、与えたコードオブジェクトを返す" do
+      it '生成したコードオブジェクト、または、与えたコードオブジェクトを返す' do
         allow(code).to receive(:<<)
 
         feature = define_and_create_feature do
@@ -180,10 +180,10 @@ module RgGen::Core::OutputBase
         expect(feature.generate_code(phase, :bar, code)).to be code
       end
 
-      describe "from_template option" do
+      describe 'from_template option' do
         include_context 'template engine'
 
-        it "テンプレートを処理して、コードを生成する" do
+        it 'テンプレートを処理して、コードを生成する' do
           engine = template_engine
           feature = define_and_create_feature do
             template_engine engine
@@ -200,8 +200,8 @@ module RgGen::Core::OutputBase
           feature.generate_code(phase, :bar, code)
         end
 
-        context "from_templateにfalseが指定された場合" do
-          it "テンプレートからコードの生成を行わない" do
+        context 'from_templateにfalseが指定された場合' do
+          it 'テンプレートからコードの生成を行わない' do
             feature = define_and_create_feature do
               send(phase, :foo, from_template: false)
             end
@@ -213,8 +213,8 @@ module RgGen::Core::OutputBase
         end
       end
 
-      context "継承された場合" do
-        specify "コード生成ブロックは継承される" do
+      context '継承された場合' do
+        specify 'コード生成ブロックは継承される' do
           parent_feature = define_feature do
             send(phase, :foo) { 'foo' }
             send(phase, :bar) { 'bar' }
@@ -228,7 +228,7 @@ module RgGen::Core::OutputBase
           feature.generate_code(phase, :bar, code)
         end
 
-        specify "継承先での変更は、親クラスに影響しない" do
+        specify '継承先での変更は、親クラスに影響しない' do
           parent_feature = define_and_create_feature do
             send(phase, :foo) { 'foo_0' }
           end
@@ -248,34 +248,34 @@ module RgGen::Core::OutputBase
       end
     end
 
-    describe "#generate_code" do
+    describe '#generate_code' do
       let(:code) { double('code') }
 
       before do
         allow_any_instance_of(Feature).to receive(:create_blank_code).and_return(code)
       end
 
-      context "生成フェーズが:pre_codeの場合" do
-        it_behaves_like "code_generator", :pre_code
+      context '生成フェーズが:pre_codeの場合' do
+        it_behaves_like 'code_generator', :pre_code
       end
 
-      context "生成フェーズが:main_codeの場合" do
-        it_behaves_like "code_generator", :main_code
+      context '生成フェーズが:main_codeの場合' do
+        it_behaves_like 'code_generator', :main_code
       end
 
-      context "生成フェーズが:post_codeの場合" do
-        it_behaves_like "code_generator", :post_code
+      context '生成フェーズが:post_codeの場合' do
+        it_behaves_like 'code_generator', :post_code
       end
     end
 
-    describe "#write_file" do
+    describe '#write_file' do
       let(:feature_base) do
         Class.new(Feature) do
           def create_blank_file(_path); ''.dup; end
         end
       end
 
-      it ".write_fileで与えられたブロックの実行し、結果をファイルに書き出す" do
+      it '.write_fileで与えられたブロックの実行し、結果をファイルに書き出す' do
         feature = define_and_create_feature(feature_base) do
           write_file 'foo.txt' do |f|
             f << file_content
@@ -287,7 +287,7 @@ module RgGen::Core::OutputBase
         feature.write_file
       end
 
-      it ".write_fileで指定したパターンのファイル名でファイルを書き出す" do
+      it '.write_fileで指定したパターンのファイル名でファイルを書き出す' do
         feature = define_and_create_feature(feature_base) do
           write_file '<%= file_name %>' do
           end
@@ -298,8 +298,8 @@ module RgGen::Core::OutputBase
         feature.write_file
       end
 
-      context "出力ディレクトリが指定された場合" do
-        it "指定されたディレクトリにファイルを書き出す" do
+      context '出力ディレクトリが指定された場合' do
+        it '指定されたディレクトリにファイルを書き出す' do
           feature = define_and_create_feature(feature_base) do
             write_file 'baz.txt' do
             end
@@ -315,8 +315,8 @@ module RgGen::Core::OutputBase
           feature.write_file(['foo', 'bar'])
         end
 
-        context "継承された場合" do
-          specify "ファイル名のパターンと内容を生成するブロックは継承される" do
+        context '継承された場合' do
+          specify 'ファイル名のパターンと内容を生成するブロックは継承される' do
             parent_feature = define_feature(feature_base) do
               write_file '<%= file_name %>' do |f|
                 f << file_content
@@ -332,8 +332,8 @@ module RgGen::Core::OutputBase
           end
         end
 
-        context "ファイル名のパターンと内容を生成するブロックが未登録の場合" do
-          it "エラーなく実行できる" do
+        context 'ファイル名のパターンと内容を生成するブロックが未登録の場合' do
+          it 'エラーなく実行できる' do
             feature = define_and_create_feature do
             end
 
@@ -346,8 +346,8 @@ module RgGen::Core::OutputBase
       end
     end
 
-    describe "#exported_methods" do
-      it ".export/#exportで指定されたメソッド一覧を返す" do
+    describe '#exported_methods' do
+      it '.export/#exportで指定されたメソッド一覧を返す' do
         feature = define_and_create_feature do
           export :foo
           export :bar, :baz
@@ -364,8 +364,8 @@ module RgGen::Core::OutputBase
         expect(feature.exported_methods(:object)).to match [:fizz, :buzz, :fizzbuzz]
       end
 
-      context "継承された場合" do
-        specify ".exportで指定されたメソッド一覧は継承される" do
+      context '継承された場合' do
+        specify '.exportで指定されたメソッド一覧は継承される' do
           foo_feature = define_and_create_feature do
             export :foo
           end
@@ -383,12 +383,12 @@ module RgGen::Core::OutputBase
       end
     end
 
-    describe "#process_template" do
+    describe '#process_template' do
       include_context 'template engine'
 
       let(:code) { double('code') }
 
-      it "テンプレートエンジンでテンプレートを処理し、コードを生成する" do
+      it 'テンプレートエンジンでテンプレートを処理し、コードを生成する' do
         engine = template_engine
         foo_feature = define_and_create_feature do
           template_engine engine

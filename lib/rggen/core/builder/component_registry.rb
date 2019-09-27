@@ -4,8 +4,8 @@ module RgGen
   module Core
     module Builder
       class ComponentRegistry
-        def initialize(name, builder)
-          @name = name
+        def initialize(component_name, builder)
+          @component_name = component_name
           @builder = builder
           @entries = []
         end
@@ -31,7 +31,7 @@ module RgGen
         private
 
         def create_new_entry(category, block)
-          entry = ComponentEntry.new
+          entry = ComponentEntry.new(@component_name)
           Docile.dsl_eval(entry, category, &block)
           add_feature_registry(category, entry.feature_registry)
           entry
@@ -39,7 +39,8 @@ module RgGen
 
         def add_feature_registry(category, feature_registry)
           feature_registry || return
-          @builder.add_feature_registry(@name, category, feature_registry)
+          @builder
+            .add_feature_registry(@component_name, category, feature_registry)
         end
       end
     end
