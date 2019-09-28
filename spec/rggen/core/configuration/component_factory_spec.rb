@@ -25,7 +25,7 @@ module RgGen::Core::Configuration
     end
 
     let(:factory) do
-      ComponentFactory.new do |f|
+      ComponentFactory.new('configuration') do |f|
         f.root_factory
         f.target_component Component
         f.feature_factories feature_factories
@@ -33,7 +33,7 @@ module RgGen::Core::Configuration
       end
     end
 
-    describe "#create" do
+    describe '#create' do
       let(:feature_values) do
         { foo: rand(99), bar: rand(99), baz: rand(99) }
       end
@@ -47,7 +47,7 @@ module RgGen::Core::Configuration
         allow(File).to receive(:binread).with(file).and_return(file_content)
       end
 
-      it "コンフィグレーションコンポーネントの生成と組み立てを行う" do
+      it 'コンフィグレーションコンポーネントの生成と組み立てを行う' do
         configuration = factory.create([file])
         expect(configuration).to have_attributes(feature_values)
       end

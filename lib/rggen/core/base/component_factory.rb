@@ -4,7 +4,8 @@ module RgGen
   module Core
     module Base
       class ComponentFactory
-        def initialize
+        def initialize(component_name)
+          @component_name = component_name
           @root_factory = false
           block_given? && yield(self)
         end
@@ -24,7 +25,7 @@ module RgGen
             else
               [args.first, preprocess(args[1..-1])]
             end
-          create_component(parent, *sources) do |component|
+          create_component(parent, sources) do |component|
             build_component(parent, component, sources)
             root_factory? && finalize(component)
           end
@@ -34,6 +35,15 @@ module RgGen
 
         def root_factory?
           @root_factory
+        end
+
+        def create_component(parent, sources, &block)
+          actual_sources = Array(select_actual_sources(*sources))
+          @target_component
+            .new(@component_name, parent, *actual_sources, &block)
+        end
+
+        def select_actual_sources(*sources)
         end
 
         def build_component(parent, component, sources)

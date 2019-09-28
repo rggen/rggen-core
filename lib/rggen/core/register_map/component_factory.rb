@@ -6,8 +6,8 @@ module RgGen
       class ComponentFactory < InputBase::ComponentFactory
         private
 
-        def create_component(parent, configuration, _, &block)
-          @target_component.new(parent, configuration, &block)
+        def select_actual_sources(configuration, *_)
+          configuration
         end
 
         def create_input_data(&block)

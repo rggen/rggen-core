@@ -11,7 +11,7 @@ module RgGen::Core::InputBase
     let(:passive_feature) { Class.new(Feature) }
 
     describe "#create" do
-      let(:component) { RgGen::Core::Base::Component.new }
+      let(:component) { RgGen::Core::Base::Component.new('component') }
 
       let(:active_factory) do
         FeatureFactory.new(feature_name) { |f| f.target_feature active_feature }

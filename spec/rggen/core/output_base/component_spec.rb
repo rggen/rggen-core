@@ -5,15 +5,15 @@ require 'spec_helper'
 module RgGen::Core::OutputBase
   describe Component do
     let(:configuration) do
-      RgGen::Core::Configuration::Component.new(nil)
+      RgGen::Core::Configuration::Component.new('configuration', nil)
     end
 
     let(:register_map) do
-      RgGen::Core::RegisterMap::Component.new(nil, configuration)
+      RgGen::Core::RegisterMap::Component.new('register_map', nil, configuration)
     end
 
     def create_component(parent)
-      component = Component.new(parent, configuration, register_map)
+      component = Component.new('component', parent, configuration, register_map)
       parent && parent.add_child(component)
       component
     end
@@ -24,7 +24,7 @@ module RgGen::Core::OutputBase
       feature
     end
 
-    it "レジスタマップオブジェクトの各プロパティドメソッドを呼び出すことができる" do
+    it 'レジスタマップオブジェクトの各プロパティドメソッドを呼び出すことができる' do
       allow(register_map).to receive(:properties).and_return([:foo, :bar, :baz])
       expect(register_map).to receive(:foo)
       expect(register_map).to receive(:bar)
@@ -66,18 +66,18 @@ module RgGen::Core::OutputBase
       end
     end
 
-    describe "#need_children?" do
+    describe '#need_children?' do
       let(:component) { create_component(nil) }
 
-      context "レジスタマップオブジェクトが子コンポーネントを必要とする場合" do
-        specify "同様に子コンポーネントを必要とする" do
+      context 'レジスタマップオブジェクトが子コンポーネントを必要とする場合' do
+        specify '同様に子コンポーネントを必要とする' do
           allow(register_map).to receive(:need_children?).and_return(true)
           expect(component.need_children?).to be true
         end
       end
 
-      context "レジスタマップオブジェクトが子コンポーネントを必要としない場合" do
-        specify "同様に子コンポーネントを必要としない" do
+      context 'レジスタマップオブジェクトが子コンポーネントを必要としない場合' do
+        specify '同様に子コンポーネントを必要としない' do
           allow(register_map).to receive(:need_children?).and_return(false)
           expect(component.need_children?).to be false
         end
@@ -136,7 +136,7 @@ module RgGen::Core::OutputBase
       end
     end
 
-    describe "#build" do
+    describe '#build' do
       let(:foo_component) do
         create_component(nil)
       end
@@ -176,7 +176,7 @@ module RgGen::Core::OutputBase
         end
       end
 
-      it "配下の全コンポーネント/フィーチャーの#buildを呼び出して、自身の組み立てを行う" do
+      it '配下の全コンポーネント/フィーチャーの#buildを呼び出して、自身の組み立てを行う' do
         [*bar_components, *baz_components].each do |component|
           expect(component).to receive(:build).and_call_original
         end
@@ -186,7 +186,7 @@ module RgGen::Core::OutputBase
         foo_component.build
       end
 
-      specify "#build実行後、Feature#exportで指定されたメソッドを、自身をレシーバとして呼び出すことができる" do
+      specify '#build実行後、Feature#exportで指定されたメソッドを、自身をレシーバとして呼び出すことができる' do
         expect { foo_component.foo_0 }.to raise_error NoMethodError
         expect { foo_component.foo_1 }.to raise_error NoMethodError
 
@@ -199,7 +199,7 @@ module RgGen::Core::OutputBase
       end
     end
 
-    describe "#generate_code" do
+    describe '#generate_code' do
       let(:code) { double('code') }
 
       let(:foo_component) do
@@ -242,8 +242,8 @@ module RgGen::Core::OutputBase
         end
       end
 
-      context "modeに:top_downを指定した場合" do
-        it "kindで指定したコードを上位コンポーネントから生成する" do
+      context 'modeに:top_downを指定した場合' do
+        it 'kindで指定したコードを上位コンポーネントから生成する' do
           [
             "#{foo_component.object_id}_fizz",
             "#{bar_components[0].object_id}_fizzfizz",
@@ -272,8 +272,8 @@ module RgGen::Core::OutputBase
         end
       end
 
-      context "modeに:bottom_upを指定した場合" do
-        it "kindで指定したコードを下位コンポーネントから生成する" do
+      context 'modeに:bottom_upを指定した場合' do
+        it 'kindで指定したコードを下位コンポーネントから生成する' do
           [
             "#{baz_components[0].object_id}_fizzfizzfizz",
             "#{baz_components[1].object_id}_fizzfizzfizz",
@@ -302,7 +302,7 @@ module RgGen::Core::OutputBase
         end
       end
 
-      it "内部で生成したコードオブジェクト、または、与えたコードオブジェクトを返す" do
+      it '内部で生成したコードオブジェクト、または、与えたコードオブジェクトを返す' do
         allow(code).to receive(:<<)
         expect(foo_component.generate_code(:fizz, :top_down)).to eq code
         expect(foo_component.generate_code(:fizz, :top_down, code)).to eq code
@@ -310,7 +310,7 @@ module RgGen::Core::OutputBase
         expect(foo_component.generate_code(:fizz, :bottom_up, code)).to eq code
       end
 
-      context "Feature.pre_codeで事前コード生成の登録がある場合" do
+      context 'Feature.pre_codeで事前コード生成の登録がある場合' do
         before do
           pre_fizz_0_body = proc do
             pre_code(:fizz) { "#{component.object_id}_pre_#{'fizz' * (component.level + 1)}_0" }
@@ -328,7 +328,7 @@ module RgGen::Core::OutputBase
           end
         end
 
-        it "Feature.main_codeで登録された主コード生成前に、事前コードを生成する" do
+        it 'Feature.main_codeで登録された主コード生成前に、事前コードを生成する' do
           [
             "#{foo_component.object_id}_pre_fizz_0",
             "#{foo_component.object_id}_pre_fizz_1",
@@ -369,7 +369,7 @@ module RgGen::Core::OutputBase
         end
       end
 
-      context "Feature.post_codeで事後コード生成の登録がある場合" do
+      context 'Feature.post_codeで事後コード生成の登録がある場合' do
         before do
           post_fizz_0_body = proc do
             post_code(:fizz) { "#{component.object_id}_post_#{'fizz' * (component.level + 1)}_0" }
@@ -387,7 +387,7 @@ module RgGen::Core::OutputBase
           end
         end
 
-        it "Feature.main_codeで登録された主コードの生成後に、事後コードを生成する" do
+        it 'Feature.main_codeで登録された主コードの生成後に、事後コードを生成する' do
           [
             "#{foo_component.object_id}_fizz",
             "#{bar_components[0].object_id}_fizzfizz",
@@ -429,7 +429,7 @@ module RgGen::Core::OutputBase
       end
     end
 
-    describe "#write_file" do
+    describe '#write_file' do
       let(:foo_component) do
         create_component(nil)
       end

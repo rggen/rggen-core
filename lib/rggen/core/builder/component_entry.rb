@@ -6,6 +6,10 @@ module RgGen
       class ComponentEntry
         Entry = Struct.new(:target, :factory)
 
+        def initialize(component_name)
+          @component_name = component_name
+        end
+
         [:component, :feature].each do |entry_name|
           define_method(entry_name) do |target, factory|
             instance_variable_set("@#{__method__}", Entry.new(target, factory))
@@ -18,7 +22,7 @@ module RgGen
         end
 
         def build_factory
-          @component.factory.new do |f|
+          @component.factory.new(@component_name) do |f|
             f.target_component(@component.target)
             f.feature_factories(feature_registry&.build_factories)
           end

@@ -5,11 +5,11 @@ require 'spec_helper'
 module RgGen::Core::OutputBase
   describe ComponentFactory do
     let(:configuration) do
-      RgGen::Core::Configuration::Component.new(nil)
+      RgGen::Core::Configuration::Component.new('configuration', nil)
     end
 
     def create_register_map(parent)
-      RgGen::Core::RegisterMap::Component.new(parent, configuration) do |c|
+      RgGen::Core::RegisterMap::Component.new('register_map', parent, configuration) do |c|
         parent&.add_child(c)
       end
     end
@@ -61,7 +61,7 @@ module RgGen::Core::OutputBase
             buzz: create_feature_factory(hierarchy, :buzz)
           }
         end
-      ComponentFactory.new do |f|
+      ComponentFactory.new('component') do |f|
         f.target_component Component
         f.feature_factories feature_factories
         f.child_factory child_factory
@@ -93,8 +93,8 @@ module RgGen::Core::OutputBase
       end
     end
 
-    describe "#create" do
-      it "出力コンポーネントの生成と組み立てを行う" do
+    describe '#create' do
+      it '出力コンポーネントの生成と組み立てを行う' do
         output_component = register_map_component_factory.create(configuration, register_map)
 
         register_blocks.each_with_index do |register_block, i|
