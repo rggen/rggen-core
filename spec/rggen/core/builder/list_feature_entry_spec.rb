@@ -21,7 +21,7 @@ module RgGen::Core::Builder
     let(:feature_registry) { double('feature_registry') }
 
     let(:default_factory_body) do
-      proc { def select_feature(key); @target_features[key]; end }
+      proc { def target_feature_key(key); key; end }
     end
 
     def create_entry(context = nil, &body)
@@ -75,7 +75,9 @@ module RgGen::Core::Builder
 
         entry = create_entry do
           define_factory do
-            define_method(:select_feature) { |key| @target_features[key] || (raise exception) }
+            define_method(:target_feature_key) do |key|
+              (@target_features.key?(key) && key) || (raise exception)
+            end
           end
           define_feature(:foo)
           define_feature(:bar)

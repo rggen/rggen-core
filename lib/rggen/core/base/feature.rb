@@ -8,15 +8,24 @@ module RgGen
         extend SharedContext
         extend Forwardable
 
-        def initialize(component, feature_name)
-          @component = component
+        def initialize(feature_name, sub_feature_name, component)
           @feature_name = feature_name
+          @sub_feature_name = sub_feature_name
+          @component = component
           post_initialize
           block_given? && yield(self)
         end
 
         attr_reader :component
-        attr_reader :feature_name
+
+        def feature_name(verbose: false)
+          if verbose
+            [@feature_name, @sub_feature_name]
+              .compact.reject(&:empty?).join(':')
+          else
+            @feature_name
+          end
+        end
 
         class << self
           attr_reader :printables

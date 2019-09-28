@@ -11,7 +11,7 @@ module RgGen::Core::Builder
     let(:feature_factory) do
       Class.new(RgGen::Core::InputBase::FeatureFactory) do
         def create(*args); create_feature(*args); end
-        def select_feature(key); @target_features[key]; end
+        def target_feature_key(key); key; end
       end
     end
 

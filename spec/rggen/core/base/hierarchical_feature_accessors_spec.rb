@@ -8,7 +8,7 @@ module RgGen::Core::Base
       Class.new(Feature) do
         include HierarchicalFeatureAccessors
         def initialize(component)
-          super(component, :feature)
+          super(:feature, nil, component)
           define_hierarchical_accessors
         end
       end

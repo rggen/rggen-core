@@ -19,7 +19,7 @@ module RgGen::Core::OutputBase
     end
 
     def define_and_create_feature(component, feature_name, super_class = nil, &body)
-      feature = Class.new(super_class || Feature, &body).new(component, feature_name)
+      feature = Class.new(super_class || Feature, &body).new(feature_name, nil, component)
       component.add_feature(feature)
       feature
     end

@@ -9,8 +9,8 @@ module RgGen::Core::InputBase
 
       let(:features) do
         [
-          Class.new(Feature) { property :foo, default: :foo; property :bar, default: :bar; }.new(component, :feature_0),
-          Class.new(Feature) { property :baz, default: :baz }.new(component, :feature_1)
+          Class.new(Feature) { property :foo, default: :foo; property :bar, default: :bar; }.new(:feature_0, nil, component),
+          Class.new(Feature) { property :baz, default: :baz }.new(:feature_1, nil, component)
         ]
       end
 
@@ -34,8 +34,8 @@ module RgGen::Core::InputBase
 
       let(:features) do
         [
-          Class.new(Feature) { property :foo; property :bar}.new(component, :feature_0),
-          Class.new(Feature) { property :baz }.new(component, :feature_1)
+          Class.new(Feature) { property :foo; property :bar}.new(:feature_0, nil, component),
+          Class.new(Feature) { property :baz }.new(:feature_1, nil, component)
         ]
       end
 
@@ -72,7 +72,7 @@ module RgGen::Core::InputBase
       let(:features) do
         [foo_component, *bar_components, *baz_components].flat_map.with_index do |component, i|
           Array.new(2) do |j|
-            feature = Feature.new(component, "feature_#{i}_#{j}")
+            feature = Feature.new("feature_#{i}_#{j}", nil, component)
             component.add_feature(feature)
             feature
           end
@@ -108,7 +108,7 @@ module RgGen::Core::InputBase
 
     describe '#printables' do
       def create_feature(component, feature_name, &body)
-        feature = Class.new(Feature, &body).new(component, feature_name)
+        feature = Class.new(Feature, &body).new(feature_name, nil, component)
         component.add_feature(feature)
         feature
       end
