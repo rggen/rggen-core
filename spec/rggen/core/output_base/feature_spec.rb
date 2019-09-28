@@ -21,7 +21,7 @@ module RgGen::Core::OutputBase
     end
 
     def define_and_create_feature(super_class = nil, &block)
-      define_feature(super_class, &block).new(component, :feature)
+      define_feature(super_class, &block).new(:feature, nil, component)
     end
 
     describe '#pre_build' do
