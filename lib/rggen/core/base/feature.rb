@@ -27,6 +27,10 @@ module RgGen
           end
         end
 
+        def inspect
+          "#{feature_name(verbose: true)}(#{component})"
+        end
+
         class << self
           attr_reader :printables
 

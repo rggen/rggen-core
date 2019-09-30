@@ -105,6 +105,12 @@ module RgGen
           !helper.printables.nil?
         end
 
+        def inspect
+          printable_values =
+            printables&.map { |name, value| "#{name}: #{value.inspect}" }
+          (printable_values && "#{super}[#{printable_values.join(', ')}]") || super
+        end
+
         private
 
         def do_build(args)
