@@ -45,6 +45,18 @@ module RgGen::Core::Base
       end
     end
 
+    describe '#inspect' do
+      it 'フィーチャー名(副フィーチャー名含む)とコンポーネント名を表示する' do
+        sub_feature_name = ''
+        feature = feature_class.new(feature_name, sub_feature_name, component)
+        expect(feature.inspect).to eq "#{feature_name}(#{component.component_name})"
+
+        sub_feature_name = 'bar'
+        feature = feature_class.new(feature_name, sub_feature_name, component)
+        expect(feature.inspect).to eq "#{feature_name}:#{sub_feature_name}(#{component.component_name})"
+      end
+    end
+
     describe '.define_helpers' do
       before do
         feature_class.class_exec do

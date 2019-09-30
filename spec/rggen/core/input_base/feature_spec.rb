@@ -469,5 +469,30 @@ module RgGen::Core::InputBase
         end
       end
     end
+
+    describe '#inspect' do
+      context '表示可能オブジェクトを含む場合' do
+        let(:feature) do
+          create_feature do
+            printable(:foo) { :foo }
+            printable(:bar) { [:bar_0, :bar_1] }
+          end
+        end
+
+        it '表示可能オブジェクトも表示する' do
+          expect(feature.inspect).to eq 'feature(component)[foo: :foo, bar: [:bar_0, :bar_1]]'
+        end
+      end
+
+      context '表示可能オブジェクトを含まない場合' do
+        let(:feature) do
+          create_feature {}
+        end
+
+        it 'フィーチャー名と、コンポーネント名のみを表示する' do
+          expect(feature.inspect).to eq 'feature(component)'
+        end
+      end
+    end
   end
 end
