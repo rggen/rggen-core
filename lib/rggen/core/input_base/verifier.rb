@@ -20,20 +20,19 @@ module RgGen
           @message = block
         end
 
-        def verify(feature)
+        def verify(feature, *values)
           if @error_checker
-            feature.instance_eval(&@error_checker)
+            feature.instance_exec(*values, &@error_checker)
           else
-            default_error_check(feature)
+            default_error_check(feature, values)
           end
         end
 
         private
 
-        def default_error_check(feature)
-          feature.instance_exec(@condition, @message) do |condition, message|
-            instance_eval(&condition) && error(instance_eval(&message))
-          end
+        def default_error_check(feature, values)
+          feature.instance_exec(*values, &@condition) &&
+            feature.__send__(:error, feature.instance_exec(*values, &@message))
         end
       end
     end
