@@ -11,6 +11,7 @@ module RgGen
           @need_children = true
           @level = (parent && parent.level + 1) || 0
           @features = {}
+          @component_index = parent&.children&.size || 0
           post_initialize(*args)
           block_given? && yield(self)
         end
@@ -18,6 +19,7 @@ module RgGen
         attr_reader :parent
         attr_reader :children
         attr_reader :level
+        attr_reader :component_index
 
         def component_name
           [hierarchy, @base_name].compact.join('@')

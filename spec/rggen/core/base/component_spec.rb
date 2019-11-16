@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
 RSpec.describe RgGen::Core::Base::Component do
   describe '#component_name' do
     let(:base_name) { 'component' }
@@ -28,6 +26,28 @@ RSpec.describe RgGen::Core::Base::Component do
 
     it '親オブジェクトを返す' do
       expect(component.parent).to eql parent
+    end
+  end
+
+  describe '#component_index' do
+    let(:parent) { described_class.new('parent') }
+
+    let(:components) do
+      Array.new(3) do
+        described_class.new('component', parent).tap(&parent.method(:add_child))
+      end
+    end
+
+    it '親コンポーネント内での通し番号を返す' do
+      expect(components[0].component_index).to eq 0
+      expect(components[1].component_index).to eq 1
+      expect(components[2].component_index).to eq 2
+    end
+
+    context '親コンポーネントを持たない場合' do
+      it '0を返す' do
+        expect(parent.component_index).to eq 0
+      end
     end
   end
 
