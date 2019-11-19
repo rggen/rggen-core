@@ -19,7 +19,7 @@ module RgGen
 
       def run(builder, options)
         verbose? && load_setup_file(builder, options[:setup])
-        puts help_message(builder)
+        puts version_message(builder)
       end
 
       private
@@ -32,7 +32,7 @@ module RgGen
         file.nil? || file.empty? || builder.load_setup_file(file, false)
       end
 
-      def help_message(builder)
+      def version_message(builder)
         [
           simple_version,
           *(verbose? && verbose_version(builder) || nil)
