@@ -4,7 +4,7 @@ module RgGen
   module Core
     module InputBase
       class InputMatcher
-        def initialize(pattern_or_patterns, options, &converter)
+        def initialize(pattern_or_patterns, **options, &converter)
           @options = options
           @converter = converter
           @patterns = format_patterns(pattern_or_patterns)

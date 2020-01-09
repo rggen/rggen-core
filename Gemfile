@@ -32,7 +32,8 @@ end
 
 group :test do
   gem 'codecov', require: false
-  gem 'regexp-examples', require: false
+  gem 'regexp-examples', '~> 1.5.1', require: false if RUBY_VERSION >= '2.4.0'
+  gem 'regexp-examples', require: false if RUBY_VERSION < '2.4.0'
   gem 'rspec', '>= 3.8'
   gem 'simplecov', require: false
 end

@@ -44,7 +44,7 @@ module RgGen
 
           def input_pattern(pattern_or_patterns, **options, &converter)
             @input_matcher =
-              InputMatcher.new(pattern_or_patterns, options, &converter)
+              InputMatcher.new(pattern_or_patterns, **options, &converter)
           end
 
           attr_reader :input_matcher
