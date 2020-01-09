@@ -27,6 +27,8 @@ matrix:
       env: RUBYOPT=--enable-frozen-string-literal USE_FIXED_GEMS=yes
     - rvm: 2.6.3
       env: RUBYOPT=--enable-frozen-string-literal USE_FIXED_GEMS=yes
+    - rvm: 2.7.0
+      env: RUBYOPT=--enable-frozen-string-literal USE_FIXED_GEMS=yes
 
 addons:
   sonarcloud:
