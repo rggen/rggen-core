@@ -15,13 +15,11 @@ module RgGen::Core::InputBase
         expect(create_matcher(/foo/).match('bar')).to be_falsey
         expect(create_matcher(/1/  ).match(1    )).to be_truthy
 
-        expect(create_matcher([/foo/, /bar/]).match('foo')).to be_truthy
-        expect(create_matcher([/foo/, /bar/]).match('bar')).to be_truthy
-        expect(create_matcher([/foo/, /bar/]).match('baz')).to be_falsey
-
-        expect(create_matcher({ foo: /foo/, bar: /bar/ }).match('foo')).to be_truthy
-        expect(create_matcher({ foo: /foo/, bar: /bar/ }).match('bar')).to be_truthy
-        expect(create_matcher({ foo: /foo/, bar: /bar/ }).match('baz')).to be_falsey
+        expect(create_matcher([/foo/, { bar: /bar/, baz: /baz/ }, /qux/]).match('foo')).to be_truthy
+        expect(create_matcher([/foo/, { bar: /bar/, baz: /baz/ }, /qux/]).match('bar')).to be_truthy
+        expect(create_matcher([/foo/, { bar: /bar/, baz: /baz/ }, /qux/]).match('baz')).to be_truthy
+        expect(create_matcher([/foo/, { bar: /bar/, baz: /baz/ }, /qux/]).match('qux')).to be_truthy
+        expect(create_matcher([/foo/, { bar: /bar/, baz: /baz/ }, /qux/]).match('abc')).to be_falsey
       end
 
       context '入力がマッチした場合' do
@@ -32,17 +30,23 @@ module RgGen::Core::InputBase
             .and have_attributes(captures: match(['foo']))
           expect(index).to eq 0
 
-          match_data, index = create_matcher([/(bar)/, /(foo)/]).match('foo')
+          match_data, index = create_matcher([/(foo)/, { bar: /(bar)/}, /(baz)/]).match('foo')
           expect(match_data)
             .to be_instance_of(MatchData)
             .and have_attributes(captures: match(['foo']))
-          expect(index).to eq 1
+          expect(index).to eq 0
 
-          match_data, index = create_matcher({ foo: /(foo)/, bar: /(bar)/ }).match('foo')
+          match_data, index = create_matcher([/(foo)/, { bar: /(bar)/}, /(baz)/]).match('bar')
           expect(match_data)
             .to be_instance_of(MatchData)
-            .and have_attributes(captures: match(['foo']))
-          expect(index).to eq :foo
+            .and have_attributes(captures: match(['bar']))
+          expect(index).to eq :bar
+
+          match_data, index = create_matcher([/(foo)/, { bar: /(bar)/}, /(baz)/]).match('baz')
+          expect(match_data)
+            .to be_instance_of(MatchData)
+            .and have_attributes(captures: match(['baz']))
+          expect(index).to eq 2
         end
       end
 
