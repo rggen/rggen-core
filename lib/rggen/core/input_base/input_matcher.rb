@@ -4,7 +4,7 @@ module RgGen
   module Core
     module InputBase
       class InputMatcher
-        def initialize(pattern_or_patterns, options, &converter)
+        def initialize(pattern_or_patterns, **options, &converter)
           @options = options
           @converter = converter
           @patterns = format_patterns(pattern_or_patterns)
@@ -22,23 +22,22 @@ module RgGen
 
         private
 
-        def format_patterns(patterns)
+        def format_patterns(pattern_or_patterns)
           if @options.fetch(:match_wholly, true)
-            patterns_hash(patterns)
+            expand_patterns(pattern_or_patterns)
               .map { |i, pattern| [i, /\A#{pattern}\z/] }
-              .to_h
           else
-            patterns_hash(patterns)
+            expand_patterns(pattern_or_patterns)
           end
         end
 
-        def patterns_hash(patterns)
-          if patterns.is_a?(Hash)
-            patterns
-          else
-            Array(patterns)
-              .map.with_index { |pattern, i| [i, pattern] }
-              .to_h
+        def expand_patterns(pattern_or_patterns)
+          Array(pattern_or_patterns).each_with_object([]) do |pattern, patterns|
+            if pattern.is_a? Hash
+              patterns.concat(pattern.to_a)
+            else
+              patterns << [patterns.size, pattern]
+            end
           end
         end
 
@@ -62,11 +61,11 @@ module RgGen
         end
 
         def match_patterns(rhs)
-          match_data, index =
+          index, match_data =
             @patterns
-              .map { |i, pattern| pattern.match(rhs) { |m| [m, i] } }
+              .map { |i, pattern| pattern.match(rhs) { |m| [i, m] } }
               .compact
-              .max { |m| m[0].length }
+              .max { |_, m| m.length }
           match_data && [convert_match_data(match_data), index]
         end
 
