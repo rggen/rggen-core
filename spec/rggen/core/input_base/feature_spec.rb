@@ -188,7 +188,7 @@ module RgGen::Core::InputBase
       describe "#match_data/#match_index" do
         let(:foo_feature) { create_feature { input_pattern(/foo/) } }
         let(:bar_feature) { create_feature { input_pattern(/bar/) { |m| m[0].upcase } }}
-        let(:foo_bar_feature) { create_feature { input_pattern(foo: /foo/, bar: /bar/) } }
+        let(:foo_bar_feature) { create_feature { input_pattern({ foo: /foo/, bar: /bar/ }) } }
 
         it "直近の比較結果を返す" do
           foo_feature.send(:match_pattern, 'foo')

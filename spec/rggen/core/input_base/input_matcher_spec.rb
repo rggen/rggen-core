@@ -5,7 +5,7 @@ require 'spec_helper'
 module RgGen::Core::InputBase
   describe InputMatcher do
     def create_matcher(pattern_or_patterns, **options, &conveter)
-      InputMatcher.new(pattern_or_patterns, options, &conveter)
+      InputMatcher.new(pattern_or_patterns, **options, &conveter)
     end
 
     describe "#match" do
@@ -19,9 +19,9 @@ module RgGen::Core::InputBase
         expect(create_matcher([/foo/, /bar/]).match('bar')).to be_truthy
         expect(create_matcher([/foo/, /bar/]).match('baz')).to be_falsey
 
-        expect(create_matcher(foo: /foo/, bar: /bar/).match('foo')).to be_truthy
-        expect(create_matcher(foo: /foo/, bar: /bar/).match('bar')).to be_truthy
-        expect(create_matcher(foo: /foo/, bar: /bar/).match('baz')).to be_falsey
+        expect(create_matcher({ foo: /foo/, bar: /bar/ }).match('foo')).to be_truthy
+        expect(create_matcher({ foo: /foo/, bar: /bar/ }).match('bar')).to be_truthy
+        expect(create_matcher({ foo: /foo/, bar: /bar/ }).match('baz')).to be_falsey
       end
 
       context '入力がマッチした場合' do
@@ -38,7 +38,7 @@ module RgGen::Core::InputBase
             .and have_attributes(captures: match(['foo']))
           expect(index).to eq 1
 
-          match_data, index = create_matcher(foo: /(foo)/, bar: /(bar)/).match('foo')
+          match_data, index = create_matcher({ foo: /(foo)/, bar: /(bar)/ }).match('foo')
           expect(match_data)
             .to be_instance_of(MatchData)
             .and have_attributes(captures: match(['foo']))
