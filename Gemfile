@@ -14,7 +14,7 @@ gemspec
   end
 end
 
-if ENV['USE_FIXED_GEMS']
+if ENV['USE_FIXED_GEMS'] == 'yes'
   ['facets'].each do |library|
     library_path = File.expand_path("../#{library}", __dir__)
     if Dir.exist?(library_path) && !ENV['USE_GITHUB_REPOSITORY']
