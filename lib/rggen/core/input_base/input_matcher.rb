@@ -25,18 +25,18 @@ module RgGen
         def format_patterns(pattern_or_patterns)
           if @options.fetch(:match_wholly, true)
             expand_patterns(pattern_or_patterns)
-              .map { |i, pattern| [i, /\A#{pattern}\z/] }
+              .transform_values { |pattern| /\A#{pattern}\z/ }
           else
             expand_patterns(pattern_or_patterns)
           end
         end
 
         def expand_patterns(pattern_or_patterns)
-          Array(pattern_or_patterns).each_with_object([]) do |pattern, patterns|
+          Array(pattern_or_patterns).each_with_object({}) do |pattern, patterns|
             if pattern.is_a? Hash
-              patterns.concat(pattern.to_a)
+              patterns.update(pattern)
             else
-              patterns << [patterns.size, pattern]
+              patterns[patterns.size] = pattern
             end
           end
         end
@@ -63,9 +63,8 @@ module RgGen
         def match_patterns(rhs)
           index, match_data =
             @patterns
-              .map { |i, pattern| pattern.match(rhs) { |m| [i, m] } }
-              .compact
-              .max { |_, m| m.length }
+              .transform_values { |pattern| pattern.match(rhs) }
+              .max_by { |_, m| m&.to_s&.length || 0 }
           match_data && [convert_match_data(match_data), index]
         end
 
