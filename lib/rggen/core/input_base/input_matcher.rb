@@ -64,7 +64,8 @@ module RgGen
           index, match_data =
             @patterns
               .transform_values { |pattern| pattern.match(rhs) }
-              .max_by { |_, m| m&.to_s&.length || 0 }
+              .compact
+              .max_by { |_, m| m[0].length }
           match_data && [convert_match_data(match_data), index]
         end
 
