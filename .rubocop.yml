@@ -31,6 +31,15 @@ Style/OptionalArguments:
   Exclude:
     - lib/rggen/core/input_base/input_data.rb
 
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true
+
 Style/RaiseArgs:
   EnforcedStyle: compact
 
