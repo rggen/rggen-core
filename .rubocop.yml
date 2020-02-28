@@ -38,7 +38,7 @@ Style/HashTransformKeys:
   Enabled: true
 
 Style/HashTransformValues:
-  Enabled: true
+  Enabled: false
 
 Style/RaiseArgs:
   EnforcedStyle: compact
