@@ -80,9 +80,9 @@ module RgGen
           end
 
           def export_verifiers(subclass)
-            copied_verifiers =
-              @verifiers.map { |scope, blocks| [scope, blocks.dup] }.to_h
-            subclass.instance_variable_set(:@verifiers, copied_verifiers)
+            subclass.instance_variable_set(
+              :@verifiers, @verifiers.transform_values(&:dup)
+            )
           end
         end
 

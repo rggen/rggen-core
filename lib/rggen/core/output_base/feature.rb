@@ -64,9 +64,8 @@ module RgGen
 
           def export(*methods)
             methods.each do |method|
-              exported_methods.include?(method) || (
-                exported_methods << method
-              )
+              exported_methods.include?(method) ||
+                (exported_methods << method)
             end
           end
         end
@@ -124,7 +123,7 @@ module RgGen
 
         def generate_code(phase, kind, code = nil)
           generator = self.class.code_generators[phase]
-          (generator&.generate(self, kind, code)) || code
+          generator&.generate(self, kind, code) || code
         end
 
         def write_file(directory = nil)

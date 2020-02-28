@@ -26,13 +26,14 @@ module RgGen
 
           def symbolize_keys(result)
             if result.is_a? Hash
-              result.keys.each do |key|
-                result[key.to_sym] = symbolize_keys(result.delete(key))
+              result.each_with_object({}) do |(key, value), hash|
+                hash[key.to_sym] = symbolize_keys(value)
               end
             elsif result.is_a? Array
-              result.map! { |value| symbolize_keys(value) }
+              result.map(&method(:symbolize_keys))
+            else
+              result
             end
-            result
           end
         end
 
