@@ -4,7 +4,7 @@ module RgGen
   module Core
     module OutputBase
       class Component < Base::Component
-        include Base::HierarchicalAccessors
+        include Base::ComponentLayerExtension
 
         attr_reader :configuration
         attr_reader :source

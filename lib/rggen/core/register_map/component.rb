@@ -4,7 +4,7 @@ module RgGen
   module Core
     module RegisterMap
       class Component < InputBase::Component
-        include Base::HierarchicalAccessors
+        include Base::ComponentLayerExtension
 
         attr_reader :configuration
 

@@ -4,7 +4,7 @@ module RgGen
   module Core
     module RegisterMap
       class Feature < InputBase::Feature
-        include Base::HierarchicalFeatureAccessors
+        include Base::FeatureLayerExtension
         include RaiseError
 
         private

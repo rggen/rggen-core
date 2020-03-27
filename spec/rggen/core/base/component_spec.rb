@@ -4,25 +4,28 @@ RSpec.describe RgGen::Core::Base::Component do
   describe '#component_name' do
     let(:base_name) { 'component' }
 
-    let(:component) { described_class.new(base_name) }
+    let(:component) { described_class.new(nil, base_name, layer) }
 
-    context '階層情報を取得できない場合' do
+    context '階層情報が未指定の場合' do
+      let(:layer) { nil }
+
       it 'コンポーネント名として、基本名を返す' do
         expect(component.component_name).to eq base_name
       end
     end
 
     context '階層情報を取得できる場合' do
+      let(:layer) { 'foo' }
+
       it '階層情報を含む、コンポーネント名を返す' do
-        allow(component).to receive(:hierarchy).and_return(:foo)
         expect(component.component_name).to eq 'foo@component'
       end
     end
   end
 
   describe '#parent' do
-    let(:parent) { described_class.new('parent') }
-    let(:component) { described_class.new('component', parent) }
+    let(:parent) { described_class.new(nil, 'parent', nil) }
+    let(:component) { described_class.new(parent, 'component', nil) }
 
     it '親オブジェクトを返す' do
       expect(component.parent).to eql parent
@@ -30,11 +33,11 @@ RSpec.describe RgGen::Core::Base::Component do
   end
 
   describe '#component_index' do
-    let(:parent) { described_class.new('parent') }
+    let(:parent) { described_class.new(nil, 'parent', nil) }
 
     let(:components) do
       Array.new(3) do
-        described_class.new('component', parent).tap(&parent.method(:add_child))
+        described_class.new(parent, 'component', nil).tap(&parent.method(:add_child))
       end
     end
 
@@ -54,8 +57,8 @@ RSpec.describe RgGen::Core::Base::Component do
   describe '#need_children?' do
     let(:components) do
       [
-        described_class.new('component'),
-        described_class.new('component') { |c| c.need_no_children }
+        described_class.new(nil, 'component', nil),
+        described_class.new(nil, 'component', nil) { |c| c.need_no_children }
       ]
     end
 
@@ -66,14 +69,14 @@ RSpec.describe RgGen::Core::Base::Component do
   end
 
   describe '#add_child' do
-    let(:children) { Array.new(2) { described_class.new('component', component) } }
+    let(:children) { Array.new(2) { described_class.new(component, 'component', nil) } }
 
     before do
       children.each { |c| component.add_child(c) }
     end
 
     context '子コンポーネントを必要とする場合' do
-      let(:component) { described_class.new('component') }
+      let(:component) { described_class.new(nil, 'component', nil) }
 
       it '子オブジェクトを追加する' do
         expect(component.children).to match [eql(children[0]), eql(children[1])]
@@ -81,7 +84,7 @@ RSpec.describe RgGen::Core::Base::Component do
     end
 
     context '子コンポーネントを必要としない場合' do
-      let(:component) { described_class.new('component') { |c| c.need_no_children } }
+      let(:component) { described_class.new(nil, 'component', nil) { |c| c.need_no_children } }
 
       it '子コンポーネントの追加を行わない' do
         expect(component.children).to be_empty
@@ -89,28 +92,8 @@ RSpec.describe RgGen::Core::Base::Component do
     end
   end
 
-  describe '#level' do
-    let(:parent) { described_class.new('component') }
-
-    context '親オブジェクトがない場合' do
-      it '0を返す' do
-        expect(parent.level).to eq 0
-      end
-    end
-
-    context '親オブジェクトがある場合' do
-      let(:child) { described_class.new('component', parent) }
-      let(:grandchild) { described_class.new('component', child) }
-
-      it 'parent.level + 1を返す' do
-        expect(child.level).to eq 1
-        expect(grandchild.level).to eq 2
-      end
-    end
-  end
-
   describe '#add_feature' do
-    let(:component) { described_class.new('component') }
+    let(:component) { described_class.new(nil, 'component', nil) }
 
     let(:features) do
       [:foo, :bar].each_with_object({}) do |feature_name, hash|

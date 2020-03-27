@@ -4,7 +4,7 @@ module RgGen
   module Core
     module OutputBase
       class Feature < Base::Feature
-        include Base::HierarchicalFeatureAccessors
+        include Base::FeatureLayerExtension
         include RaiseError
 
         class << self

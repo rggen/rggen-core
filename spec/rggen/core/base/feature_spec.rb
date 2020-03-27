@@ -4,7 +4,7 @@ require  'spec_helper'
 
 module RgGen::Core::Base
   describe Feature do
-    let(:component) { Component.new('component') }
+    let(:component) { Component.new(nil, 'component', nil) }
 
     let(:feature_class) { Class.new(Feature) }
 

@@ -15,12 +15,18 @@ module RgGen::Core::Base
 
     let(:component_name) { 'component' }
 
+    let(:layer) { 'foo' }
+
     let(:component_class) { Class.new(Component) }
 
-    let(:child_component_class) { Class.new(Component) }
+    let(:child_component_classes) { [Class.new(Component), Class.new(Component)] }
 
-    let(:child_factory) do
-      define_factory.new(component_name) { |f| f.target_component child_component_class }
+    let(:child_layers) { ['bar', 'baz'] }
+
+    let(:child_factories) do
+      child_component_classes.zip(child_layers).map do |child_class, layer|
+        define_factory.new(component_name, layer) { |f| f.target_component child_class }
+      end
     end
 
     let(:feature_factory_class) do
@@ -43,13 +49,13 @@ module RgGen::Core::Base
       feature_factory_class.new(:bar) { |f| f.target_feature bar_feature }
     end
 
-    let(:parent) { Class.new(Component).new(component_name) }
+    let(:parent) { Class.new(Component).new(nil, component_name, nil) }
 
-    let(:arguments) { [2, 1] }
+    let(:arguments) { ['bar', 'baz', 'baz', 'bar'] }
 
     describe '#create' do
       let(:factory) do
-        define_factory.new(component_name) { |f| f.target_component component_class }
+        define_factory.new(component_name, layer) { |f| f.target_component component_class }
       end
 
       it '#target_componentで登録されたコンポーネントオブジェクトを生成する' do
@@ -57,9 +63,9 @@ module RgGen::Core::Base
         expect(component).to be_instance_of(component_class)
       end
 
-      specify 'コンポーネントオブジェクトは、ファクトリ生成時に指定されたコンポーネント名を持つ' do
+      specify 'コンポーネントオブジェクトは、ファクトリ生成時に指定されたコンポーネント/階層名を持つ' do
         component = factory.create(parent, *arguments)
-        expect(component.component_name).to eq component_name
+        expect(component.component_name).to eq "#{layer}@#{component_name}"
       end
 
       context 'ルートファクトリのとき' do
@@ -111,18 +117,22 @@ module RgGen::Core::Base
         let(:factory) do
           define_factory {
             def create_children(component, *args)
-              args[0].times { create_child(component, args[1]) }
+              args.last.each  { |key| create_child(component, *args[0..-2], key) }
             end
-          }.new(component_name) { |f|
+            def find_child_factory(*args)
+              @child_factories.find { |f| f.layer == args.last }
+            end
+          }.new(component_name, layer) { |f|
             f.target_component component_class
-            f.child_factory child_factory
+            f.child_factories child_factories
           }
         end
 
         it '子コンポーネントを含むコンポーネントオブジェクトを生成する' do
-          component = factory.create(parent, *arguments)
+          component = factory.create(parent, arguments)
           expect(component.children).to match [
-            be_instance_of(child_component_class), be_instance_of(child_component_class)
+            be_instance_of(child_component_classes[0]), be_instance_of(child_component_classes[1]),
+            be_instance_of(child_component_classes[1]), be_instance_of(child_component_classes[0])
           ]
         end
 
@@ -132,8 +142,8 @@ module RgGen::Core::Base
           end
 
           it '子コンポーネントを含まないコンポーネントオブジェクトを生成する' do
-            expect(child_factory).not_to receive(:create)
-            component = factory.create(parent, *arguments)
+            child_factories.each { |f| expect(f).not_to receive(:create) }
+            component = factory.create(parent, arguments)
             expect(component.children).to be_empty
           end
         end
@@ -145,7 +155,7 @@ module RgGen::Core::Base
             def create_features(component, *args)
               @feature_factories.each_value { |f| create_feature(component, f, *args) }
             end
-          }.new(component_name) { |f|
+          }.new(component_name, layer) { |f|
             f.target_component Class.new(Component)
             f.feature_factories(foo: foo_feature_factory, bar: bar_feature_factory)
           }
@@ -167,21 +177,24 @@ module RgGen::Core::Base
             @feature_factories.each_value { |f| create_feature(component, f, *args) }
           end
           def create_children(component, *args)
-            2.times { create_child(component, *args) }
+            args.last.each { |key| create_child(component, *args[0..-2], key) }
+          end
+          def find_child_factory(*args)
+            @child_factories.find { |f| f.layer == args.last }
           end
           define_method(:post_build) do |component|
             captured_values << component.parent.children.size
             captured_values << component.children.size
             captured_values << component.features.size
           end
-        }.new(component_name) do |f|
+        }.new(component_name, layer) do |f|
           f.target_component Class.new(Component)
-          f.feature_factories(foo: foo_feature_factory, bar: bar_feature_factory)
-          f.child_factory(child_factory)
+          f.feature_factories foo: foo_feature_factory, bar: bar_feature_factory
+          f.child_factories child_factories
         end
 
-        factory.create(parent)
-        expect(captured_values).to match([0, 2, 2])
+        factory.create(parent, arguments)
+        expect(captured_values).to match([0, 4, 2])
       end
     end
   end

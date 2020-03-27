@@ -4,12 +4,12 @@ module RgGen
   module Core
     module Base
       class Component
-        def initialize(base_name, *args)
+        def initialize(parent, base_name, layer, *args)
+          @parent = parent
           @base_name = base_name
-          @parent = args.first
+          @layer = layer
           @children = []
           @need_children = true
-          @level = (parent && parent.level + 1) || 0
           @features = {}
           @component_index = parent&.children&.size || 0
           post_initialize(*args)
@@ -17,15 +17,12 @@ module RgGen
         end
 
         attr_reader :parent
+        attr_reader :layer
         attr_reader :children
-        attr_reader :level
         attr_reader :component_index
 
         def component_name
-          [hierarchy, @base_name].compact.join('@')
-        end
-
-        def hierarchy
+          [@layer, @base_name].compact.join('@')
         end
 
         alias_method :to_s, :component_name
