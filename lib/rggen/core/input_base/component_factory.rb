@@ -27,8 +27,13 @@ module RgGen
         end
 
         def find_loader(file)
-          loader = loaders.find { |l| l.support?(file) }
-          loader || (raise Core::LoadError.new('unsupported file type', file))
+          loaders.find { |l| l.support?(file) } ||
+            (raise Core::LoadError.new('unsupported file type', file))
+        end
+
+        def valid_value_lists
+          component_factories
+            .transform_values(&->(f) { f.valid_value_list })
         end
 
         def create_input_data(&block)
@@ -77,10 +82,8 @@ module RgGen
 
         protected
 
-        def valid_value_lists
-          list = [Array(active_feature_factories&.keys)]
-          list.concat(Array(child_factory&.valid_value_lists))
-          list
+        def valid_value_list
+          Array(active_feature_factories&.keys)
         end
       end
     end

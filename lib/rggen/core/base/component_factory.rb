@@ -15,8 +15,8 @@ module RgGen
         attr_reader :layer
 
         attr_setter :target_component
+        attr_setter :component_factories
         attr_setter :feature_factories
-        attr_setter :child_factories
 
         def root_factory
           @root_factory = true
@@ -70,7 +70,7 @@ module RgGen
         end
 
         def create_children?(component)
-          @child_factories && component.need_children?
+          @component_factories && component.need_children?
         end
 
         def preprocess(args)
