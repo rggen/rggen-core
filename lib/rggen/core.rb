@@ -49,6 +49,7 @@ require_relative 'core/input_base/property'
 require_relative 'core/input_base/feature'
 require_relative 'core/input_base/feature_factory'
 
+require_relative 'core/configuration/input_data'
 require_relative 'core/configuration/error'
 require_relative 'core/configuration/component'
 require_relative 'core/configuration/component_factory'

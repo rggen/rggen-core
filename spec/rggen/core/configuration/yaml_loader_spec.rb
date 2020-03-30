@@ -1,61 +1,61 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+RSpec.describe RgGen::Core::Configuration::YAMLLoader do
+  let(:loader) do
+    RgGen::Core::Configuration::YAMLLoader
+  end
 
-module RgGen::Core::Configuration
-  describe YAMLLoader do
-    let(:loader) { YAMLLoader }
+  let(:files) { ['foo.yaml', 'foo.yml'] }
 
-    let(:files) { ['foo.yaml', 'foo.yml'] }
+  describe '.support?' do
+    let(:supported_files) { files }
 
-    describe ".support?" do
-      let(:supported_files) { files }
-
-      let(:unsupported_files) do
-        random_file_extensions(max_length: 5, exceptions: ['yaml', 'yml'])
-          .map { |extension| "foo.#{extension}" }
-      end
-
-      it "yaml/yml形式のファイルに対応する" do
-        supported_files.each do |file|
-          expect(loader.support?(file)).to be true
-        end
-
-        unsupported_files.each do |file|
-          expect(loader.support?(file)).to be false
-        end
-      end
+    let(:unsupported_files) do
+      random_file_extensions(max_length: 5, exceptions: ['yaml', 'yml'])
+        .map { |extension| "foo.#{extension}" }
     end
 
-    describe ".load_file" do
-      let(:valid_value_lists) { [[:foo, :bar, :baz, :fizz, :buzz]] }
-
-      let(:input_data) { RgGen::Core::InputBase::InputData.new(valid_value_lists) }
-
-      let(:file) { files.sample }
-
-      let(:file_content) do
-        <<~'YAML'
-          foo: 0
-          bar: 1
-          baz: 2
-          fizz: fizz
-          buzz: :buzz
-        YAML
+    it 'yaml/yml形式のファイルに対応する' do
+      supported_files.each do |file|
+        expect(loader.support?(file)).to be true
       end
 
-      before do
-        allow(File).to receive(:readable?).and_return(true)
-        allow(File).to receive(:binread).and_return(file_content)
+      unsupported_files.each do |file|
+        expect(loader.support?(file)).to be false
       end
+    end
+  end
 
-      it "入力ファイルを元に、入力データを組み立てる" do
-        loader.load_file(file, input_data, valid_value_lists)
-        expect(input_data).to have_values(
-          [:foo, 0, file], [:bar, 1, file], [:baz, 2, file],
-          [:fizz, 'fizz', file], [:buzz, :buzz, file]
-        )
-      end
+  describe '.load_file' do
+    let(:valid_value_lists) do
+      { nil => [:foo, :bar, :baz, :fizz, :buzz] }
+    end
+
+    let(:input_data) { RgGen::Core::Configuration::InputData.new(valid_value_lists) }
+
+    let(:file) { files.sample }
+
+    let(:file_content) do
+      <<~'YAML'
+        foo: 0
+        bar: 1
+        baz: 2
+        fizz: fizz
+        buzz: :buzz
+      YAML
+    end
+
+    before do
+      allow(File).to receive(:readable?).and_return(true)
+      allow(File).to receive(:binread).and_return(file_content)
+    end
+
+    it '入力ファイルを元に、入力データを組み立てる' do
+      loader.load_file(file, input_data, valid_value_lists)
+      expect(input_data).to have_values(
+        [:foo, 0, file], [:bar, 1, file], [:baz, 2, file],
+        [:fizz, 'fizz', file], [:buzz, :buzz, file]
+      )
     end
   end
 end
