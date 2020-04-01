@@ -62,14 +62,10 @@ RSpec.describe RgGen::Core::InputBase::Loader do
 
     let(:input_data) do
       Class.new(RgGen::Core::InputBase::InputData) do
-        def initialize(valid_value_lists)
-          super(:foo, valid_value_lists)
-        end
-
         def bar(value_list = nil, &block)
           child(:bar, value_list, &block)
         end
-      end.new(valid_value_lists)
+      end.new(:foo, valid_value_lists)
     end
 
     let(:valid_value_lists) do

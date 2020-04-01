@@ -14,7 +14,7 @@ module RgGen
         end
 
         def post_initialize
-          define_hierarchical_accessors
+          define_layer_methods
         end
       end
     end

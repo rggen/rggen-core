@@ -10,9 +10,9 @@ module RgGen
 
         private
 
-        def post_initialize(_parent, configuration)
+        def post_initialize(configuration)
           @configuration = configuration
-          define_hierarchical_accessors
+          define_layer_methods
         end
       end
     end

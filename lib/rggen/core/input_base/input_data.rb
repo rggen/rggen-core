@@ -83,11 +83,11 @@ module RgGen
         end
 
         def create_child_data(layer, &block)
-          child_data_class(layer).new(layer, @valid_value_lists, &block)
+          child_data_class.new(layer, @valid_value_lists, &block)
         end
 
-        def child_data_class(_layer)
-          InputData
+        def child_data_class
+          self.class
         end
 
         protected

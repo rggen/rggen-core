@@ -11,7 +11,11 @@ module RgGen
         end
 
         def create_input_data(&block)
-          RegisterMapData.new(valid_value_lists, &block)
+          InputData.new(:root, valid_value_lists, &block)
+        end
+
+        def find_child_factory(_configuration, register_map)
+          component_factories[register_map.layer]
         end
       end
     end
