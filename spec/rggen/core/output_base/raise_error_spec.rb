@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
 RSpec.describe RgGen::Core::OutputBase::RaiseError do
   describe '#error' do
     let(:object) do

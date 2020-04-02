@@ -7,19 +7,18 @@ module RgGen
         include Base::ComponentLayerExtension
 
         attr_reader :configuration
-        attr_reader :source
+        attr_reader :register_map
 
-        def post_initialize(_paren, configuration, source)
+        def post_initialize(configuration, register_map)
           @configuration = configuration
-          @source = source
-          @need_children = source.need_children?
-          define_hierarchical_accessors
-          define_children_presense_indicator
-          define_proxy_calls(@source, @source.properties)
+          @register_map = register_map
+          @need_children = register_map.need_children?
+          define_layer_methods
+          define_proxy_calls(@register_map, @register_map.properties)
         end
 
         def children?
-          !source.children.empty?
+          !register_map.children.empty?
         end
 
         def add_feature(feature)
@@ -28,7 +27,7 @@ module RgGen
         end
 
         def printables
-          @source.printables
+          register_map.printables
         end
 
         def pre_build
@@ -50,18 +49,6 @@ module RgGen
         end
 
         private
-
-        INDICATOR_NAMES = {
-          register_map: :register_blocks?,
-          register_block: :registers?,
-          register: :bit_fields?
-        }.freeze
-
-        def define_children_presense_indicator
-          indicator_name = INDICATOR_NAMES[hierarchy]
-          indicator_name &&
-            singleton_exec { alias_method indicator_name, :children? }
-        end
 
         def build_feature(feature)
           feature.build
