@@ -6,8 +6,9 @@ module RgGen
       class ComponentEntry
         Entry = Struct.new(:target, :factory)
 
-        def initialize(component_name)
+        def initialize(component_name, layer)
           @component_name = component_name
+          @layer = layer
         end
 
         [:component, :feature].each do |entry_name|
@@ -22,7 +23,7 @@ module RgGen
         end
 
         def build_factory
-          @component.factory.new(@component_name) do |f|
+          @component.factory.new(@component_name, @layer) do |f|
             f.target_component(@component.target)
             f.feature_factories(feature_registry&.build_factories)
           end

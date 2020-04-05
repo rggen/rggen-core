@@ -3,13 +3,14 @@
 module RgGen
   module Core
     module Builder
-      class Category
+      class Layer
         class Proxy
-          def initialize(body)
-            body.call(self)
+          def initialize
+            block_given? && yield(self)
           end
 
-          attr_setter :method
+          attr_setter :body
+          attr_setter :method_name
           attr_setter :list_names
           attr_setter :feature_names
 
@@ -21,25 +22,22 @@ module RgGen
             @shared_context
           end
 
-          def register_execution(registry, args, body)
+          def register_execution(registry, &body)
             @executions ||= []
-            @executions << { registry: registry, args: args, body: body }
+            @executions << { registry: registry, body: body }
           end
 
-          def execute(category, body)
-            Docile.dsl_eval(category, &body)
-            Array(@executions).each { |execution| call_execution(execution) }
+          def execute(layer)
+            Docile.dsl_eval(layer, &body)
+            @executions&.each(&method(:call_execution))
           end
 
           private
 
           def call_execution(execution)
-            send_args = [
-              list_names, feature_names, shared_context, *execution[:args]
-            ].compact
-            execution[:registry].__send__(
-              method, *send_args, &execution[:body]
-            )
+            args = [list_names, feature_names, shared_context].compact
+            execution[:registry]
+              .__send__(method_name, *args, &execution[:body])
           end
         end
 
@@ -58,22 +56,25 @@ module RgGen
         end
 
         def define_simple_feature(feature_names, &body)
-          do_proxy_call(body) do |proxy|
-            proxy.method(__method__)
+          do_proxy_call do |proxy|
+            proxy.body(body)
+            proxy.method_name(__method__)
             proxy.feature_names(feature_names)
           end
         end
 
         def define_list_feature(list_names, &body)
-          do_proxy_call(body) do |proxy|
-            proxy.method(__method__)
+          do_proxy_call do |proxy|
+            proxy.body(body)
+            proxy.method_name(__method__)
             proxy.list_names(list_names)
           end
         end
 
         def define_list_item_feature(list_name, feature_names, &body)
-          do_proxy_call(body) do |proxy|
-            proxy.method(__method__)
+          do_proxy_call do |proxy|
+            proxy.body(body)
+            proxy.method_name(__method__)
             proxy.list_names(list_name)
             proxy.feature_names(feature_names)
           end
@@ -100,14 +101,14 @@ module RgGen
         private
 
         def define_proxy_call(name)
-          define_singleton_method(name) do |*args, &body|
-            @proxy.register_execution(@feature_registries[name], args, body)
+          define_singleton_method(name) do |&body|
+            @proxy.register_execution(@feature_registries[__method__], &body)
           end
         end
 
-        def do_proxy_call(body, &proxy_block)
-          @proxy = Proxy.new(proxy_block)
-          @proxy.execute(self, body)
+        def do_proxy_call(&block)
+          @proxy = Proxy.new(&block)
+          @proxy.execute(self)
           remove_instance_variable(:@proxy)
         end
       end

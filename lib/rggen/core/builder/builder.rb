@@ -6,7 +6,7 @@ module RgGen
       class Builder
         def initialize
           initialize_component_registries
-          initialize_categories
+          initialize_layers
           @plugins = Plugins.new
         end
 
@@ -32,15 +32,15 @@ module RgGen
           @component_registries[:input][component].define_loader(&body)
         end
 
-        def add_feature_registry(name, target_category, registry)
-          target_categories =
-            if target_category
-              Array(@categories[target_category])
+        def add_feature_registry(name, target_layer, registry)
+          target_layers =
+            if target_layer
+              Array(@layers[target_layer])
             else
-              @categories.values
+              @layers.values
             end
-          target_categories.each do |category|
-            category.add_feature_registry(name, registry)
+          target_layers.each do |layer|
+            layer.add_feature_registry(name, registry)
           end
         end
 
@@ -49,21 +49,21 @@ module RgGen
           :define_list_feature,
           :define_list_item_feature
         ].each do |method_name|
-          define_method(method_name) do |category, *args, &body|
-            @categories[category].__send__(__method__, *args, &body)
+          define_method(method_name) do |layer, *args, &body|
+            @layers[layer].__send__(__method__, *args, &body)
           end
         end
 
-        def enable(category, *args)
-          @categories[category].enable(*args)
+        def enable(layer, *args)
+          @layers[layer].enable(*args)
         end
 
         def disable_all
-          @categories.each_value(&:disable)
+          @layers.each_value(&:disable)
         end
 
-        def disable(category, *args)
-          @categories.key?(category) && @categories[category].disable(*args)
+        def disable(layer, *args)
+          @layers.key?(layer) && @layers[layer].disable(*args)
         end
 
         def build_factory(type, component)
@@ -81,8 +81,8 @@ module RgGen
           registries.each_value.map(&:build_factory)
         end
 
-        def delete(category, *args)
-          @categories.key?(category) && @categories[category].delete(*args)
+        def delete(layer, *args)
+          @layers.key?(layer) && @layers[layer].delete(*args)
         end
 
         def register_input_components
@@ -119,14 +119,14 @@ module RgGen
           end
         end
 
-        def initialize_categories
-          @categories = Hash.new do |_, category_name|
-            raise BuilderError.new("unknown category: #{category_name}")
+        def initialize_layers
+          @layers = Hash.new do |_, layer_name|
+            raise BuilderError.new("unknown layer: #{layer_name}")
           end
           [
-            :global, :register_map, :register_block, :register, :bit_field
-          ].each do |category|
-            @categories[category] = Category.new(category)
+            :global, :root, :register_block, :register_file, :register, :bit_field
+          ].each do |layer|
+            @layers[layer] = Layer.new(layer)
           end
         end
 
