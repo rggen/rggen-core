@@ -285,6 +285,14 @@ RSpec.describe RgGen::Core::Base::FeatureLayerExtension do
       end
     end
 
+    describe '#register_file' do
+      it '属するレジスタファイルオブジェクトを返す' do
+        expect(features[0].register_file).to be_nil
+        expect(features[1].register_file).to equal register_files[0]
+        expect(features[2].register_file).to equal register_files[1]
+      end
+    end
+
     describe '#block_or_file' do
       it '属するレジスタブロックオブジェクト、または、レジスタファイルオブジェクトを返す' do
         expect(features[0].block_or_file).to equal register_block
@@ -390,6 +398,14 @@ RSpec.describe RgGen::Core::Base::FeatureLayerExtension do
         expect(features[0].register_block).to equal register_block
         expect(features[1].register_block).to equal register_block
         expect(features[2].register_block).to equal register_block
+      end
+    end
+
+    describe '#register_file' do
+      it '属するレジスタファイルオブジェクトを返す' do
+        expect(features[0].register_file).to be_nil
+        expect(features[1].register_file).to equal register_files[0]
+        expect(features[2].register_file).to equal register_files[1]
       end
     end
 

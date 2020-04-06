@@ -83,6 +83,10 @@ module RgGen
             parent.register_block? && parent || parent.register_block
           end
 
+          def register_file
+            parent.register_file? && parent || nil
+          end
+
           def block_or_file
             parent
           end
@@ -105,6 +109,10 @@ module RgGen
 
           def register_block
             parent.register_block
+          end
+
+          def register_file
+            parent.register_file
           end
 
           def register

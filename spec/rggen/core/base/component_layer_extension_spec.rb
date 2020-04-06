@@ -250,6 +250,16 @@ RSpec.describe RgGen::Core::Base::ComponentLayerExtension do
       end
     end
 
+    describe '#register_file' do
+      it '属するレジスタファイルオブジェクトを返す' do
+        expect(registers[0].register_file).to equal register_files[0]
+        expect(registers[2].register_file).to be_nil
+        expect(registers[3].register_file).to be_nil
+        expect(registers[5].register_file).to equal register_files[3]
+        expect(registers[6].register_file).to equal register_files[5]
+      end
+    end
+
     describe '#block_or_file' do
       it '属するレジスタブロックオブジェクト、または、レジスタファイルオブジェクトを返す' do
         expect(registers[0].block_or_file).to equal register_files[0]
@@ -325,6 +335,15 @@ RSpec.describe RgGen::Core::Base::ComponentLayerExtension do
         expect(bit_fields[2].register_block).to equal register_blocks[2]
         expect(bit_fields[3].register_block).to equal register_blocks[0]
         expect(bit_fields[4].register_block).to equal register_blocks[0]
+      end
+    end
+
+    describe '#register_file' do
+      it '属するレジスタファイルオブジェクトを返す' do
+        expect(bit_fields[0].register_file).to equal register_files[0]
+        expect(bit_fields[2].register_file).to be_nil
+        expect(bit_fields[3].register_file).to equal register_files[3]
+        expect(bit_fields[4].register_file).to equal register_files[5]
       end
     end
 
