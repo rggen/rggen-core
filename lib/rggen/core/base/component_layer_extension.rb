@@ -34,6 +34,18 @@ module RgGen
           def register_blocks
             children
           end
+
+          def register_files
+            register_blocks.flat_map(&:register_files)
+          end
+
+          def registers
+            register_blocks.flat_map(&:registers)
+          end
+
+          def bit_fields
+            register_blocks.flat_map(&:bit_fields)
+          end
         end
 
         module RegisterBlock
@@ -45,6 +57,26 @@ module RgGen
 
           def files_and_registers
             children
+          end
+
+          def register_files(include_lower_layer = true)
+            files_and_registers
+              .select(&:register_file?)
+              .flat_map { |rf| [rf, *(include_lower_layer ? rf : nil)&.register_files] }
+          end
+
+          def registers(include_lower_layer = true)
+            files_and_registers.flat_map do |file_or_register|
+              if file_or_register.register?
+                file_or_register
+              else
+                [*(include_lower_layer ? file_or_register : nil)&.registers]
+              end
+            end
+          end
+
+          def bit_fields
+            registers.flat_map(&:bit_fields)
           end
         end
 
@@ -63,12 +95,28 @@ module RgGen
             parent.register_block? && parent || parent.register_block
           end
 
-          def register_files
-            parent.register_file? && [*parent.register_files, parent] || []
-          end
-
           def files_and_registers
             children
+          end
+
+          def register_files(include_lower_layer = true)
+            files_and_registers
+              .select(&:register_file?)
+              .flat_map { |rf| [rf, *(include_lower_layer ? rf : nil)&.register_files] }
+          end
+
+          def registers(include_lower_layer = true)
+            files_and_registers.flat_map do |file_or_register|
+              if file_or_register.register?
+                file_or_register
+              else
+                [*(include_lower_layer ? file_or_register : nil)&.registers]
+              end
+            end
+          end
+
+          def bit_fields
+            registers.flat_map(&:bit_fields)
           end
         end
 
@@ -89,10 +137,6 @@ module RgGen
 
           def block_or_file
             parent
-          end
-
-          def register_files
-            parent.register_file? && [*parent.register_files, parent] || []
           end
 
           def bit_fields

@@ -71,10 +71,6 @@ module RgGen
             @component
           end
 
-          def register_files
-            register_file.register_files
-          end
-
           def files_and_registers
             block_or_file.files_and_registers
           end
@@ -97,10 +93,6 @@ module RgGen
 
           def block_or_file
             register.block_or_file
-          end
-
-          def register_files
-            register.register_files
           end
 
           def register

@@ -48,15 +48,43 @@ RSpec.describe RgGen::Core::Base::ComponentLayerExtension do
       @klass.new(registers[0], :component, :bit_field),
       @klass.new(registers[3], :component, :bit_field),
       @klass.new(registers[5], :component, :bit_field),
-      @klass.new(registers[6], :component, :bit_field),
+      @klass.new(registers[6], :component, :bit_field)
     ]
   end
 
   context 'root階層の場合' do
     describe '#register_blocks' do
-      it '直下のレジスタブロックオブジェクトを返す' do
+      it '配下のレジスタブロックオブジェクトを返す' do
         expect(root.register_blocks).to match [
           equal(register_blocks[0]), equal(register_blocks[1]), equal(register_blocks[2])
+        ]
+      end
+    end
+
+    describe '#register_files' do
+      it '配下のレジスタファイルオブジェクトを返す' do
+        expect(root.register_files).to match [
+          equal(register_files[0]), equal(register_files[1]), equal(register_files[3]),
+          equal(register_files[5]), equal(register_files[4]), equal(register_files[2])
+        ]
+      end
+    end
+
+    describe '#registers' do
+      it '配下のレジスタオブジェクトを返す' do
+        expect(root.registers).to match [
+          equal(registers[0]), equal(registers[1]), equal(registers[6]),
+          equal(registers[5]), equal(registers[2]), equal(registers[3]),
+          equal(registers[4])
+        ]
+      end
+    end
+
+    describe '#bit_fields' do
+      it '配下のビットフィールドを返す' do
+        expect(root.bit_fields).to match [
+          equal(bit_fields[0]), equal(bit_fields[1]), equal(bit_fields[4]),
+          equal(bit_fields[3]), equal(bit_fields[2])
         ]
       end
     end
@@ -111,6 +139,85 @@ RSpec.describe RgGen::Core::Base::ComponentLayerExtension do
 
         expect(register_blocks[2].files_and_registers).to match [
           equal(registers[3]), equal(registers[4])
+        ]
+      end
+    end
+
+    describe '#register_files' do
+      context '無引数の場合' do
+        it '配下のレジスタファイルオブジェクトを返す' do
+          expect(register_blocks[0].register_files).to match [
+            equal(register_files[0]), equal(register_files[1]), equal(register_files[3]),
+            equal(register_files[5]), equal(register_files[4])
+          ]
+
+          expect(register_blocks[1].register_files).to match [
+            equal(register_files[2])
+          ]
+
+          expect(register_blocks[2].register_files).to be_empty
+        end
+      end
+
+      context '引数にfalseが指定された場合' do
+        it '直下のレジスタファイルオブジェクトを返す' do
+          expect(register_blocks[0].register_files(false)).to match [
+            equal(register_files[0]), equal(register_files[1])
+          ]
+
+          expect(register_blocks[1].register_files(false)).to match [
+            equal(register_files[2])
+          ]
+
+          expect(register_blocks[2].register_files(false)).to be_empty
+        end
+      end
+    end
+
+    describe '#registers' do
+      context '無引数の場合' do
+        it '配下のレジスタオブジェクトを返す' do
+          expect(register_blocks[0].registers).to match [
+            equal(registers[0]), equal(registers[1]),
+            equal(registers[6]), equal(registers[5])
+          ]
+
+          expect(register_blocks[1].registers).to match [
+            equal(registers[2])
+          ]
+
+          expect(register_blocks[2].registers).to match [
+            equal(registers[3]), equal(registers[4])
+          ]
+        end
+      end
+
+      context '引数にfalseが指定された場合' do
+        it '直下のレジスタオブジェクトを返す' do
+          expect(register_blocks[0].registers(false)).to be_empty
+
+          expect(register_blocks[1].registers(false)).to match [
+            equal(registers[2])
+          ]
+
+          expect(register_blocks[2].registers(false)).to match [
+            equal(registers[3]), equal(registers[4])
+          ]
+        end
+      end
+    end
+
+    describe '#bit_fields' do
+      it '配下のビットフィールドオブジェクトを返す' do
+        expect(register_blocks[0].bit_fields).to match [
+          equal(bit_fields[0]), equal(bit_fields[1]),
+          equal(bit_fields[4]), equal(bit_fields[3])
+        ]
+
+        expect(register_blocks[1].bit_fields).to be_empty
+
+        expect(register_blocks[2].bit_fields).to match [
+          equal(bit_fields[2])
         ]
       end
     end
@@ -174,14 +281,6 @@ RSpec.describe RgGen::Core::Base::ComponentLayerExtension do
       end
     end
 
-    describe '#register_files' do
-      it '属するレジスタファイルオブジェクトの一覧を返す' do
-        expect(register_files[0].register_files).to be_empty
-        expect(register_files[3].register_files).to match [equal(register_files[1])]
-        expect(register_files[5].register_files).to match [equal(register_files[1]), equal(register_files[3])]
-      end
-    end
-
     describe '#files_and_registers' do
       it '直下のレジスタファイルオブジェクトとレジスタオブジェクトの一覧を返す' do
         expect(register_files[0].files_and_registers).to match [
@@ -194,6 +293,63 @@ RSpec.describe RgGen::Core::Base::ComponentLayerExtension do
 
         expect(register_files[3].files_and_registers).to match [
           equal(register_files[5]), equal(registers[5])
+        ]
+      end
+    end
+
+    describe '#register_files' do
+      context '無引数の場合' do
+        it '配下のレジスタファイルオブジェクトを返す' do
+          expect(register_files[0].register_files).to be_empty
+          expect(register_files[1].register_files).to match [
+            equal(register_files[3]), equal(register_files[5]), equal(register_files[4])
+          ]
+        end
+      end
+
+      context '引数にfalseが指定された場合' do
+        it '直下のレジスタファイルオブジェクトを返す' do
+          expect(register_files[0].register_files(false)).to be_empty
+
+          expect(register_files[1].register_files(false)).to match [
+            equal(register_files[3]), equal(register_files[4])
+          ]
+        end
+      end
+    end
+
+    describe '#registers' do
+      context '無引数の場合' do
+        it '配下のレジスタオブジェクトを返す' do
+          expect(register_files[0].registers).to match [
+            equal(registers[0]), equal(registers[1])
+          ]
+
+          expect(register_files[1].registers).to match [
+            equal(registers[6]), equal(registers[5])
+          ]
+        end
+      end
+
+      context '引数にfalseが指定された場合' do
+        it '直下のレジスタオブジェクトを返す' do
+          expect(register_files[0].registers(false)).to match [
+            equal(registers[0]), equal(registers[1])
+          ]
+
+          expect(register_files[1].registers(false)).to be_empty
+        end
+      end
+    end
+
+    describe '#bit_fields' do
+      it '配下のビットフィールドオブジェクトを返す' do
+        expect(register_files[0].bit_fields).to match [
+          equal(bit_fields[0]), equal(bit_fields[1])
+        ]
+
+        expect(register_files[1].bit_fields).to match [
+          equal(bit_fields[4]), equal(bit_fields[3])
         ]
       end
     end
@@ -267,16 +423,6 @@ RSpec.describe RgGen::Core::Base::ComponentLayerExtension do
         expect(registers[3].block_or_file).to equal register_blocks[2]
         expect(registers[5].block_or_file).to equal register_files[3]
         expect(registers[6].block_or_file).to equal register_files[5]
-      end
-    end
-
-    describe '#register_files' do
-      it '属するレジスタファイルオブジェクトの一覧を返す' do
-        expect(registers[0].register_files).to match [equal(register_files[0])]
-        expect(registers[2].register_files).to be_empty
-        expect(registers[3].register_files).to be_empty
-        expect(registers[5].register_files).to match [equal(register_files[1]), equal(register_files[3])]
-        expect(registers[6].register_files).to match [equal(register_files[1]), equal(register_files[3]), equal(register_files[5])]
       end
     end
 

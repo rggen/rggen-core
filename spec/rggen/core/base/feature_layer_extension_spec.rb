@@ -193,14 +193,6 @@ RSpec.describe RgGen::Core::Base::FeatureLayerExtension do
       end
     end
 
-    describe '#register_files' do
-      it '属するレジスタファイルオブジェクトの一覧を返す' do
-        expect(features[0].register_files).to be_empty
-        expect(features[1].register_files).to match [equal(register_files[0])]
-        expect(features[2].register_files).to match [equal(register_files[0]), equal(register_files[1])]
-      end
-    end
-
     describe '#files_and_registers' do
       before { features }
 
@@ -306,14 +298,6 @@ RSpec.describe RgGen::Core::Base::FeatureLayerExtension do
         expect(features[0].register).to equal registers[0]
         expect(features[1].register).to equal registers[1]
         expect(features[2].register).to equal registers[2]
-      end
-    end
-
-    describe '#register_files' do
-      it '属するレジスタファイルオブジェクトの一覧を返す' do
-        expect(features[0].register_files).to be_empty
-        expect(features[1].register_files).to match [equal(register_files[0])]
-        expect(features[2].register_files).to match [equal(register_files[0]), equal(register_files[1])]
       end
     end
 
