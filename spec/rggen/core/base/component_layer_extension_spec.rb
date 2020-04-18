@@ -273,11 +273,20 @@ RSpec.describe RgGen::Core::Base::ComponentLayerExtension do
     end
 
     describe '#register_block' do
-      it '属する直近のレジスタブロックオブジェクトを返す' do
+      it '属するレジスタブロックオブジェクトを返す' do
         expect(register_files[0].register_block).to equal register_blocks[0]
         expect(register_files[2].register_block).to equal register_blocks[1]
         expect(register_files[3].register_block).to equal register_blocks[0]
         expect(register_files[5].register_block).to equal register_blocks[0]
+      end
+    end
+
+    describe '#register_file' do
+      it '属する直近のレジスタファイルオブジェクトを返す' do
+        expect(register_files[0].register_file).to be_nil
+        expect(register_files[2].register_file).to be_nil
+        expect(register_files[3].register_file).to equal register_files[1]
+        expect(register_files[5].register_file).to equal register_files[3]
       end
     end
 

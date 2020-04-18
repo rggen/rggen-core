@@ -186,10 +186,20 @@ RSpec.describe RgGen::Core::Base::FeatureLayerExtension do
     end
 
     describe '#register_file' do
-      it '属するレジスタファイルオブジェクトを返す' do
-        expect(features[0].register_file).to equal register_files[0]
-        expect(features[1].register_file).to equal register_files[1]
-        expect(features[2].register_file).to equal register_files[2]
+      context '無引数の場合' do
+        it '属するレジスタファイルオブジェクトを返す' do
+          expect(features[0].register_file).to equal register_files[0]
+          expect(features[1].register_file).to equal register_files[1]
+          expect(features[2].register_file).to equal register_files[2]
+        end
+      end
+
+      context '引数に:upperが指定された場合' do
+        it '属する上位のレジスタファイルオブジェクトを返す' do
+          expect(features[0].register_file(:upper)).to be_nil
+          expect(features[1].register_file(:upper)).to equal register_files[0]
+          expect(features[2].register_file(:upper)).to equal register_files[1]
+        end
       end
     end
 

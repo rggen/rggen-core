@@ -67,8 +67,8 @@ module RgGen
             register_file.block_or_file
           end
 
-          def register_file
-            @component
+          def register_file(layer = nil)
+            layer == :upper ? @component.register_file : @component
           end
 
           def files_and_registers

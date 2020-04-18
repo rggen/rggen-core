@@ -95,6 +95,10 @@ module RgGen
             parent.register_block? && parent || parent.register_block
           end
 
+          def register_file
+            parent.register_file? && parent || nil
+          end
+
           def files_and_registers
             children
           end
