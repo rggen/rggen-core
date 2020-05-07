@@ -21,6 +21,16 @@ module RgGen
         attr_reader :children
         attr_reader :component_index
 
+        def ancestors
+          [].tap do |components|
+            component = self
+            while component
+              components.unshift(component)
+              component = component.parent
+            end
+          end
+        end
+
         def component_name
           [@layer, @base_name].compact.join('@')
         end

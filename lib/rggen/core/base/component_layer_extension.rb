@@ -139,6 +139,10 @@ module RgGen
             parent.register_file? && parent || nil
           end
 
+          def register_files
+            ancestors.select(&:register_file?)
+          end
+
           def block_or_file
             parent
           end
@@ -161,6 +165,10 @@ module RgGen
 
           def register_file
             parent.register_file
+          end
+
+          def register_files
+            parent.register_files
           end
 
           def register

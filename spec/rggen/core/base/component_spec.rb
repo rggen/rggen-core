@@ -32,6 +32,30 @@ RSpec.describe RgGen::Core::Base::Component do
     end
   end
 
+  describe '#ancestors' do
+    let(:component_foo) { described_class.new(nil, 'foo', nil) }
+
+    let(:component_bar_0) { described_class.new(component_foo, 'bar', nil) }
+    let(:component_bar_1) { described_class.new(component_foo, 'bar', nil) }
+
+    let(:component_baz_0) { described_class.new(component_bar_0, 'bar', nil) }
+    let(:component_baz_1) { described_class.new(component_bar_0, 'bar', nil) }
+    let(:component_baz_2) { described_class.new(component_bar_1, 'bar', nil) }
+    let(:component_baz_3) { described_class.new(component_bar_1, 'bar', nil) }
+
+    it '自身を含め、属するコンポーネントの一覧を返す' do
+      expect(component_foo.ancestors).to match [equal(component_foo)]
+
+      expect(component_bar_0.ancestors).to match [equal(component_foo), equal(component_bar_0)]
+      expect(component_bar_1.ancestors).to match [equal(component_foo), equal(component_bar_1)]
+
+      expect(component_baz_0.ancestors).to match [equal(component_foo), equal(component_bar_0), equal(component_baz_0)]
+      expect(component_baz_1.ancestors).to match [equal(component_foo), equal(component_bar_0), equal(component_baz_1)]
+      expect(component_baz_2.ancestors).to match [equal(component_foo), equal(component_bar_1), equal(component_baz_2)]
+      expect(component_baz_3.ancestors).to match [equal(component_foo), equal(component_bar_1), equal(component_baz_3)]
+    end
+  end
+
   describe '#component_index' do
     let(:parent) { described_class.new(nil, 'parent', nil) }
 
