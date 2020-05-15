@@ -11,6 +11,7 @@ module RgGen
           @children = []
           @need_children = true
           @features = {}
+          @depth = (parent&.depth || 0) + 1
           @component_index = parent&.children&.size || 0
           post_initialize(*args)
           block_given? && yield(self)
@@ -19,6 +20,7 @@ module RgGen
         attr_reader :parent
         attr_reader :layer
         attr_reader :children
+        attr_reader :depth
         attr_reader :component_index
 
         def ancestors

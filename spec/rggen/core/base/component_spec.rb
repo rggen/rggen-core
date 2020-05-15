@@ -56,6 +56,30 @@ RSpec.describe RgGen::Core::Base::Component do
     end
   end
 
+  describe '#depth' do
+    let(:component_0_0) { described_class.new(nil, 'foo', nil) }
+
+    let(:component_1_0) { described_class.new(component_0_0, 'foo', nil) }
+    let(:component_1_1) { described_class.new(component_0_0, 'foo', nil) }
+
+    let(:component_2_0) { described_class.new(component_1_0, 'foo', nil) }
+    let(:component_2_1) { described_class.new(component_1_0, 'foo', nil) }
+    let(:component_2_2) { described_class.new(component_1_1, 'foo', nil) }
+    let(:component_2_3) { described_class.new(component_1_1, 'foo', nil) }
+
+    it '階層の深さを示す' do
+      expect(component_0_0.depth).to eq 1
+
+      expect(component_1_0.depth).to eq 2
+      expect(component_1_1.depth).to eq 2
+
+      expect(component_2_0.depth).to eq 3
+      expect(component_2_1.depth).to eq 3
+      expect(component_2_2.depth).to eq 3
+      expect(component_2_3.depth).to eq 3
+    end
+  end
+
   describe '#component_index' do
     let(:parent) { described_class.new(nil, 'parent', nil) }
 
