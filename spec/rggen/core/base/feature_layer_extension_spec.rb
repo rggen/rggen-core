@@ -295,6 +295,14 @@ RSpec.describe RgGen::Core::Base::FeatureLayerExtension do
       end
     end
 
+    describe '#register_files' do
+      it '階層上のレジスタファイルオブジェクトの一覧を返す' do
+        expect(features[0].register_files).to be_empty
+        expect(features[1].register_files).to match([equal(register_files[0])])
+        expect(features[2].register_files).to match([equal(register_files[0]), equal(register_files[1])])
+      end
+    end
+
     describe '#block_or_file' do
       it '属するレジスタブロックオブジェクト、または、レジスタファイルオブジェクトを返す' do
         expect(features[0].block_or_file).to equal register_block
@@ -400,6 +408,14 @@ RSpec.describe RgGen::Core::Base::FeatureLayerExtension do
         expect(features[0].register_file).to be_nil
         expect(features[1].register_file).to equal register_files[0]
         expect(features[2].register_file).to equal register_files[1]
+      end
+    end
+
+    describe '#register_files' do
+      it '階層上のレジスタファイルオブジェクトの一覧を返す' do
+        expect(features[0].register_files).to be_empty
+        expect(features[1].register_files).to match([equal(register_files[0])])
+        expect(features[2].register_files).to match([equal(register_files[0]), equal(register_files[1])])
       end
     end
 

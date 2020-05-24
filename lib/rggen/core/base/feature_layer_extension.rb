@@ -91,6 +91,10 @@ module RgGen
             register.register_file
           end
 
+          def register_files
+            register.register_files
+          end
+
           def block_or_file
             register.block_or_file
           end
@@ -117,6 +121,10 @@ module RgGen
 
           def register_file
             bit_field.register_file
+          end
+
+          def register_files
+            bit_field.register_files
           end
 
           def register
