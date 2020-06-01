@@ -52,6 +52,13 @@ RSpec.describe RgGen::Core::Base::FeatureLayerExtension do
     end
   end
 
+  context 'componentの階層がnilの場合' do
+    it 'エラーなくnewできる' do
+      component = @component_class.new(nil, :component, nil)
+      expect { @feature_class.new('', '', component) }.not_to raise_error
+    end
+  end
+
   context 'componentがroot階層の場合' do
     let(:feature) do
       @feature_class.new('', '', root)

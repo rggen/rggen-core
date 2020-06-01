@@ -185,7 +185,8 @@ module RgGen
         }.freeze
 
         def define_layer_methods
-          extend ACCESSOR_EXTENSIONS[layer]
+          ACCESSOR_EXTENSIONS.key?(layer) &&
+            (extend ACCESSOR_EXTENSIONS[layer])
         end
       end
     end

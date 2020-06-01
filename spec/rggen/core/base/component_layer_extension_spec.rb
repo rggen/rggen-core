@@ -52,6 +52,12 @@ RSpec.describe RgGen::Core::Base::ComponentLayerExtension do
     ]
   end
 
+  context '階層がnilの場合' do
+    it 'エラーなくnewできる' do
+      expect { @klass.new(nil, :component, nil) }.not_to raise_error
+    end
+  end
+
   context 'root階層の場合' do
     describe '#register_blocks' do
       it '配下のレジスタブロックオブジェクトを返す' do
