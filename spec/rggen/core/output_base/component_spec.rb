@@ -193,19 +193,39 @@ RSpec.describe RgGen::Core::OutputBase::Component do
       end
     end
 
-    before do
-      allow_any_instance_of(RgGen::Core::OutputBase::Feature)
-        .to receive(:create_blank_code).and_return(code)
+    let(:pre_fizz_bodies) do
+      fizz_0 = proc do
+        pre_code(:fizz) { "#{component.object_id}_pre_#{'fizz' * (component.level)}_0" }
+      end
+      fizz_1 = proc do
+        pre_code(:fizz) { "#{component.object_id}_pre_#{'fizz' * (component.level)}_1" }
+      end
+      [fizz_0, fizz_1]
+    end
+
+    let(:fizz_body) do
+      proc do
+        main_code(:fizz) { "#{component.object_id}_#{'fizz' * (component.level)}" }
+      end
+    end
+
+    let(:post_fizz_bodies) do
+      fizz_0 = proc do
+        post_code(:fizz) { "#{component.object_id}_post_#{'fizz' * (component.level)}_0" }
+      end
+      fizz_1 = proc do
+        post_code(:fizz) { "#{component.object_id}_post_#{'fizz' * (component.level)}_1" }
+      end
+      [fizz_0, fizz_1]
+    end
+
+    let(:buzz_body) do
+      proc do
+        main_code(:buzz) { "#{component.object_id}_#{'buzz' * (component.level)}" }
+      end
     end
 
     before do
-      fizz_body = proc do
-        main_code(:fizz) { "#{component.object_id}_#{'fizz' * (component.level)}" }
-      end
-      buzz_body = proc do
-        main_code(:buzz) { "#{component.object_id}_#{'buzz' * (component.level)}" }
-      end
-
       define_and_create_feature(foo_component, :fizz, &fizz_body)
       define_and_create_feature(foo_component, :buzz, &buzz_body)
 
@@ -233,7 +253,7 @@ RSpec.describe RgGen::Core::OutputBase::Component do
         ].each do |expected_code|
           expect(code).to receive(:<<).with(expected_code).ordered
         end
-        foo_component.generate_code(:fizz, :top_down)
+        foo_component.generate_code(code, :fizz, :top_down)
 
         [
           "#{foo_component.object_id}_buzz",
@@ -246,7 +266,7 @@ RSpec.describe RgGen::Core::OutputBase::Component do
         ].each do |expected_code|
           expect(code).to receive(:<<).with(expected_code).ordered
         end
-        foo_component.generate_code(:buzz, :top_down, code)
+        foo_component.generate_code(code, :buzz, :top_down)
       end
     end
 
@@ -263,7 +283,7 @@ RSpec.describe RgGen::Core::OutputBase::Component do
         ].each do |expected_code|
           expect(code).to receive(:<<).with(expected_code).ordered
         end
-        foo_component.generate_code(:fizz, :bottom_up)
+        foo_component.generate_code(code, :fizz, :bottom_up)
 
         [
           "#{baz_components[0].object_id}_buzzbuzzbuzz",
@@ -276,33 +296,18 @@ RSpec.describe RgGen::Core::OutputBase::Component do
         ].each do |expected_code|
           expect(code).to receive(:<<).with(expected_code).ordered
         end
-        foo_component.generate_code(:buzz, :bottom_up, code)
+        foo_component.generate_code(code, :buzz, :bottom_up)
       end
-    end
-
-    it '内部で生成したコードオブジェクト、または、与えたコードオブジェクトを返す' do
-      allow(code).to receive(:<<)
-      expect(foo_component.generate_code(:fizz, :top_down)).to eq code
-      expect(foo_component.generate_code(:fizz, :top_down, code)).to eq code
-      expect(foo_component.generate_code(:fizz, :bottom_up)).to eq code
-      expect(foo_component.generate_code(:fizz, :bottom_up, code)).to eq code
     end
 
     context 'Feature.pre_codeで事前コード生成の登録がある場合' do
       before do
-        pre_fizz_0_body = proc do
-          pre_code(:fizz) { "#{component.object_id}_pre_#{'fizz' * (component.level)}_0" }
-        end
-        pre_fizz_1_body = proc do
-          pre_code(:fizz) { "#{component.object_id}_pre_#{'fizz' * (component.level)}_1" }
-        end
-
-        define_and_create_feature(foo_component, :pre_fizz_0, &pre_fizz_0_body)
-        define_and_create_feature(foo_component, :pre_fizz_1, &pre_fizz_1_body)
+        define_and_create_feature(foo_component, :pre_fizz_0, &pre_fizz_bodies[0])
+        define_and_create_feature(foo_component, :pre_fizz_1, &pre_fizz_bodies[1])
 
         bar_components.each do |bar_component|
-          define_and_create_feature(bar_component, :pre_fizz_0, &pre_fizz_0_body)
-          define_and_create_feature(bar_component, :pre_fizz_1, &pre_fizz_1_body)
+          define_and_create_feature(bar_component, :pre_fizz_0, &pre_fizz_bodies[0])
+          define_and_create_feature(bar_component, :pre_fizz_1, &pre_fizz_bodies[1])
         end
       end
 
@@ -324,7 +329,7 @@ RSpec.describe RgGen::Core::OutputBase::Component do
         ].each do |expected_code|
           expect(code).to receive(:<<).with(expected_code).ordered
         end
-        foo_component.generate_code(:fizz, :top_down, code)
+        foo_component.generate_code(code, :fizz, :top_down)
 
         [
           "#{foo_component.object_id}_pre_fizz_0",
@@ -343,25 +348,18 @@ RSpec.describe RgGen::Core::OutputBase::Component do
         ].each do |expected_code|
           expect(code).to receive(:<<).with(expected_code).ordered
         end
-        foo_component.generate_code(:fizz, :bottom_up, code)
+        foo_component.generate_code(code, :fizz, :bottom_up)
       end
     end
 
     context 'Feature.post_codeで事後コード生成の登録がある場合' do
       before do
-        post_fizz_0_body = proc do
-          post_code(:fizz) { "#{component.object_id}_post_#{'fizz' * (component.level)}_0" }
-        end
-        post_fizz_1_body = proc do
-          post_code(:fizz) { "#{component.object_id}_post_#{'fizz' * (component.level)}_1" }
-        end
-
-        define_and_create_feature(foo_component, :post_fizz_0, &post_fizz_0_body)
-        define_and_create_feature(foo_component, :post_fizz_1, &post_fizz_1_body)
+        define_and_create_feature(foo_component, :post_fizz_0, &post_fizz_bodies[0])
+        define_and_create_feature(foo_component, :post_fizz_1, &post_fizz_bodies[1])
 
         bar_components.each do |bar_component|
-          define_and_create_feature(bar_component, :post_fizz_0, &post_fizz_0_body)
-          define_and_create_feature(bar_component, :post_fizz_1, &post_fizz_1_body)
+          define_and_create_feature(bar_component, :post_fizz_0, &post_fizz_bodies[0])
+          define_and_create_feature(bar_component, :post_fizz_1, &post_fizz_bodies[1])
         end
       end
 
@@ -383,7 +381,7 @@ RSpec.describe RgGen::Core::OutputBase::Component do
         ].each do |expected_code|
           expect(code).to receive(:<<).with(expected_code).ordered
         end
-        foo_component.generate_code(:fizz, :top_down, code)
+        foo_component.generate_code(code, :fizz, :top_down)
 
         [
           "#{baz_components[0].object_id}_fizzfizzfizz",
@@ -402,7 +400,107 @@ RSpec.describe RgGen::Core::OutputBase::Component do
         ].each do |expected_code|
           expect(code).to receive(:<<).with(expected_code).ordered
         end
-        foo_component.generate_code(:fizz, :bottom_up, code)
+        foo_component.generate_code(code, :fizz, :bottom_up)
+      end
+    end
+
+    context '生成する階層の指定がある場合' do
+      before do
+        define_and_create_feature(foo_component, :pre_fizz_0, &pre_fizz_bodies[0])
+        define_and_create_feature(foo_component, :pre_fizz_1, &pre_fizz_bodies[1])
+
+        bar_components.each do |bar_component|
+          define_and_create_feature(bar_component, :pre_fizz_0, &pre_fizz_bodies[0])
+          define_and_create_feature(bar_component, :pre_fizz_1, &pre_fizz_bodies[1])
+        end
+      end
+
+      before do
+        define_and_create_feature(foo_component, :post_fizz_0, &post_fizz_bodies[0])
+        define_and_create_feature(foo_component, :post_fizz_1, &post_fizz_bodies[1])
+
+        bar_components.each do |bar_component|
+          define_and_create_feature(bar_component, :post_fizz_0, &post_fizz_bodies[0])
+          define_and_create_feature(bar_component, :post_fizz_1, &post_fizz_bodies[1])
+        end
+      end
+
+      it '指定された階層のコードをだけを生成する' do
+        [
+          "#{foo_component.object_id}_pre_fizz_0",
+          "#{foo_component.object_id}_pre_fizz_1",
+          "#{foo_component.object_id}_fizz",
+          "#{foo_component.object_id}_post_fizz_0",
+          "#{foo_component.object_id}_post_fizz_1"
+        ].each do |expected_code|
+          expect(code).to receive(:<<).with(expected_code).ordered
+        end
+        foo_component.generate_code(code, :fizz, :top_down, 0)
+
+        [
+          "#{baz_components[0].object_id}_fizzfizzfizz",
+          "#{baz_components[1].object_id}_fizzfizzfizz",
+          "#{baz_components[2].object_id}_fizzfizzfizz",
+          "#{baz_components[3].object_id}_fizzfizzfizz"
+        ].each do |expected_code|
+          expect(code).to receive(:<<).with(expected_code).ordered
+        end
+        foo_component.generate_code(code, :fizz, :top_down, 2)
+      end
+    end
+
+    context '生成する階層の範囲が指定されている場合' do
+      before do
+        define_and_create_feature(foo_component, :pre_fizz_0, &pre_fizz_bodies[0])
+        define_and_create_feature(foo_component, :pre_fizz_1, &pre_fizz_bodies[1])
+
+        bar_components.each do |bar_component|
+          define_and_create_feature(bar_component, :pre_fizz_0, &pre_fizz_bodies[0])
+          define_and_create_feature(bar_component, :pre_fizz_1, &pre_fizz_bodies[1])
+        end
+      end
+
+      before do
+        define_and_create_feature(foo_component, :post_fizz_0, &post_fizz_bodies[0])
+        define_and_create_feature(foo_component, :post_fizz_1, &post_fizz_bodies[1])
+
+        bar_components.each do |bar_component|
+          define_and_create_feature(bar_component, :post_fizz_0, &post_fizz_bodies[0])
+          define_and_create_feature(bar_component, :post_fizz_1, &post_fizz_bodies[1])
+        end
+      end
+
+      it '範囲内の階層のコードをだけを生成する' do
+        [
+          "#{foo_component.object_id}_pre_fizz_0",
+          "#{foo_component.object_id}_pre_fizz_1",
+          "#{foo_component.object_id}_fizz",
+          "#{foo_component.object_id}_post_fizz_0",
+          "#{foo_component.object_id}_post_fizz_1"
+        ].each do |expected_code|
+          expect(code).to receive(:<<).with(expected_code).ordered
+        end
+        foo_component.generate_code(code, :fizz, :top_down, (0..0))
+
+        [
+          "#{bar_components[0].object_id}_pre_fizzfizz_0",
+          "#{bar_components[0].object_id}_pre_fizzfizz_1",
+          "#{bar_components[0].object_id}_fizzfizz",
+          "#{baz_components[0].object_id}_fizzfizzfizz",
+          "#{baz_components[1].object_id}_fizzfizzfizz",
+          "#{bar_components[0].object_id}_post_fizzfizz_0",
+          "#{bar_components[0].object_id}_post_fizzfizz_1",
+          "#{bar_components[1].object_id}_pre_fizzfizz_0",
+          "#{bar_components[1].object_id}_pre_fizzfizz_1",
+          "#{bar_components[1].object_id}_fizzfizz",
+          "#{baz_components[2].object_id}_fizzfizzfizz",
+          "#{baz_components[3].object_id}_fizzfizzfizz",
+          "#{bar_components[1].object_id}_post_fizzfizz_0",
+          "#{bar_components[1].object_id}_post_fizzfizz_1"
+        ].each do |expected_code|
+          expect(code).to receive(:<<).with(expected_code).ordered
+        end
+        foo_component.generate_code(code, :fizz, :top_down, (1..2))
       end
     end
   end

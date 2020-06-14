@@ -121,9 +121,9 @@ module RgGen
           end
         end
 
-        def generate_code(phase, kind, code = nil)
+        def generate_code(code, phase, kind)
           generator = self.class.code_generators[phase]
-          generator&.generate(self, kind, code) || code
+          generator&.generate(self, code, kind)
         end
 
         def write_file(directory = nil)

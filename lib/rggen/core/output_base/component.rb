@@ -39,8 +39,9 @@ module RgGen
           @children.each(&:build)
         end
 
-        def generate_code(kind, mode, code = nil)
-          code_generators(kind, mode).inject(code) { |c, g| g[c] }
+        def generate_code(code, kind, mode, target_or_range = nil, depth = 0)
+          code_generator_contexts(kind, mode, target_or_range, depth)
+            .each { |context| context.generate(code) }
         end
 
         def write_file(directory = nil)
@@ -60,25 +61,40 @@ module RgGen
           define_proxy_calls(feature, methods)
         end
 
-        def code_generators(kind, mode)
-          [
-            [@features.each_value, [:pre_code, kind]],
-            *main_code_contexts(kind, mode),
-            [@features.each_value, [:post_code, kind]]
-          ].map do |receivers, args|
-            lambda do |code|
-              receivers.inject(code) { |c, r| r.generate_code(*args, c) }
-            end
+        CodeGeneratorContext = Struct.new(:receivers, :args) do
+          def generate(code)
+            receivers.each { |receiver| receiver.generate_code(code, *args) }
           end
         end
 
-        def main_code_contexts(kind, mode)
-          contexts = [
-            [@features.each_value, [:main_code, kind]],
-            [@children, [kind, mode]]
-          ]
-          contexts.reverse! if mode == :bottom_up
-          contexts
+        def code_generator_contexts(kind, mode, target_or_range, depth)
+          [
+            feature_code_generator_context(:pre_code, kind, target_or_range, depth),
+            *main_code_generator_contexts(kind, mode, target_or_range, depth),
+            feature_code_generator_context(:post_code, kind, target_or_range, depth)
+          ].compact
+        end
+
+        def feature_code_generator_context(phase, kind, target_or_range, depth)
+          (target_depth?(depth, target_or_range) || nil) &&
+            CodeGeneratorContext.new(@features.each_value, [phase, kind])
+        end
+
+        def target_depth?(depth, target_or_range)
+          if target_or_range.nil?
+            true
+          elsif target_or_range.respond_to?(:include?)
+            target_or_range.include?(depth)
+          else
+            depth == target_or_range
+          end
+        end
+
+        def main_code_generator_contexts(kind, mode, target_or_range, depth)
+          [
+            feature_code_generator_context(:main_code, kind, target_or_range, depth),
+            CodeGeneratorContext.new(@children, [kind, mode, target_or_range, depth + 1])
+          ].tap { |contexts| mode == :bottom_up && contexts.reverse! }
         end
       end
     end

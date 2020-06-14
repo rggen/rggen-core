@@ -9,11 +9,10 @@ module RgGen
           code_blocks[kind] << block
         end
 
-        def generate(context, kind, code)
-          return code unless generatable?(kind)
-          execute_code_blocks(
-            context, kind, code || context.create_blank_code
-          )
+        def generate(context, code, kind)
+          code_blocks[kind].each do |block|
+            execute_code_block(context, code, block)
+          end
         end
 
         def copy
@@ -28,30 +27,18 @@ module RgGen
           @code_blocks ||= Hash.new { |blocks, kind| blocks[kind] = [] }
         end
 
-        def generatable?(kind)
-          @code_blocks&.key?(kind)
-        end
-
-        def execute_code_blocks(context, kind, code)
-          code_blocks[kind].each(&code_block_executor(context, code))
-          code
-        end
-
-        def code_block_executor(context, code)
-          lambda do |block|
-            if block.arity.zero?
-              code << context.instance_exec(&block)
-            else
-              context.instance_exec(code, &block)
-            end
+        def execute_code_block(context, code, block)
+          if block.arity.zero?
+            code << context.instance_exec(&block)
+          else
+            context .instance_exec(code, &block)
           end
         end
 
         protected
 
         def copy_code_blocks(original_blocks)
-          original_blocks
-            .each { |kind, blocks| code_blocks[kind] = blocks.dup }
+          original_blocks.each { |kind, blocks| code_blocks[kind] = blocks.dup }
         end
       end
     end

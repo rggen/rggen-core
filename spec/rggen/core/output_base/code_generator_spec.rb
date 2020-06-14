@@ -30,11 +30,11 @@ RSpec.describe RgGen::Core::OutputBase::CodeGenerator do
 
       expect(context).to receive(:foo).and_call_original
       expect(code).to receive(:<<).with('foo')
-      generator.generate(context, :foo, code)
+      generator.generate(context, code, :foo)
 
       expect(context).to receive(:bar).and_call_original
       expect(code).to receive(:<<).with('bar')
-      generator.generate(context, :bar, code)
+      generator.generate(context, code, :bar)
     end
 
     specify '同名のコード生成ブロックを複数個登録できる' do
@@ -47,37 +47,7 @@ RSpec.describe RgGen::Core::OutputBase::CodeGenerator do
       expect(code).to receive(:<<).with('foo')
       expect(code).to receive(:<<).with('foofoo')
       expect(code).to receive(:<<).with('foofoofoo')
-      generator.generate(context, :foo, code)
-    end
-
-    it '与えられたコードオブジェクトを返す' do
-      generator = create_generator do |g|
-        g.register(:foo, ->(c) { c << foo })
-        g.register(:foo, -> { bar })
-      end
-
-      expect(generator.generate(context, :foo, code)).to equal(code)
-      expect(generator.generate(context, :bar, code)).to equal(code)
-    end
-
-    context '与えらた code が nil の場合' do
-      let(:generator) do
-        create_generator do |g|
-          g.register(:foo, ->(c) {  c << foo })
-          g.register(:bar, -> { bar })
-        end
-      end
-
-      it 'context の #create_blank_code を呼び出して、コードオブジェクトを生成する' do
-        expect(context).to receive(:create_blank_code).and_return(code)
-        generator.generate(context, :foo, nil)
-      end
-
-      it '生成したコードオブジェクトを返す' do
-        allow(context).to receive(:create_blank_code).and_return(code)
-        expect(generator.generate(context, :foo, nil)).to be code
-        expect(generator.generate(context, :bar, nil)).to be code
-      end
+      generator.generate(context, code, :foo)
     end
 
     context '登録されたコード生成ブロックが指定されなかった場合' do
@@ -89,26 +59,13 @@ RSpec.describe RgGen::Core::OutputBase::CodeGenerator do
 
       it 'エラーなく実行される' do
         expect {
-          generator.generate(context, :bar, code)
-        }.not_to raise_error
-        expect {
-          generator.generate(context, :bar, nil)
+          generator.generate(context, code, :bar)
         }.not_to raise_error
       end
 
       it 'コードの追加は行わない' do
         expect(code).not_to receive(:<<)
-        generator.generate(context, :bar, code)
-      end
-
-      it 'コードの生成は行わない' do
-        expect(context).not_to receive(:create_blank_code)
-        generator.generate(context, :bar, nil)
-      end
-
-      it '与えたコードオブジェクトを返す' do
-        expect(generator.generate(context, :bar, code)).to be code
-        expect(generator.generate(context, :bar, nil)).to be nil
+        generator.generate(context, code, :bar)
       end
     end
 
@@ -117,26 +74,13 @@ RSpec.describe RgGen::Core::OutputBase::CodeGenerator do
 
       it 'エラーなく実行される' do
         expect {
-          generator.generate(context, :bar, code)
-        }.not_to raise_error
-        expect {
-          generator.generate(context, :bar, nil)
+          generator.generate(context, code, :bar)
         }.not_to raise_error
       end
 
       it 'コードの追加は行わない' do
         expect(code).not_to receive(:<<)
-        generator.generate(context, :bar, code)
-      end
-
-      it 'コードの生成は行わない' do
-        expect(context).not_to receive(:create_blank_code)
-        generator.generate(context, :bar, nil)
-      end
-
-      it '与えたコードオブジェクトを返す' do
-        expect(generator.generate(context, :bar, code)).to be code
-        expect(generator.generate(context, :bar, nil)).to be nil
+        generator.generate(context, code, :bar)
       end
     end
   end
@@ -153,10 +97,10 @@ RSpec.describe RgGen::Core::OutputBase::CodeGenerator do
       bar_generator = foo_generator.copy
 
       expect(code).to receive(:<<).with('foo')
-      bar_generator.generate(context, :foo, code)
+      bar_generator.generate(context, code, :foo)
 
       expect(code).to receive(:<<).with('bar')
-      bar_generator.generate(context, :bar, code)
+      bar_generator.generate(context, code, :bar)
     end
 
     specify 'コピー変更は、コピー元に影響しない' do
@@ -165,11 +109,11 @@ RSpec.describe RgGen::Core::OutputBase::CodeGenerator do
 
       expect(code).to receive(:<<).with('foo')
       expect(code).to receive(:<<).with('foofoo')
-      bar_generator.generate(context, :foo, code)
+      bar_generator.generate(context, code, :foo)
 
       expect(code).to receive(:<<).with('foo')
       expect(code).not_to receive(:<<).with('foofoo')
-      foo_generator.generate(context, :foo, code)
+      foo_generator.generate(context, code, :foo)
     end
   end
 end

@@ -135,10 +135,10 @@ RSpec.describe RgGen::Core::OutputBase::Feature do
       end
 
       expect(code).to receive(:<<).with('foo')
-      feature.generate_code(phase, :foo, nil)
+      feature.generate_code(code, phase, :foo)
 
       expect(code).to receive(:<<).with('bar')
-      feature.generate_code(phase, :bar, code)
+      feature.generate_code(code, phase, :bar)
     end
 
     specify '同名のコード生成ブロックを複数個登録できる' do
@@ -149,7 +149,7 @@ RSpec.describe RgGen::Core::OutputBase::Feature do
 
       expect(code).to receive(:<<).with('foo_0')
       expect(code).to receive(:<<).with('foo_1')
-      feature.generate_code(phase, :foo, code)
+      feature.generate_code(code, phase, :foo)
     end
 
     context '未登録のコードの種類が指定された場合' do
@@ -159,22 +159,9 @@ RSpec.describe RgGen::Core::OutputBase::Feature do
         end
 
         expect(code).not_to receive(:<<)
-        feature.generate_code(phase, :bar, nil)
-        feature.generate_code(phase, :bar, code)
+        feature.generate_code(code, phase, :bar)
+        feature.generate_code(code, phase, :bar)
       end
-    end
-
-    it '生成したコードオブジェクト、または、与えたコードオブジェクトを返す' do
-      allow(code).to receive(:<<)
-
-      feature = define_and_create_feature do
-        send(phase, :foo) { 'foo' }
-      end
-
-      expect(feature.generate_code(phase, :foo, nil )).to be code
-      expect(feature.generate_code(phase, :foo, code)).to be code
-      expect(feature.generate_code(phase, :bar, nil )).to be nil
-      expect(feature.generate_code(phase, :bar, code)).to be code
     end
 
     describe 'from_template option' do
@@ -190,11 +177,11 @@ RSpec.describe RgGen::Core::OutputBase::Feature do
 
         allow(File).to receive(:binread).with('foo.erb').and_return(template)
         expect(code).to receive(:<<).with("#{feature.object_id}")
-        feature.generate_code(phase, :foo, code)
+        feature.generate_code(code, phase, :foo)
 
         allow(File).to receive(:binread).with(default_template_path).and_return(template)
         expect(code).to receive(:<<).with("#{feature.object_id}")
-        feature.generate_code(phase, :bar, code)
+        feature.generate_code(code, phase, :bar)
       end
 
       context 'from_templateにfalseが指定された場合' do
@@ -205,7 +192,7 @@ RSpec.describe RgGen::Core::OutputBase::Feature do
 
           expect(File).not_to receive(:binread)
           expect(code).not_to receive(:<<)
-          feature.generate_code(phase, :foo, code)
+          feature.generate_code(code, phase, :foo)
         end
       end
     end
@@ -219,10 +206,10 @@ RSpec.describe RgGen::Core::OutputBase::Feature do
         feature = define_and_create_feature(parent_feature)
 
         expect(code).to receive(:<<). with('foo')
-        feature.generate_code(phase, :foo, code)
+        feature.generate_code(code, phase, :foo)
 
         expect(code).to receive(:<<). with('bar')
-        feature.generate_code(phase, :bar, code)
+        feature.generate_code(code, phase, :bar)
       end
 
       specify '継承先での変更は、親クラスに影響しない' do
@@ -235,22 +222,18 @@ RSpec.describe RgGen::Core::OutputBase::Feature do
 
         expect(code).to receive(:<<).with('foo_0')
         expect(code).to receive(:<<).with('foo_1')
-        feature.generate_code(phase, :foo, code)
+        feature.generate_code(code, phase, :foo)
 
 
         expect(code).to receive(:<<).with('foo_0')
         expect(code).not_to receive(:<<).with('foo_1')
-        parent_feature.generate_code(phase, :foo, code)
+        parent_feature.generate_code(code, phase, :foo)
       end
     end
   end
 
   describe '#generate_code' do
     let(:code) { double('code') }
-
-    before do
-      allow_any_instance_of(described_class).to receive(:create_blank_code).and_return(code)
-    end
 
     context '生成フェーズが:pre_codeの場合' do
       it_behaves_like 'code_generator', :pre_code
@@ -397,11 +380,11 @@ RSpec.describe RgGen::Core::OutputBase::Feature do
 
       allow(File).to receive(:binread).with(default_template_path).and_return(template)
       expect(code).to receive(:<<).with("#{foo_feature.object_id}")
-      foo_feature.generate_code(:main_code, :foo, code)
+      foo_feature.generate_code(code, :main_code, :foo)
 
       allow(File).to receive(:binread).with('bar.erb').and_return(template)
       expect(code).to receive(:<<).with("#{bar_feature.object_id}")
-      bar_feature.generate_code(:main_code, :bar, code)
+      bar_feature.generate_code(code, :main_code, :bar)
     end
   end
 end
