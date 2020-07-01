@@ -94,8 +94,8 @@ module RgGen
           plugins.add(name, module_or_version, &block)
         end
 
-        def activate_plugins
-          plugins.activate(self)
+        def activate_plugins(**options)
+          plugins.activate(self, **options)
         end
 
         def load_setup_file(file, activation = true)
