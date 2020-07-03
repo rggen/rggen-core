@@ -4,6 +4,20 @@ module RgGen
   module Core
     module InputBase
       class ComponentFactory < Base::ComponentFactory
+        class << self
+          def enable_no_children_error
+            @enable_no_children_error = true
+          end
+
+          def disable_no_children_error
+            @enable_no_children_error = false
+          end
+
+          def enable_no_children_error?
+            @enable_no_children_error.nil? || @enable_no_children_error
+          end
+        end
+
         attr_setter :loaders
 
         private
@@ -63,7 +77,21 @@ module RgGen
         end
 
         def post_build(component)
+          exist_no_children?(component) &&
+            raise_no_children_error(component)
           component.verify(:component)
+        end
+
+        def exist_no_children?(component)
+          enable_no_children_error? &&
+            component.need_children? && component.children.empty?
+        end
+
+        def enable_no_children_error?
+          self.class.enable_no_children_error?
+        end
+
+        def raise_no_children_error(_component)
         end
 
         def finalize(component)

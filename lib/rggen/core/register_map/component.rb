@@ -13,6 +13,7 @@ module RgGen
         def post_initialize(configuration)
           @configuration = configuration
           define_layer_methods
+          layer == :bit_field && need_no_children
         end
       end
     end
