@@ -68,6 +68,15 @@ module RgGen::Core::Utility
       end
     end
 
+    describe '#array_name' do
+      it '大きさを含む配列名を返す' do
+        expect(utility.send(:array_name, 'foo', nil)).to eq 'foo'
+        expect(utility.send(:array_name, 'foo', [])).to eq 'foo'
+        expect(utility.send(:array_name, 'foo', [1])).to eq 'foo[1]'
+        expect(utility.send(:array_name, 'foo', [2, 3])).to eq 'foo[2][3]'
+      end
+    end
+
     describe '#code_block' do
       it 'CodeBlockオブジェクトを返す' do
         expect(utility.send(:code_block)).to be_instance_of(CodeUtility::CodeBlock)
