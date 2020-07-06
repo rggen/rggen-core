@@ -4,7 +4,7 @@ module RgGen
   module Core
     module OutputBase
       class Feature < Base::Feature
-        include Base::HierarchicalFeatureAccessors
+        include Base::FeatureLayerExtension
         include RaiseError
 
         class << self
@@ -89,7 +89,7 @@ module RgGen
         end
 
         def post_initialize
-          define_hierarchical_accessors
+          define_layer_methods
         end
 
         def pre_build
@@ -121,9 +121,9 @@ module RgGen
           end
         end
 
-        def generate_code(phase, kind, code = nil)
+        def generate_code(code, phase, kind)
           generator = self.class.code_generators[phase]
-          generator&.generate(self, kind, code) || code
+          generator&.generate(self, code, kind)
         end
 
         def write_file(directory = nil)

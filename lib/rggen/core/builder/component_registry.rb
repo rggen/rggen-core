@@ -10,10 +10,10 @@ module RgGen
           @entries = []
         end
 
-        def register_component(categories = nil, &block)
-          if categories
-            Array(categories).each do |category|
-              @entries << create_new_entry(category, block)
+        def register_component(layers = nil, &block)
+          if layers
+            Array(layers).each do |layer|
+              @entries << create_new_entry(layer, block)
             end
           else
             @entries << create_new_entry(nil, block)
@@ -21,26 +21,31 @@ module RgGen
         end
 
         def build_factory
-          factories = @entries.map(&:build_factory)
-          factories.each_cons(2) { |(f0, f1)| f0.child_factory(f1) }
-          root_factory = factories.first
-          root_factory.root_factory
-          root_factory
+          build_factories.first.tap(&:root_factory)
         end
 
         private
 
-        def create_new_entry(category, block)
-          entry = ComponentEntry.new(@component_name)
-          Docile.dsl_eval(entry, category, &block)
-          add_feature_registry(category, entry.feature_registry)
+        def create_new_entry(layer, block)
+          entry = ComponentEntry.new(@component_name, layer)
+          Docile.dsl_eval(entry, layer, &block)
+          add_feature_registry(layer, entry.feature_registry)
           entry
         end
 
-        def add_feature_registry(category, feature_registry)
-          feature_registry || return
-          @builder
-            .add_feature_registry(@component_name, category, feature_registry)
+        def add_feature_registry(layer, feature_registry)
+          feature_registry &&
+            @builder
+              .add_feature_registry(@component_name, layer, feature_registry)
+        end
+
+        def build_factories
+          factories =
+            @entries
+              .map(&:build_factory)
+              .map { |f| [f.layer, f] }.to_h
+          factories.each_value { |f| f.component_factories factories }
+          factories.values
         end
       end
     end

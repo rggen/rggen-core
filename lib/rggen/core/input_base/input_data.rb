@@ -4,13 +4,16 @@ module RgGen
   module Core
     module InputBase
       class InputData
-        def initialize(valid_value_lists)
+        def initialize(layer, valid_value_lists)
+          @layer = layer
           @valid_value_lists = valid_value_lists
           @values = Hash.new(NAValue)
           @children = []
           define_setter_methods
           block_given? && yield(self)
         end
+
+        attr_reader :layer
 
         def value(value_name, value, position = nil)
           symbolized_name = value_name.to_sym
@@ -24,8 +27,8 @@ module RgGen
             end
         end
 
-        def []=(value_name, position = nil, value)
-          value(value_name, value, position)
+        def []=(value_name, position_or_value, value = nil)
+          value(value_name, value || position_or_value, position_or_value)
         end
 
         def [](value_name)
@@ -39,8 +42,8 @@ module RgGen
 
         attr_reader :children
 
-        def child(value_list = nil, &block)
-          create_child_data do |child_data|
+        def child(layer, value_list = nil, &block)
+          create_child_data(layer) do |child_data|
             child_data.build_by_block(block)
             child_data.values(value_list)
             @children << child_data
@@ -56,11 +59,11 @@ module RgGen
         private
 
         def valid_value?(value_name)
-          @valid_value_lists.first.include?(value_name)
+          @valid_value_lists[layer].include?(value_name)
         end
 
         def define_setter_methods
-          @valid_value_lists.first.each(&method(:define_setter_method))
+          @valid_value_lists[layer].each(&method(:define_setter_method))
         end
 
         def define_setter_method(value_name)
@@ -79,12 +82,12 @@ module RgGen
           locations[0].path.include?('docile') ? locations[1] : locations[0]
         end
 
-        def create_child_data(&block)
-          child_data_class.new(@valid_value_lists[1..-1], &block)
+        def create_child_data(layer, &block)
+          child_data_class.new(layer, @valid_value_lists, &block)
         end
 
         def child_data_class
-          InputData
+          self.class
         end
 
         protected

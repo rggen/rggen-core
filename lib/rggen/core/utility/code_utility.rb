@@ -8,13 +8,15 @@ module RgGen
           code_block
         end
 
-        private
+        module_function
 
         def newline
           "\n"
         end
 
-        alias_method :nl, :newline
+        def nl
+          newline
+        end
 
         def comma
           ','
@@ -34,6 +36,10 @@ module RgGen
 
         def string(expression)
           "\"#{expression}\""
+        end
+
+        def array_name(name, size)
+          [name, *size&.map { |s| "[#{s}]" }].join
         end
 
         def code_block(indent = 0, &body)

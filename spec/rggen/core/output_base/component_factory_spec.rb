@@ -1,116 +1,159 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+RSpec.describe RgGen::Core::OutputBase::ComponentFactory do
+  let(:configuration) do
+    RgGen::Core::Configuration::Component.new(nil, :configuration, nil)
+  end
 
-module RgGen::Core::OutputBase
-  describe ComponentFactory do
-    let(:configuration) do
-      RgGen::Core::Configuration::Component.new('configuration', nil)
+  def create_register_map(parent, layer)
+    RgGen::Core::RegisterMap::Component.new(parent, :register_map, layer, configuration) do |c|
+      parent&.add_child(c)
     end
+  end
 
-    def create_register_map(parent)
-      RgGen::Core::RegisterMap::Component.new('register_map', parent, configuration) do |c|
-        parent&.add_child(c)
+  let(:root) do
+    create_register_map(nil, :root)
+  end
+
+  let(:register_blocks) do
+    [
+      create_register_map(root, :register_block),
+      create_register_map(root, :register_block)
+    ]
+  end
+
+  let(:register_files) do
+    [
+      create_register_map(register_blocks[1], :register_file),
+      create_register_map(register_blocks[1], :register_file),
+      create_register_map(register_blocks[1].children[0], :register_file)
+    ]
+  end
+
+  let(:registers) do
+    [
+      create_register_map(register_blocks[0], :register),
+      create_register_map(register_blocks[0], :register),
+      create_register_map(register_files[0], :register),
+      create_register_map(register_files[1], :register),
+      create_register_map(register_files[1], :register),
+      create_register_map(register_files[2], :register),
+      create_register_map(register_files[2], :register),
+    ]
+  end
+
+  let(:bit_fields) do
+    registers.flat_map do |register|
+      Array.new(2) { create_register_map(register, :bit_field) }
+    end
+  end
+
+  def define_feature(layer, name)
+    Class.new(RgGen::Core::OutputBase::Feature) do
+      export "feature_#{name}"
+      define_method("feature_#{name}") do
+        @value
+      end
+      build do
+        @value = "#{send(layer).object_id} #{send(layer).send(name)}"
       end
     end
+  end
 
-    let(:register_map) do
-      create_register_map(nil)
+  def create_feature_factory(layer, name)
+    feature = define_feature(layer, name)
+    RgGen::Core::OutputBase::FeatureFactory.new(name) do |f|
+      f.target_feature feature
     end
+  end
 
-    let(:register_blocks) do
-      Array.new(2) { create_register_map(register_map) }
-    end
-
-    let(:registers) do
-      register_blocks.flat_map do |register_block|
-        Array.new(2) { create_register_map(register_block) }
+  def create_component_factory(factories, layer)
+    feature_factories =
+      if layer != :root
+        {
+          fizz: create_feature_factory(layer, :fizz),
+          buzz: create_feature_factory(layer, :buzz)
+        }
       end
+    factories[layer] = described_class.new('component', layer) do |f|
+      f.target_component RgGen::Core::OutputBase::Component
+      f.component_factories factories
+      f.feature_factories feature_factories
+      f.root_factory if layer == :root
     end
+  end
 
-    let(:bit_fields) do
-      registers.flat_map do |register|
-        Array.new(2) { create_register_map(register) }
+  let!(:component_factories) { {} }
+
+  let!(:bit_field_component_factory) do
+    create_component_factory(component_factories, :bit_field)
+  end
+
+  let!(:register_component_facotry) do
+    create_component_factory(component_factories, :register)
+  end
+
+  let!(:register_file_component_factory) do
+    create_component_factory(component_factories, :register_file)
+  end
+
+  let!(:register_block_component_factory) do
+    create_component_factory(component_factories, :register_block)
+  end
+
+  let!(:root_component_factory) do
+    create_component_factory(component_factories, :root)
+  end
+
+  before do
+    [*register_blocks, *register_files, *registers, *bit_fields].each.with_index(1) do |c, i|
+      allow(c).to receive(:properties).and_return([:fizz, :buzz])
+      allow(c).to receive(:fizz).and_return("fizz #{'!' * i}")
+      allow(c).to receive(:buzz).and_return("buzz #{'!' * i}")
+    end
+  end
+
+  describe '#create' do
+    it '出力コンポーネントの生成と組み立てを行う' do
+      output_root = root_component_factory.create(configuration, root)
+
+      output_register_blocks = [
+        output_root.register_blocks[0],
+        output_root.register_blocks[1]
+      ]
+      output_register_blocks.each_with_index do |block, i|
+        expect(block.feature_fizz).to eq "#{block.object_id} #{register_blocks[i].fizz}"
+        expect(block.feature_buzz).to eq "#{block.object_id} #{register_blocks[i].buzz}"
       end
-    end
 
-    def define_feature(hierarchy, name)
-      Class.new(Feature) do
-        export "feature_#{name}"
-        define_method("feature_#{name}") do
-          @value
-        end
-        build do
-          @value = "#{send(hierarchy).object_id} #{send(hierarchy).send(name)}"
-        end
+      output_register_files = [
+        output_register_blocks[1].files_and_registers[0],
+        output_register_blocks[1].files_and_registers[1],
+        output_register_blocks[1].files_and_registers[0].files_and_registers[0]
+      ]
+      output_register_files.each_with_index do |file, i|
+        expect(file.feature_fizz).to eq "#{file.object_id} #{register_files[i].fizz}"
+        expect(file.feature_buzz).to eq "#{file.object_id} #{register_files[i].buzz}"
       end
-    end
 
-    def create_feature_factory(hierarchy, name)
-      feature = define_feature(hierarchy, name)
-      FeatureFactory.new(name) do |f|
-        f.target_feature feature
+      output_registers = [
+        output_register_blocks[0].files_and_registers[0],
+        output_register_blocks[0].files_and_registers[1],
+        output_register_files[0].files_and_registers[1],
+        output_register_files[1].files_and_registers[0],
+        output_register_files[1].files_and_registers[1],
+        output_register_files[2].files_and_registers[0],
+        output_register_files[2].files_and_registers[1]
+      ]
+      output_registers.each_with_index do |register, i|
+        expect(register.feature_fizz).to eq "#{register.object_id} #{registers[i].fizz}"
+        expect(register.feature_buzz).to eq "#{register.object_id} #{registers[i].buzz}"
       end
-    end
 
-    def create_component_factory(hierarchy, child_factory)
-      feature_factories =
-        if hierarchy != :register_map
-          {
-            fizz: create_feature_factory(hierarchy, :fizz),
-            buzz: create_feature_factory(hierarchy, :buzz)
-          }
-        end
-      ComponentFactory.new('component') do |f|
-        f.target_component Component
-        f.feature_factories feature_factories
-        f.child_factory child_factory
-        f.root_factory if hierarchy == :register_map
-      end
-    end
-
-    let(:bit_field_component_factory) do
-      create_component_factory(:bit_field, nil)
-    end
-
-    let(:register_component_facotry) do
-      create_component_factory(:register, bit_field_component_factory)
-    end
-
-    let(:register_block_component_factory) do
-      create_component_factory(:register_block, register_component_facotry)
-    end
-
-    let(:register_map_component_factory) do
-      create_component_factory(:register_map, register_block_component_factory)
-    end
-
-    before do
-      [*register_blocks, *registers, *bit_fields].each_with_index do |component, i|
-        allow(component).to receive(:properties).and_return([:fizz, :buzz])
-        allow(component).to receive(:fizz).and_return("fizz #{"!" * (i + 1)}")
-        allow(component).to receive(:buzz).and_return("buzz #{"!" * (i + 1)}")
-      end
-    end
-
-    describe '#create' do
-      it '出力コンポーネントの生成と組み立てを行う' do
-        output_component = register_map_component_factory.create(configuration, register_map)
-
-        register_blocks.each_with_index do |register_block, i|
-          expect(output_component.register_blocks[i].feature_fizz).to eq "#{output_component.register_blocks[i].object_id} #{register_block.fizz}"
-          expect(output_component.register_blocks[i].feature_buzz).to eq "#{output_component.register_blocks[i].object_id} #{register_block.buzz}"
-        end
-
-        registers.each_with_index do |register, i|
-          expect(output_component.registers[i].feature_fizz).to eq "#{output_component.registers[i].object_id} #{register.fizz}"
-          expect(output_component.registers[i].feature_buzz).to eq "#{output_component.registers[i].object_id} #{register.buzz}"
-        end
-
-        bit_fields.each_with_index do |bit_field, i|
-          expect(output_component.bit_fields[i].feature_fizz).to eq "#{output_component.bit_fields[i].object_id} #{bit_field.fizz}"
-          expect(output_component.bit_fields[i].feature_buzz).to eq "#{output_component.bit_fields[i].object_id} #{bit_field.buzz}"
-        end
+      output_bit_fiels = output_registers.flat_map(&:bit_fields)
+      output_bit_fiels.each_with_index do |bit_field, i|
+        expect(bit_field.feature_fizz).to eq "#{bit_field.object_id} #{bit_fields[i].fizz}"
+        expect(bit_field.feature_buzz).to eq "#{bit_field.object_id} #{bit_fields[i].buzz}"
       end
     end
   end

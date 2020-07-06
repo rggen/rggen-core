@@ -27,10 +27,6 @@ Style/EmptyMethod:
 Style/FormatStringToken:
   EnforcedStyle: unannotated
 
-Style/OptionalArguments:
-  Exclude:
-    - lib/rggen/core/input_base/input_data.rb
-
 Style/HashEachMethods:
   Enabled: true
 

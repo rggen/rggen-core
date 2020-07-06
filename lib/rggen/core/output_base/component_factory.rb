@@ -22,6 +22,10 @@ module RgGen
           end
         end
 
+        def find_child_factory(_configuration, register_map)
+          component_factories[register_map.layer]
+        end
+
         def post_build(component)
           component.pre_build
         end

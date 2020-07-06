@@ -4,15 +4,19 @@ module RgGen
   module Core
     module Base
       class ComponentFactory
-        def initialize(component_name)
+        def initialize(component_name, layer)
           @component_name = component_name
+          @layer = layer
           @root_factory = false
           block_given? && yield(self)
         end
 
+        attr_reader :component_name
+        attr_reader :layer
+
         attr_setter :target_component
+        attr_setter :component_factories
         attr_setter :feature_factories
-        attr_setter :child_factory
 
         def root_factory
           @root_factory = true
@@ -40,7 +44,7 @@ module RgGen
         def create_component(parent, sources, &block)
           actual_sources = Array(select_actual_sources(*sources))
           @target_component
-            .new(@component_name, parent, *actual_sources, &block)
+            .new(parent, component_name, layer, *actual_sources, &block)
         end
 
         def select_actual_sources(*sources)
@@ -54,8 +58,7 @@ module RgGen
         end
 
         def do_create_features(component, sources)
-          return unless create_features?
-          create_features(component, *sources)
+          create_features? && create_features(component, *sources)
         end
 
         def create_features?
@@ -63,12 +66,11 @@ module RgGen
         end
 
         def do_create_children(component, sources)
-          return unless create_children?(component)
-          create_children(component, *sources)
+          create_children?(component) && create_children(component, *sources)
         end
 
         def create_children?(component)
-          @child_factory && component.need_children?
+          @component_factories && component.need_children?
         end
 
         def preprocess(args)
@@ -86,7 +88,8 @@ module RgGen
         end
 
         def create_child(component, *args)
-          @child_factory.create(component, *args)
+          factory = find_child_factory(*args)
+          factory.create(component, *args)
         end
       end
     end

@@ -4,6 +4,20 @@ module RgGen
   module Core
     module InputBase
       class ComponentFactory < Base::ComponentFactory
+        class << self
+          def enable_no_children_error
+            @enable_no_children_error = true
+          end
+
+          def disable_no_children_error
+            @enable_no_children_error = false
+          end
+
+          def enable_no_children_error?
+            @enable_no_children_error.nil? || @enable_no_children_error
+          end
+        end
+
         attr_setter :loaders
 
         private
@@ -27,8 +41,13 @@ module RgGen
         end
 
         def find_loader(file)
-          loader = loaders.find { |l| l.support?(file) }
-          loader || (raise Core::LoadError.new('unsupported file type', file))
+          loaders.find { |l| l.support?(file) } ||
+            (raise Core::LoadError.new('unsupported file type', file))
+        end
+
+        def valid_value_lists
+          component_factories
+            .transform_values(&->(f) { f.valid_value_list })
         end
 
         def create_input_data(&block)
@@ -58,7 +77,21 @@ module RgGen
         end
 
         def post_build(component)
+          exist_no_children?(component) &&
+            raise_no_children_error(component)
           component.verify(:component)
+        end
+
+        def exist_no_children?(component)
+          enable_no_children_error? &&
+            component.need_children? && component.children.empty?
+        end
+
+        def enable_no_children_error?
+          self.class.enable_no_children_error?
+        end
+
+        def raise_no_children_error(_component)
         end
 
         def finalize(component)
@@ -77,10 +110,8 @@ module RgGen
 
         protected
 
-        def valid_value_lists
-          list = [Array(active_feature_factories&.keys)]
-          list.concat(Array(child_factory&.valid_value_lists))
-          list
+        def valid_value_list
+          Array(active_feature_factories&.keys)
         end
       end
     end

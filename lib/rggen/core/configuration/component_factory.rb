@@ -7,7 +7,7 @@ module RgGen
         private
 
         def create_input_data(&block)
-          InputBase::InputData.new(valid_value_lists, &block)
+          InputData.new(valid_value_lists, &block)
         end
       end
     end

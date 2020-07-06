@@ -6,7 +6,7 @@ module RgGen
       class Loader < InputBase::Loader
         private
 
-        def register_map
+        def root
           input_data
         end
       end

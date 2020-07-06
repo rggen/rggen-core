@@ -7,7 +7,7 @@ module RgGen
         support_types [:rb]
 
         def read_file(file)
-          register_map.load_file(file)
+          root.load_file(file)
         end
       end
     end

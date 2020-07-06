@@ -63,9 +63,11 @@ module RgGen
           @plugins << Plugin.new(name, module_or_version, &block)
         end
 
-        def activate(builder)
-          @plugins.each { |plugin| plugin.default_setup(builder) }
-          @plugins.each { |plugin| plugin.optional_setup(builder) }
+        def activate(builder, **options)
+          options[:no_default_setup] ||
+            @plugins.each { |plugin| plugin.default_setup(builder) }
+          options[:no_optional_setup] ||
+            @plugins.each { |plugin| plugin.optional_setup(builder) }
         end
 
         def version_info
