@@ -29,7 +29,6 @@ group :develop do
 end
 
 group :test do
-  gem 'codecov', require: false
   gem 'regexp-examples', '~> 1.5.1', require: false
   gem 'rspec', '>= 3.8'
   gem 'simplecov', require: false

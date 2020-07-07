@@ -56,8 +56,11 @@ jobs:
       - name: Run RSpec
         run: |
           bundle exec rake coverage
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v1
+        with:
+          file: coverage/.resultset.json
 
   static-analysis:
     runs-on: ubuntu-latest
