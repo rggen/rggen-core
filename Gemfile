@@ -33,4 +33,5 @@ group :test do
   gem 'regexp-examples', '~> 1.5.1', require: false
   gem 'rspec', '>= 3.8'
   gem 'simplecov', require: false
+  gem 'simplecov-cobertura', require: false
 end
