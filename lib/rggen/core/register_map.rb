@@ -12,7 +12,6 @@ module RgGen
             feature Feature, FeatureFactory if layer != :root
           end
 
-          base_loader Loader
           register_loaders [RubyLoader, JSONLoader, YAMLLoader]
         end
       end

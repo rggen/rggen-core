@@ -10,7 +10,6 @@ module RgGen
             feature Feature, FeatureFactory
           end
 
-          base_loader Loader
           register_loaders [RubyLoader, JSONLoader, YAMLLoader]
         end
       end

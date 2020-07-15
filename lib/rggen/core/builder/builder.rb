@@ -28,10 +28,6 @@ module RgGen
           @component_registries[:input][component].register_loaders(loaders)
         end
 
-        def define_loader(component, &body)
-          @component_registries[:input][component].define_loader(&body)
-        end
-
         def add_feature_registry(name, target_layer, registry)
           target_layers =
             if target_layer

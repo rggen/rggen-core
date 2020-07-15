@@ -34,8 +34,6 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
         )
       end
 
-      registry.base_loader(RgGen::Core::Configuration::Loader)
-
       builder.feature_registres[0].define_simple_feature(:foo) do
         property :foo
         build { |v| @foo = v.to_i }
@@ -44,19 +42,12 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
       builder.feature_registres[0].enable(:foo)
     end
 
-    specify '#register_loader/#register_loadersで登録したローダー、#define_loaderで定義したローダーを使うことができる' do
+    specify '#register_loader/#register_loadersで登録したローダーを使うことができる' do
       registry.register_loader(RgGen::Core::Configuration::RubyLoader)
       registry.register_loaders([
         RgGen::Core::Configuration::YAMLLoader,
         RgGen::Core::Configuration::JSONLoader
       ])
-      registry.define_loader do
-        include RgGen::Core::Configuration::HashLoader
-        support_types [:txt]
-        def read_file(file)
-          Marshal.load(File.binread(file))
-        end
-      end
 
       value = rand(99)
       setup_file_access('test.rb', "foo #{value}")
@@ -71,11 +62,6 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
       value = rand(99)
       setup_file_access('test.json', "{\"foo\": #{value}}")
       component = registry.build_factory.create(['test.json'])
-      expect(component.foo).to eq value
-
-      value = rand(99)
-      setup_file_access('test.txt', Marshal.dump({ foo: value }))
-      component = registry.build_factory.create(['test.txt'])
       expect(component.foo).to eq value
     end
   end

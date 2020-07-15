@@ -253,8 +253,6 @@ RSpec.describe RgGen::Core::Builder::Builder do
           RgGen::Core::Configuration::FeatureFactory
         )
       end
-
-      base_loader RgGen::Core::Configuration::Loader
     end
 
     builder.input_component_registry(:register_map) do
@@ -274,7 +272,6 @@ RSpec.describe RgGen::Core::Builder::Builder do
           RgGen::Core::RegisterMap::FeatureFactory
         )
       end
-      base_loader RgGen::Core::RegisterMap::Loader
     end
 
     [:foo, :bar, :baz].each do |component_name|
@@ -331,7 +328,7 @@ RSpec.describe RgGen::Core::Builder::Builder do
     end
   end
 
-  describe '#register_loader/#register_loaders/#define_loader' do
+  describe '#register_loader/#register_loaders' do
     before do
       default_component_registration
     end
@@ -358,18 +355,15 @@ RSpec.describe RgGen::Core::Builder::Builder do
       end
     end
 
-    it '対象コンポーネントローダーの追加/定義を行う' do
+    it '対象コンポーネントローダーの追加を行う' do
       allow(component_registry).to receive(:register_loader).and_call_original
       allow(component_registry).to receive(:register_loaders).and_call_original
-      allow(component_registry).to receive(:define_loader).and_call_original
 
       builder.register_loader(target_component, loaders[0])
       builder.register_loaders(target_component, [loaders[1], loaders[2]])
-      builder.define_loader(target_component) { support_types [:txt] }
 
       expect(component_registry).to have_received(:register_loader).with(equal(loaders[0]))
       expect(component_registry).to have_received(:register_loaders).with(match([equal(loaders[1]), equal(loaders[2])]))
-      expect(component_registry).to have_received(:define_loader)
     end
 
     context '未登録のコンポーネントが指定された場合' do
@@ -383,10 +377,6 @@ RSpec.describe RgGen::Core::Builder::Builder do
             :foo, [RgGen::Core::Configuration::YAMLLoader, RgGen::Core::Configuration::JSONLoader]
           )
         }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: foo'
-
-        expect {
-          builder.define_loader(:bar) { support_types [:txt] }
-        }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: bar'
       end
     end
   end
