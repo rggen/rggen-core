@@ -132,12 +132,13 @@ RSpec.describe RgGen::Core::InputBase::ComponentFactory do
 
     describe '入力データの生成と入力ファイルの読み出し' do
       let(:rb_loader) do
-        Class.new(RgGen::Core::InputBase::Loader) do
+        loader_class = Class.new(RgGen::Core::InputBase::Loader) do
           support_types [:rb]
           def read_file(file)
             input_data.load_file(file)
           end
         end
+        loader_class.new
       end
 
       let(:foo_load_data) do

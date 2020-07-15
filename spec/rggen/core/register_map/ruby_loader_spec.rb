@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 RSpec.describe RgGen::Core::RegisterMap::RubyLoader do
-  let(:loader) { RgGen::Core::RegisterMap::RubyLoader }
+  let(:loader) { RgGen::Core::RegisterMap::RubyLoader.new }
 
   let(:file) { 'ruby.rb' }
 
-  describe '.support?' do
+  describe '#support?' do
     let(:supported_file) { file }
 
     let(:unsupported_files) do
@@ -21,7 +21,7 @@ RSpec.describe RgGen::Core::RegisterMap::RubyLoader do
     end
   end
 
-  describe '.load_file' do
+  describe '#load_file' do
     let(:valid_value_lists) do
       {
         root: [], register_block: [:foo], register_file: [:bar],

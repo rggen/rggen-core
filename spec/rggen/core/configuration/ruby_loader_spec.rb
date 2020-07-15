@@ -2,12 +2,12 @@
 
 RSpec.describe RgGen::Core::Configuration::RubyLoader do
   let(:loader) do
-    RgGen::Core::Configuration::RubyLoader
+    RgGen::Core::Configuration::RubyLoader.new
   end
 
   let(:file) { 'ruby.rb' }
 
-  describe '.support?' do
+  describe '#support?' do
     let(:supported_file) { file }
 
     let(:unsupported_files) do
@@ -23,7 +23,7 @@ RSpec.describe RgGen::Core::Configuration::RubyLoader do
     end
   end
 
-  describe '.load_file' do
+  describe '#load_file' do
     let(:valid_value_lists) do
       { nil => [:foo, :bar, :baz] }
     end

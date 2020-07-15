@@ -19,7 +19,7 @@ module RgGen
 
         def build_factory
           factory = super
-          factory.loaders(@loaders)
+          factory.loaders(@loaders.map(&:new))
           factory
         end
       end

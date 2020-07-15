@@ -5,9 +5,9 @@ RSpec.describe RgGen::Core::InputBase::Loader do
     Class.new(described_class, &body)
   end
 
-  describe '.support?' do
+  describe '#support?' do
     let(:loader) do
-      define_loader { support_types [:csv, :txt] }
+      define_loader { support_types [:csv, :txt] }.new
     end
 
     let(:support_extensions) do
@@ -41,9 +41,9 @@ RSpec.describe RgGen::Core::InputBase::Loader do
     end
   end
 
-  describe '.load_file' do
+  describe '#load_file' do
     let(:loader) do
-      define_loader do
+      loader_class = define_loader do
         def read_file(file)
           binding.eval(File.read(file))
         end
@@ -58,6 +58,7 @@ RSpec.describe RgGen::Core::InputBase::Loader do
           Hash[valid_value_lists[:bar].zip(read_data[1])]
         end
       end
+      loader_class.new
     end
 
     let(:input_data) do

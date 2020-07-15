@@ -4,29 +4,22 @@ module RgGen
   module Core
     module InputBase
       class Loader
-        class << self
-          def support_types(types)
-            @support_types = types.map(&:to_sym)
-          end
-
-          def support?(file)
-            file_ext = File.ext(file).to_sym
-            @support_types.any? { |type| type.casecmp?(file_ext) }
-          end
-
-          def load_file(file, input_data, valid_value_list)
-            new(input_data, valid_value_list).load_file(file)
-          end
+        def self.support_types(types = nil)
+          types && (@support_types ||= []).concat(types.map(&:to_sym))
+          @support_types
         end
 
-        def initialize(input_data, valid_value_lists)
-          @input_data = input_data
-          @valid_value_lists = valid_value_lists
+        def support?(file)
+          ext = File.ext(file).to_sym
+          types = self.class.support_types
+          types&.any? { |type| type.casecmp?(ext) } || false
         end
 
-        def load_file(file)
+        def load_file(file, input_data, valid_value_lists)
           File.readable?(file) ||
             (raise Core::LoadError.new('cannot load such file', file))
+          @input_data = input_data
+          @valid_value_lists = valid_value_lists
           format(read_file(file), file)
         end
 
