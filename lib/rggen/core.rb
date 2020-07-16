@@ -38,6 +38,7 @@ require_relative 'core/base/feature_layer_extension'
 
 require_relative 'core/input_base/input_value'
 require_relative 'core/input_base/input_data'
+require_relative 'core/input_base/input_data_extractor'
 require_relative 'core/input_base/loader'
 require_relative 'core/input_base/json_loader'
 require_relative 'core/input_base/yaml_loader'
