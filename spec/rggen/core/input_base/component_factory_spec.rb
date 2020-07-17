@@ -138,7 +138,7 @@ RSpec.describe RgGen::Core::InputBase::ComponentFactory do
             input_data.load_file(file)
           end
         end
-        loader_class.new
+        loader_class.new([])
       end
 
       let(:foo_load_data) do

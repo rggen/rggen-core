@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe RgGen::Core::Configuration::YAMLLoader do
-  let(:loader) do
-    RgGen::Core::Configuration::YAMLLoader.new
-  end
+  let(:loader) { described_class.new([]) }
 
   let(:files) { ['foo.yaml', 'foo.yml'] }
 

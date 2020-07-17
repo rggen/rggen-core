@@ -4,8 +4,9 @@ module RgGen
   module Core
     module InputBase
       class InputDataExtractor
-        def initialize(target_layers)
+        def initialize(target_layers, target_value)
           @target_layers = Array(target_layers)
+          @target_value = target_value
         end
 
         class << self
@@ -18,8 +19,9 @@ module RgGen
           end
         end
 
-        def target_layer?(layer)
-          @target_layers.empty? || @target_layers.include?(layer)
+        def target_value?(layer, value)
+          value == @target_value &&
+            (@target_layers.empty? || @target_layers.include?(layer))
         end
 
         def extract(input_data)
@@ -30,4 +32,3 @@ module RgGen
     end
   end
 end
-

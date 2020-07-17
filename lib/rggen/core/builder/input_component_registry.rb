@@ -19,8 +19,14 @@ module RgGen
 
         def build_factory
           factory = super
-          factory.loaders(@loaders.map(&:new))
+          factory.loaders(build_loaders)
           factory
+        end
+
+        private
+
+        def build_loaders
+          @loaders.map { |loader| loader.new([]) }
         end
       end
     end

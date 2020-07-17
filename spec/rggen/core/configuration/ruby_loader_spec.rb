@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe RgGen::Core::Configuration::RubyLoader do
-  let(:loader) do
-    RgGen::Core::Configuration::RubyLoader.new
-  end
+  let(:loader) { described_class.new([]) }
 
   let(:file) { 'ruby.rb' }
 

@@ -121,7 +121,7 @@ RSpec.describe RgGen::Core::RegisterMap::ComponentFactory do
         f.component_factories component_factories
         f.feature_factories {}
         f.root_factory
-        f.loaders [RgGen::Core::RegisterMap::JSONLoader.new]
+        f.loaders [RgGen::Core::RegisterMap::JSONLoader.new([])]
       end
   end
 

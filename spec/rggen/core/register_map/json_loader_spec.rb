@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe RgGen::Core::RegisterMap::JSONLoader do
-  let(:loader) { RgGen::Core::RegisterMap::JSONLoader.new }
+  let(:loader) { described_class.new([]) }
 
   let(:file) { 'foo.json' }
 

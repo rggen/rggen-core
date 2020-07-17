@@ -9,6 +9,10 @@ module RgGen
           @support_types
         end
 
+        def initialize(extractors)
+          @extractors = extractors
+        end
+
         def support?(file)
           ext = File.ext(file).to_sym
           types = self.class.support_types
@@ -20,16 +24,56 @@ module RgGen
             (raise Core::LoadError.new('cannot load such file', file))
           @input_data = input_data
           @valid_value_lists = valid_value_lists
-          format(read_file(file), file)
+          format(read_file(file), input_data, input_data.layer, file)
         end
 
         private
 
-        def format(_read_data, _file)
-        end
-
         attr_reader :input_data
         attr_reader :valid_value_lists
+
+        def format(read_data, input_data, layer, file)
+          layer_data =
+            format_layer_data(read_data, layer, file) ||
+            format_layer_data_by_extractors(read_data, layer)
+          layer_data && input_data.values(layer_data, file)
+          format_sub_layer(read_data, input_data, layer, file)
+        end
+
+        def format_sub_layer(read_data, input_data, layer, file)
+          format_sub_layer_data(read_data, layer, file)
+            &.flat_map { |sub_layer, data_array| [sub_layer].product(data_array) }
+            &.each do |(sub_layer, data)|
+              format(data, input_data.child(sub_layer), sub_layer, file)
+            end
+        end
+
+        def format_layer_data(_read_data, _layer, _file)
+        end
+
+        def format_layer_data_by_extractors(read_data, layer)
+          layer_data = {}
+          valid_values(layer).each do |value|
+            @extractors
+              .select { |extractor| extractor.target_value?(layer, value) }
+              .each do |extractor|
+                extract_value(read_data, extractor, layer_data, value)
+              end
+          end
+          layer_data.empty? ? nil : layer_data
+        end
+
+        def extract_value(read_data, extractor, layer_data, value)
+          data = extractor.extract(read_data)
+          data && (layer_data[value] = data)
+        end
+
+        def format_sub_layer_data(_read_data, _layer, _file)
+        end
+
+        def valid_values(layer)
+          @valid_value_lists[layer]
+        end
       end
     end
   end

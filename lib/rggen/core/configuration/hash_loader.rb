@@ -4,8 +4,10 @@ module RgGen
   module Core
     module Configuration
       module HashLoader
-        def format(read_data, file)
-          input_data.values(Hash(read_data), file)
+        private
+
+        def format_layer_data(read_data, layer, file)
+          Hash(read_data)
         rescue TypeError => e
           raise Core::LoadError.new(e.message, file)
         end

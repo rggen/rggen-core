@@ -15,7 +15,7 @@ RSpec.describe RgGen::Core::Configuration::HashLoader do
         load_data
       end
     end
-    loader_class.new
+    loader_class.new([])
   end
 
   let(:file) { 'foo.txt' }
