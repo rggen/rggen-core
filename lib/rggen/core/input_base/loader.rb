@@ -9,8 +9,9 @@ module RgGen
           @support_types
         end
 
-        def initialize(extractors)
+        def initialize(extractors, ignore_values)
           @extractors = extractors
+          @ignore_values = ignore_values
         end
 
         def support?(file)
@@ -30,13 +31,13 @@ module RgGen
         private
 
         attr_reader :input_data
-        attr_reader :valid_value_lists
 
         def format(read_data, input_data, layer, file)
           layer_data =
             format_layer_data(read_data, layer, file) ||
             format_layer_data_by_extractors(read_data, layer)
-          layer_data && input_data.values(layer_data, file)
+          layer_data &&
+            input_data.values(filter_layer_data(layer_data, layer), file)
           format_sub_layer(read_data, input_data, layer, file)
         end
 
@@ -68,11 +69,17 @@ module RgGen
           data && (layer_data[value] = data)
         end
 
+        def filter_layer_data(layer_data, layer)
+          layer_data
+            .select { |key, _| valid_values(layer).include?(key) }
+        end
+
         def format_sub_layer_data(_read_data, _layer, _file)
         end
 
         def valid_values(layer)
           @valid_value_lists[layer]
+            .reject { |value| @ignore_values[layer]&.include?(value) }
         end
       end
     end

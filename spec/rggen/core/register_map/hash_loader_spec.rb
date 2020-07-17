@@ -9,7 +9,7 @@ RSpec.describe RgGen::Core::RegisterMap::HashLoader do
         load_data
       end
     end
-    loader_class.new([])
+    loader_class.new([], {})
   end
 
   let(:valid_value_lists) do

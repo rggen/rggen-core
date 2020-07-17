@@ -5,9 +5,13 @@ RSpec.describe RgGen::Core::InputBase::Loader do
     Class.new(loader_base || described_class, &body)
   end
 
+  def create_extractor(layer, value, &body)
+    Class.new(RgGen::Core::InputBase::InputDataExtractor) { extract(&body) }.new(layer, value)
+  end
+
   describe '#support?' do
     let(:loader) do
-      define_loader { support_types [:csv, :txt] }.new([])
+      define_loader { support_types [:csv, :txt] }.new([], {})
     end
 
     let(:support_extensions) do
@@ -93,22 +97,22 @@ RSpec.describe RgGen::Core::InputBase::Loader do
       end
     end
 
+    let(:simple_loader) do
+      define_loader(loader_base) do
+        def format_layer_data(read_data, layer, _file)
+          @valid_value_lists[layer].zip(read_data[0]).to_h
+        end
+      end
+    end
+
     before do
       allow(File).to receive(:readable?).with(file_name).and_return(true)
       allow(File).to receive(:read).with(file_name).and_return(file_content)
     end
 
     context '#format_layer_dataが定義されている場合' do
-      let(:loader) do
-        loader_class = define_loader(loader_base) do
-          def format_layer_data(read_data, layer, _file)
-            valid_values(layer).zip(read_data[0]).to_h
-          end
-        end
-        loader_class.new([])
-      end
-
       specify '#format_layer_dataの戻り値が、その階層の入力データとなる' do
+        loader = simple_loader.new([], {})
         loader.load_file(file_name, input_data, valid_value_lists)
         expect(foo_data).to have_values([:fizz_0, :a], [:buzz_0, :b])
         expect(bar_data[0]).to have_values([:fizz_1, :c], [:buzz_1, :d])
@@ -121,10 +125,6 @@ RSpec.describe RgGen::Core::InputBase::Loader do
     end
 
     context '#format_layer_dataが定義されておらず、input_data_extractorsが指定されている場合' do
-      def create_extractor(layer, value, &body)
-        Class.new(RgGen::Core::InputBase::InputDataExtractor) { extract(&body) }.new(layer, value)
-      end
-
       specify 'input_data_extractorsで取り出した値が、その階層の入力データとなる' do
         extractors = [
           create_extractor(:foo, :fizz_0) { |d| d[0][0] },
@@ -134,7 +134,7 @@ RSpec.describe RgGen::Core::InputBase::Loader do
           create_extractor(:bar, :buzz_1) { |d| d[0][1] },
           create_extractor(:baz, :buzz_2) { |d| d[0][1] }
         ]
-        loader = loader_base.new(extractors)
+        loader = loader_base.new(extractors, {})
 
         loader.load_file(file_name, input_data, valid_value_lists)
         expect(foo_data).to have_values([:fizz_0, :a], [:buzz_0, :b])
@@ -151,7 +151,7 @@ RSpec.describe RgGen::Core::InputBase::Loader do
           extractors = [
             create_extractor(:foo, :fizz_0) { |d| d[0][0] }
           ]
-          loader = loader_base.new(extractors)
+          loader = loader_base.new(extractors, {})
 
           loader.load_file(file_name, input_data, valid_value_lists)
           expect(foo_data).to have_value(:fizz_0, :a)
@@ -165,7 +165,7 @@ RSpec.describe RgGen::Core::InputBase::Loader do
             create_extractor(:foo, :fizz_0) { |d| d[0][0] },
             create_extractor(:foo, :buzz_0) {}
           ]
-          loader = loader_base.new(extractors)
+          loader = loader_base.new(extractors, {})
 
           loader.load_file(file_name, input_data, valid_value_lists)
           expect(foo_data).to have_value(:fizz_0, :a)
@@ -179,11 +179,48 @@ RSpec.describe RgGen::Core::InputBase::Loader do
             create_extractor(:foo, :fizz_0) { |d| d[0][0] },
             create_extractor(:foo, :fizz_0) { |d| d[0][0].upcase }
           ]
-          loader = loader_base.new(extractors)
+          loader = loader_base.new(extractors, {})
 
           loader.load_file(file_name, input_data, valid_value_lists)
           expect(foo_data).to have_value(:fizz_0, :A)
         end
+      end
+    end
+
+    context 'ignore_valuesが指定された場合' do
+      let(:ignore_values) do
+        { foo: [:fizz_0], bar: [:buzz_1], baz: [:fizz_2, :buzz_2]}
+      end
+
+      specify '指定された値は無視される' do
+        loader = simple_loader.new([], ignore_values)
+        loader.load_file(file_name, input_data, valid_value_lists)
+        expect(foo_data).to have_value(:buzz_0, :b)
+        expect(foo_data).not_to have_value(:fizz_0)
+        expect(bar_data[0]).to have_value(:fizz_1, :c)
+        expect(bar_data[0]).not_to have_value(:buzz_1, :d)
+        expect(baz_data[0]).not_to have_values(:fizz_2)
+        expect(baz_data[0]).not_to have_values(:buzz_2)
+      end
+
+      specify 'input_data_extractorによって抽出される値も対象' do
+        extractors = [
+          create_extractor(:foo, :fizz_0) { |d| d[0][0] },
+          create_extractor(:bar, :fizz_1) { |d| d[0][0] },
+          create_extractor(:baz, :fizz_2) { |d| d[0][0] },
+          create_extractor(:foo, :buzz_0) { |d| d[0][1] },
+          create_extractor(:bar, :buzz_1) { |d| d[0][1] },
+          create_extractor(:baz, :buzz_2) { |d| d[0][1] }
+        ]
+        loader = loader_base.new(extractors, ignore_values)
+
+        loader.load_file(file_name, input_data, valid_value_lists)
+        expect(foo_data).to have_value(:buzz_0, :b)
+        expect(foo_data).not_to have_value(:fizz_0)
+        expect(bar_data[0]).to have_value(:fizz_1, :c)
+        expect(bar_data[0]).not_to have_value(:buzz_1, :d)
+        expect(baz_data[0]).not_to have_values(:fizz_2)
+        expect(baz_data[0]).not_to have_values(:buzz_2)
       end
     end
 
@@ -196,7 +233,7 @@ RSpec.describe RgGen::Core::InputBase::Loader do
 
       it 'LoadErrorを起こす' do
         expect {
-          loader_base.new([]).load_file(invalid_file_name, input_data, valid_value_lists)
+          loader_base.new([], {}).load_file(invalid_file_name, input_data, valid_value_lists)
         }.to raise_rggen_error RgGen::Core::LoadError, 'cannot load such file', invalid_file_name
       end
     end

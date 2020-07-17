@@ -26,7 +26,7 @@ module RgGen
         private
 
         def build_loaders
-          @loaders.map { |loader| loader.new([]) }
+          @loaders.map { |loader| loader.new([], {}) }
         end
       end
     end

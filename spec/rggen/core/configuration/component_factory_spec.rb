@@ -33,7 +33,7 @@ RSpec.describe RgGen::Core::Configuration::ComponentFactory do
       f.target_component RgGen::Core::Configuration::Component
       f.component_factories nil => f
       f.feature_factories feature_factories
-      f.loaders [RgGen::Core::Configuration::JSONLoader.new([])]
+      f.loaders [RgGen::Core::Configuration::JSONLoader.new([], {})]
     end
   end
 
