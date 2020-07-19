@@ -3,7 +3,7 @@
 module RgGen
   module Core
     module InputBase
-      class InputDataExtractor
+      class InputValueExtractor
         def initialize(target_layers, target_value)
           @target_layers = Array(target_layers)
           @target_value = target_value

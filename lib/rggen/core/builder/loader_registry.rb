@@ -1,0 +1,48 @@
+# frozen_string_literal: true
+
+module RgGen
+  module Core
+    module Builder
+      class LoaderRegistry
+        def initialize
+          @loaders = []
+          @extractors = []
+          @ignore_values = {}
+        end
+
+        def register_loader(loader)
+          register_loaders([loader])
+        end
+
+        def register_loaders(loaders)
+          @loaders.concat(Array(loaders))
+        end
+
+        def define_value_extractor(layers, value, &body)
+          @extractors <<
+            create_extractor(layers, value, &body)
+        end
+
+        def ignore_value(layers, value)
+          ignore_values(layers, [value])
+        end
+
+        def ignore_values(layers, values)
+          [layers].flatten.each do |layer|
+            (@ignore_values[layer] ||= []).concat(Array(values))
+          end
+        end
+
+        def create_loaders
+          @loaders.map { |loader| loader.new(@extractors, @ignore_values) }
+        end
+
+        private
+
+        def create_extractor(layers, value, &body)
+          Class.new(Core::InputBase::InputValueExtractor, &body).new(layers, value)
+        end
+      end
+    end
+  end
+end

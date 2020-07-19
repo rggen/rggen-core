@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe RgGen::Core::InputBase::InputDataExtractor do
+RSpec.describe RgGen::Core::InputBase::InputValueExtractor do
   def create_extractor(target_layers, target_value, &body)
     Class.new(described_class) { extract(&body) }.new(target_layers, target_value)
   end

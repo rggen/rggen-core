@@ -6,7 +6,7 @@ RSpec.describe RgGen::Core::InputBase::Loader do
   end
 
   def create_extractor(layer, value, &body)
-    Class.new(RgGen::Core::InputBase::InputDataExtractor) { extract(&body) }.new(layer, value)
+    Class.new(RgGen::Core::InputBase::InputValueExtractor) { extract(&body) }.new(layer, value)
   end
 
   describe '#support?' do
