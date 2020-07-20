@@ -4,39 +4,7 @@ module RgGen
   module Core
     module RegisterMap
       module HashLoader
-        def format(read_data, file)
-          format_data(:root, root, read_data, file)
-        rescue TypeError => e
-          raise Core::LoadError.new(e.message, file)
-        end
-
         private
-
-        def format_data(layer, input_data, read_data, file)
-          property_data, sub_layer_data =
-            if read_data.is_a?(Array)
-              split_array_data(layer, read_data)
-            else
-              split_hash_data(layer, read_data)
-            end
-          input_data.values(property_data, file)
-          format_sub_layer_data(input_data, sub_layer_data, file)
-        end
-
-        def split_array_data(layer, read_data)
-          property_data = {}
-          sub_layer_data = {}
-          read_data
-            .each { |data| split_hash_data(layer, data, property_data, sub_layer_data) }
-          [property_data, sub_layer_data]
-        end
-
-        def split_hash_data(layer, read_data, property_data = {}, sub_layer_data = {})
-          read_data = Hash(read_data)
-          collect_property_data(layer, read_data, property_data)
-          collect_sub_layer_data(layer, read_data, sub_layer_data)
-          [property_data, sub_layer_data]
-        end
 
         SUB_LAYER_KEYS = {
           root: [:register_block, :register_blocks],
@@ -52,17 +20,46 @@ module RgGen
           register: { bit_fields: :bit_field }
         }.freeze
 
-        def collect_property_data(layer, read_data, property_data)
-          property_data
-            .merge!(read_data.reject { |key, _| SUB_LAYER_KEYS[layer]&.include?(key) })
+        def format_layer_data(read_data, layer, file)
+          if read_data.is_a?(Array)
+            format_array_layer_data(read_data, layer, file)
+          else
+            fomrat_hash_layer_data(read_data, layer, file)
+          end
         end
 
-        def collect_sub_layer_data(layer, read_data, sub_layer_data)
-          read_data
+        def format_array_layer_data(read_data, layer, file)
+          read_data.each_with_object({}) do |data, layer_data|
+            layer_data.merge!(fomrat_hash_layer_data(data, layer, file))
+          end
+        end
+
+        def fomrat_hash_layer_data(read_data, layer, file)
+          convert_to_hash(read_data, file)
+            .reject { |key, _| SUB_LAYER_KEYS[layer]&.include?(key) }
+        end
+
+        def format_sub_layer_data(read_data, layer, file)
+          if read_data.is_a?(Array)
+            format_array_sub_layer_data(read_data, layer, file)
+          else
+            format_hash_sub_layer_data(read_data, layer, file)
+          end
+        end
+
+        def format_array_sub_layer_data(read_data, layer, file)
+          read_data.each_with_object({}) do |data, sub_layer_data|
+            format_hash_sub_layer_data(data, layer, file, sub_layer_data)
+          end
+        end
+
+        def format_hash_sub_layer_data(read_data, layer, file, sub_layer_data = {})
+          convert_to_hash(read_data, file)
             .select { |key, _| SUB_LAYER_KEYS[layer]&.include?(key) }
             .each do |key, value|
               merge_sub_layer_data(sub_layer_data, layer, key, value)
             end
+          sub_layer_data
         end
 
         def merge_sub_layer_data(sub_layer_data, layer, key, value)
@@ -73,12 +70,10 @@ module RgGen
           end
         end
 
-        def format_sub_layer_data(input_data, sub_layer_data, file)
-          sub_layer_data
-            .flat_map { |sub_layer, values| [sub_layer].product(values) }
-            .each do |(sub_layer, value)|
-              format_data(sub_layer, input_data.child(sub_layer), value, file)
-            end
+        def convert_to_hash(read_data, file)
+          Hash(read_data)
+        rescue TypeError => e
+          raise Core::LoadError.new(e.message, file)
         end
       end
     end

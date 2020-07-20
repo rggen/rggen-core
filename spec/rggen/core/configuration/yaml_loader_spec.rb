@@ -1,13 +1,11 @@
 # frozen_string_literal: true
 
 RSpec.describe RgGen::Core::Configuration::YAMLLoader do
-  let(:loader) do
-    RgGen::Core::Configuration::YAMLLoader
-  end
+  let(:loader) { described_class.new([], {}) }
 
   let(:files) { ['foo.yaml', 'foo.yml'] }
 
-  describe '.support?' do
+  describe '#support?' do
     let(:supported_files) { files }
 
     let(:unsupported_files) do
@@ -26,7 +24,7 @@ RSpec.describe RgGen::Core::Configuration::YAMLLoader do
     end
   end
 
-  describe '.load_file' do
+  describe '#load_file' do
     let(:valid_value_lists) do
       { nil => [:foo, :bar, :baz, :fizz, :buzz] }
     end

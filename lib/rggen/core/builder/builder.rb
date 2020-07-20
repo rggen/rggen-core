@@ -20,16 +20,14 @@ module RgGen
           component_registry(:output, name, body)
         end
 
-        def register_loader(component, loader)
-          @component_registries[:input][component].register_loader(loader)
-        end
-
-        def register_loaders(component, loaders)
-          @component_registries[:input][component].register_loaders(loaders)
-        end
-
-        def define_loader(component, &body)
-          @component_registries[:input][component].define_loader(&body)
+        [
+          :register_loader, :register_loaders,
+          :define_value_extractor, :ignore_value, :ignore_values
+        ].each do |method_name|
+          define_method(method_name) do |component, *args, &block|
+            @component_registries[:input][component]
+              .__send__(__method__, *args, &block)
+          end
         end
 
         def add_feature_registry(name, target_layer, registry)

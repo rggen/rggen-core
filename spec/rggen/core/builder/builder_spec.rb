@@ -253,8 +253,6 @@ RSpec.describe RgGen::Core::Builder::Builder do
           RgGen::Core::Configuration::FeatureFactory
         )
       end
-
-      base_loader RgGen::Core::Configuration::Loader
     end
 
     builder.input_component_registry(:register_map) do
@@ -274,7 +272,6 @@ RSpec.describe RgGen::Core::Builder::Builder do
           RgGen::Core::RegisterMap::FeatureFactory
         )
       end
-      base_loader RgGen::Core::RegisterMap::Loader
     end
 
     [:foo, :bar, :baz].each do |component_name|
@@ -331,7 +328,7 @@ RSpec.describe RgGen::Core::Builder::Builder do
     end
   end
 
-  describe '#register_loader/#register_loaders/#define_loader' do
+  describe '#register_loader/#register_loaders' do
     before do
       default_component_registration
     end
@@ -358,35 +355,102 @@ RSpec.describe RgGen::Core::Builder::Builder do
       end
     end
 
-    it '対象コンポーネントローダーの追加/定義を行う' do
+    it '対象コンポーネントローダーの追加を行う' do
       allow(component_registry).to receive(:register_loader).and_call_original
       allow(component_registry).to receive(:register_loaders).and_call_original
-      allow(component_registry).to receive(:define_loader).and_call_original
 
-      builder.register_loader(target_component, loaders[0])
-      builder.register_loaders(target_component, [loaders[1], loaders[2]])
-      builder.define_loader(target_component) { support_types [:txt] }
+      builder.register_loader(target_component, :ruby, loaders[0])
+      builder.register_loaders(target_component, :hash_based, [loaders[1], loaders[2]])
 
-      expect(component_registry).to have_received(:register_loader).with(equal(loaders[0]))
-      expect(component_registry).to have_received(:register_loaders).with(match([equal(loaders[1]), equal(loaders[2])]))
-      expect(component_registry).to have_received(:define_loader)
+      expect(component_registry).to have_received(:register_loader).with(:ruby, equal(loaders[0]))
+      expect(component_registry).to have_received(:register_loaders).with(:hash_based, match([equal(loaders[1]), equal(loaders[2])]))
     end
 
     context '未登録のコンポーネントが指定された場合' do
       it 'BuilderErrorを起こす' do
         expect {
-          builder.register_loader(:foo, RgGen::Core::Configuration::YAMLLoader)
+          builder.register_loader(:foo, :yaml, RgGen::Core::Configuration::YAMLLoader)
         }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: foo'
 
         expect {
           builder.register_loaders(
-            :foo, [RgGen::Core::Configuration::YAMLLoader, RgGen::Core::Configuration::JSONLoader]
+            :foo, :hash_based, [RgGen::Core::Configuration::YAMLLoader, RgGen::Core::Configuration::JSONLoader]
           )
         }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: foo'
+      end
+    end
+  end
 
+  describe '#define_value_extractor' do
+    let(:target_component) do
+      [:configuration, :register_map].sample
+    end
+
+    let(:component_registry) { component_registries[target_component] }
+
+    before do
+      default_component_registration
+    end
+
+    before do
+      loader = {
+        configuration: RgGen::Core::Configuration::YAMLLoader,
+        register_map: RgGen::Core::RegisterMap::YAMLLoader
+      }[target_component]
+      builder.register_loader(target_component, :hash_based, loader)
+    end
+
+    it '対象コンポーネントの値取り出しを定義する' do
+      allow(component_registry).to receive(:define_value_extractor).and_call_original
+      builder.define_value_extractor(target_component, :foo, :bar) {}
+      expect(component_registry).to have_received(:define_value_extractor).with(:foo, :bar)
+    end
+
+    context '未登録のコンポーネントが指定された場合' do
+      it 'BuilderErrorを起こす' do
         expect {
-          builder.define_loader(:bar) { support_types [:txt] }
-        }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: bar'
+          builder.define_value_extractor(:foo, :bar, :baz) {}
+        }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: foo'
+      end
+    end
+  end
+
+  describe '#ignore_value/#ignore_values' do
+    let(:target_component) do
+      [:configuration, :register_map].sample
+    end
+
+    let(:component_registry) { component_registries[target_component] }
+
+    before do
+      default_component_registration
+    end
+
+    before do
+      loader = {
+        configuration: RgGen::Core::Configuration::YAMLLoader,
+        register_map: RgGen::Core::RegisterMap::YAMLLoader
+      }[target_component]
+      builder.register_loader(target_component, :hash_based, loader)
+    end
+
+    it '対象コンポーネントの無視値の設定を行う' do
+      allow(component_registry).to receive(:ignore_value).and_call_original
+      allow(component_registry).to receive(:ignore_values).and_call_original
+      builder.ignore_value(target_component, :fizz, :foo)
+      builder.ignore_values(target_component, :buzz, [:bar, :baz])
+      expect(component_registry).to have_received(:ignore_value).with(:fizz, :foo)
+      expect(component_registry).to have_received(:ignore_values).with(:buzz, match([:bar, :baz]))
+    end
+
+    context '未登録のコンポーネントが指定された場合' do
+      it 'BuilderErrorを起こす' do
+        expect {
+          builder.ignore_value(:foo, :fizz, :foo)
+        }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: foo'
+        expect {
+          builder.ignore_values(:foo, :fizz, [:foo])
+        }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: foo'
       end
     end
   end

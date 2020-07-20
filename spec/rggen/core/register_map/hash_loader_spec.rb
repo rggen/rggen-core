@@ -2,17 +2,14 @@
 
 RSpec.describe RgGen::Core::RegisterMap::HashLoader do
   let(:loader) do
-    Class.new(RgGen::Core::RegisterMap::Loader) do
-      class << self
-        attr_accessor :load_data
-      end
-
+    loader_class = Class.new(RgGen::Core::RegisterMap::Loader) do
       include RgGen::Core::RegisterMap::HashLoader
-
+      attr_accessor :load_data
       def read_file(_file)
-        self.class.load_data
+        load_data
       end
     end
+    loader_class.new([], {})
   end
 
   let(:valid_value_lists) do

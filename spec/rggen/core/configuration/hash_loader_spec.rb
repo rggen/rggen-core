@@ -8,17 +8,14 @@ RSpec.describe RgGen::Core::Configuration::HashLoader do
   let(:input_data) { RgGen::Core::Configuration::InputData.new(valid_value_lists) }
 
   let(:loader) do
-    Class.new(RgGen::Core::Configuration::Loader) do
-      class << self
-        attr_accessor :load_data
-      end
-
+    loader_class = Class.new(RgGen::Core::Configuration::Loader) do
       include RgGen::Core::Configuration::HashLoader
-
+      attr_accessor :load_data
       def read_file(_file)
-        self.class.load_data
+        load_data
       end
     end
+    loader_class.new([], {})
   end
 
   let(:file) { 'foo.txt' }
