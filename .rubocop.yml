@@ -18,6 +18,15 @@ Layout/MultilineMethodCallIndentation:
 Lint/AmbiguousRegexpLiteral:
   Enabled: false
 
+Metrics/ClassLength:
+  Max: 130
+
+Metrics/MethodLength:
+  Max: 15
+
+Metrics/ModuleLength:
+  Max: 130
+
 Style/Alias:
   EnforcedStyle: prefer_alias_method
 
