@@ -6,7 +6,7 @@ module RgGen
       module HashLoader
         private
 
-        def format_layer_data(read_data, layer, file)
+        def format_layer_data(read_data, _layer, file)
           Hash(read_data)
         rescue TypeError => e
           raise Core::LoadError.new(e.message, file)
