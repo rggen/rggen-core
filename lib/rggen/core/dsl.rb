@@ -15,6 +15,7 @@ module RgGen
         :define_simple_feature,
         :define_list_feature,
         :define_list_item_feature,
+        :define_value_extractor,
         :enable,
         :disable_all,
         :disable,
