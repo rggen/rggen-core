@@ -4,13 +4,15 @@ module RgGen
   module Core
     module Builder
       class Builder
+        extend Forwardable
+
         def initialize
           initialize_component_registries
           initialize_layers
-          @plugins = Plugins.new
+          @plugin_manager = PluginManager.new(self)
         end
 
-        attr_reader :plugins
+        attr_reader :plugin_manager
 
         def input_component_registry(name, &body)
           component_registry(:input, name, body)
@@ -88,23 +90,9 @@ module RgGen
           RegisterMap.setup(self)
         end
 
-        def setup(name, module_or_version = nil, &block)
-          plugins.add(name, module_or_version, &block)
-        end
-
-        def activate_plugins(**options)
-          plugins.activate(self, **options)
-        end
-
-        def load_setup_file(file, activation = true)
-          (file.nil? || file.empty?) &&
-            (raise Core::LoadError.new('no setup file is given'))
-          File.readable?(file) ||
-            (raise Core::LoadError.new("cannot load such setup file: #{file}"))
-          RgGen.builder(self)
-          load(file)
-          activation && activate_plugins
-        end
+        def_delegator :plugin_manager, :load_plugin
+        def_delegator :plugin_manager, :load_plugins
+        def_delegator :plugin_manager, :setup
 
         private
 

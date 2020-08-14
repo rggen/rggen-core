@@ -101,21 +101,19 @@ module RgGen
       end
     end
 
-    Options.add_option(:setup) do |option|
-      option.long_option '--setup FILE'
-      option.default { default_steup_file }
-      option.description 'Specify a Ruby file to set up RgGen tool'
+    Options.add_option(:no_default_plugins) do |option|
+      option.long_option '--no-default-plugins'
+      option.default false
+      option.action { |_, options| options[:no_default_plugins] = true }
+      option.description 'Do not load default plugins'
+    end
 
-      def option.default_steup_file
-        ENV['RGGEN_DEFAULT_SETUP_FILE'] || define_setup_file_from_const
-      end
-
-      def option.define_setup_file_from_const
-        require 'rggen/default_setup_file'
-        RgGen::DEFAULT_SETUP_FILE
-      rescue ::LoadError
-        nil
-      end
+    Options.add_option(:plugins) do |option|
+      option.long_option '--plugin PLUGIN'
+      option.default { [] }
+      option.action { |value, options| options[:plugins] << value }
+      option.description 'Load a RgGen plugin ' \
+                         "(name of plugin/path to 'setup.rb' file)"
     end
 
     Options.add_option(:configuration) do |option|
