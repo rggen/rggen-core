@@ -15,6 +15,9 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
         expect(plugin_manager).to receive(:require).with('setup')
         plugin_manager.load_plugin('setup')
 
+        expect(plugin_manager).to receive(:require).with('setup.rb')
+        plugin_manager.load_plugin('setup.rb')
+
         expect(plugin_manager).to receive(:require).with('foo/setup')
         plugin_manager.load_plugin(' foo/setup')
 
@@ -109,6 +112,12 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
       end
     end
 
+    it 'プラグインの読み込み前に、RgGen.builderに@builderを設定する' do
+      expect(RgGen).to receive(:builder).with(equal(builder)).ordered
+      expect(plugin_manager).to receive(:load_plugin).with('rggen-foo').ordered
+      plugin_manager.load_plugins(['rggen-foo'], true)
+    end
+
     it 'DEFAULT_PLUGINSと引数で指定されたプラグインを読み込む' do
       expect(plugin_manager).to receive(:load_plugin).with('rggen-default-register-map').and_call_original
       expect(plugin_manager).to receive(:require).with('rggen/default_register_map/setup')
@@ -131,7 +140,14 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
       expect(plugin_manager).to receive(:load_plugin).with('rggen-bar', 'baz').and_call_original
       expect(plugin_manager).to receive(:require).with('rggen/bar/baz/setup')
 
-      plugin_manager.load_plugins([['rggen-foo'], ['rggen-bar', 'baz']])
+      plugin_manager.load_plugins([['rggen-foo'], ['rggen-bar', 'baz']], false)
+    end
+
+    it 'プラグイン読み込み後、プラグインの有効化を行う' do
+      expect(plugin_manager).to receive(:load_plugin).with('rggen-foo').ordered
+      expect(plugin_manager).to receive(:load_plugin).with('rggen-bar').ordered
+      expect(plugin_manager).to receive(:activate_plugins).ordered
+      plugin_manager.load_plugins([['rggen-foo'], ['rggen-bar']], true)
     end
 
     context 'rggen/default_pluginsが読み込めない場合' do
@@ -149,7 +165,7 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
         expect(plugin_manager).to receive(:require).with('rggen/bar/baz/setup')
 
         allow(plugin_manager).to receive(:require).with('rggen/default_plugins').and_raise(::LoadError)
-        plugin_manager.load_plugins([['rggen-foo'], ['rggen-bar', 'baz']])
+        plugin_manager.load_plugins([['rggen-foo'], ['rggen-bar', 'baz']], false)
       end
     end
 
@@ -168,7 +184,7 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
         expect(plugin_manager).to receive(:require).with('rggen/bar/baz/setup')
 
         allow(ENV).to receive(:key?).with('RGGEN_NO_DEFAULT_PLUGINS').and_return(true)
-        plugin_manager.load_plugins([['rggen-foo'], ['rggen-bar', 'baz']])
+        plugin_manager.load_plugins([['rggen-foo'], ['rggen-bar', 'baz']], false)
       end
     end
 
@@ -203,6 +219,14 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
 
         allow(ENV).to receive(:[]).with('RGGEN_PLUGINS').and_return('bar/setup:rggen-baz,qux')
         plugin_manager.load_plugins([['rggen-foo']], true)
+      end
+    end
+
+    context 'activationにfalseが指定された場合' do
+      it 'プラグインの有効化は行わない' do
+        allow(plugin_manager).to receive(:load_plugin).with('rggen-foo')
+        expect(plugin_manager).not_to receive(:activate_plugins)
+        plugin_manager.load_plugins([['rggen-foo']], true, false)
       end
     end
   end

@@ -5,6 +5,8 @@ RSpec.describe RgGen::Core::CLI do
 
   let(:builder) { cli.builder }
 
+  let(:plugin_manager) { builder.plugin_manager }
+
   let(:setup) do
     proc do
       RgGen.define_simple_feature(:global, :prefix) do
@@ -127,14 +129,14 @@ RSpec.describe RgGen::Core::CLI do
   end
 
   before do
-    allow(cli.options).to receive(:require).with('rggen/default_setup_file').and_raise(::LoadError)
-    allow(ENV).to receive(:[]).with('RGGEN_DEFAULT_SETUP_FILE').and_return(nil)
+    allow(plugin_manager).to receive(:require).with('rggen/default_plugins').and_raise(::LoadError)
+    allow(ENV).to receive(:key?).with('RGGEN_NO_DEFAULT_PLUGINS').and_return(false)
+    allow(ENV).to receive(:[]).with('RGGEN_PLUGINS').and_return(nil)
     allow(ENV).to receive(:[]).with('RGGEN_DEFAULT_CONFIGURATION_FILE').and_return(nil)
   end
 
   before do
-    allow(File).to receive(:readable?).with(setup_file).and_return(true)
-    allow(builder).to receive(:load).with(setup_file, &setup)
+    allow(plugin_manager).to receive(:require).with(setup_file, &setup)
   end
 
   before do
@@ -178,7 +180,8 @@ RSpec.describe RgGen::Core::CLI do
     let(:help_message) do
       <<~'HELP'
         Usage: rggen [options] register_map_files
-                --setup FILE                 Specify a Ruby file to set up RgGen tool
+                --no-default-plugins         Do not load default plugins
+                --plugin PLUGIN              Load a RgGen plugin (name of plugin/path to 'setup.rb' file)
             -c, --configuration FILE         Specify a configuration file
             -o, --output DIRECTORY           Specify the directory where generated file(s) will be written
                 --load-only                  Load setup, configuration and register map files only; write no files
@@ -218,8 +221,8 @@ RSpec.describe RgGen::Core::CLI do
     end
   end
 
-  describe '--verbose-version/-Vオプション' do
-    context 'セットアップファイルが読める場合' do
+  describe '--verbose-version' do
+    context 'プラグインが読み込まれる場合' do
       let(:version) do
         <<~VERSION
           RgGen #{RgGen::Core::MAJOR}.#{RgGen::Core::MINOR}
@@ -229,15 +232,15 @@ RSpec.describe RgGen::Core::CLI do
         VERSION
       end
 
-      it 'セットアップファイルを読んだ上で、詳細なバージョン情報を出力する' do
-        expect(builder).to receive(:load_setup_file).with(setup_file, false).and_call_original
+      it 'プラグインを読んだ上で、詳細なバージョン情報を出力する' do
+        expect(builder).to receive(:load_plugins).with([setup_file], false, false).and_call_original
         expect {
-          cli.run(['--verbose-version', '--setup', setup_file])
+          cli.run(['--verbose-version', '--plugin', setup_file])
         }.to output(version).to_stdout
       end
     end
 
-    context 'セットアップファイルの指定がない場合' do
+    context 'プラグインが読み込まれない場合' do
       let(:version) do
         <<~VERSION
           RgGen #{RgGen::Core::MAJOR}.#{RgGen::Core::MINOR}
@@ -252,27 +255,25 @@ RSpec.describe RgGen::Core::CLI do
       end
     end
 
-    context 'セットアップファイルが読めない場合' do
-      let(:invalid_setup_file) { 'invalid_setup_file.rb' }
+    context 'プラグインが読み込めない場合' do
+      let(:invalid_setup_file) { 'invalid/setup.rb' }
 
       before do
-        allow(File).to receive(:readable?).with(invalid_setup_file).and_return(false)
+        allow(plugin_manager).to receive(:require).with(invalid_setup_file).and_raise(::LoadError)
       end
 
       it 'Loaderエラーを起こす' do
         expect {
-          cli.run(['--verbose-version', '--setup', invalid_setup_file])
+          cli.run(['--verbose-version', '--plugin', invalid_setup_file])
         }.to raise_error RgGen::Core::LoadError
       end
     end
   end
 
-  describe 'セットアップファイルの読み込み' do
-    context '存在するセットアップファイルが指定された場合' do
-      it '指定されたファイルを読み込んで、セットアップを実行する' do
-        expect(builder).to receive(:load_setup_file).with(setup_file).and_call_original
-        cli.run(['--setup', setup_file, *register_map_files])
-      end
+  describe 'プラグインの読み込み' do
+    it '指定されたプラグインを読み込んで、セットアップを実行する' do
+      expect(builder).to receive(:load_plugins).with([setup_file], false).and_call_original
+      cli.run(['--plugin', setup_file, *register_map_files])
     end
   end
 
@@ -293,14 +294,14 @@ RSpec.describe RgGen::Core::CLI do
       end
 
       it 'コンフィグレーションの生成と、コンフィグレーションファイルの読み込みを行う' do
-        cli.run(['--setup', setup_file, '-c', configuration_file, *register_map_files])
+        cli.run(['--plugin', setup_file, '-c', configuration_file, *register_map_files])
         expect(configurations.last.prefix).to eq 'foo'
       end
     end
 
     context 'コンフィグレーションファイルの指定がない場合' do
       it 'コンフィグレーションの生成のみ行う' do
-        cli.run(['--setup', setup_file, *register_map_files])
+        cli.run(['--plugin', setup_file, *register_map_files])
         expect(configurations.last.prefix).to eq 'fizz'
       end
     end
@@ -318,7 +319,7 @@ RSpec.describe RgGen::Core::CLI do
     end
 
     it 'パース後の残引数をレジスタマップへのパスとして、レジスタマップの読み込みを行う' do
-      cli.run(['--setup', setup_file, *register_map_files])
+      cli.run(['--plugin', setup_file, *register_map_files])
 
       register_blocks = register_maps.last.register_blocks
       expect(register_blocks[0].name).to eq 'register_block_0'
@@ -338,9 +339,9 @@ RSpec.describe RgGen::Core::CLI do
     end
 
     context 'レジスタマップの指定がない場合' do
-      it do
+      it 'LoadErrorを起こす' do
         expect {
-          cli.run(['--setup', setup_file])
+          cli.run(['--plugin', setup_file])
         }.to raise_rggen_error RgGen::Core::LoadError, 'no register map files are given'
       end
     end
@@ -371,7 +372,7 @@ RSpec.describe RgGen::Core::CLI do
       it 'カレントディレクトリにファイルを書き出す' do
         expect(File).to receive(:binwrite).with(match_string('./foo_register_block_0.txt'), foo_file_content)
         expect(File).to receive(:binwrite).with(match_string('./bar_register_block_0.txt'), bar_file_content)
-        cli.run(['--setup', setup_file, register_map_files[0]])
+        cli.run(['--plugin', setup_file, register_map_files[0]])
       end
     end
 
@@ -379,7 +380,7 @@ RSpec.describe RgGen::Core::CLI do
       it '指定されたディレクトリにファイルを書き出す' do
         expect(File).to receive(:binwrite).with(match_string('out/foo_register_block_0.txt'), foo_file_content)
         expect(File).to receive(:binwrite).with(match_string('out/bar_register_block_0.txt'), bar_file_content)
-        cli.run(['--setup', setup_file, '-o', 'out', register_map_files[0]])
+        cli.run(['--plugin', setup_file, '-o', 'out', register_map_files[0]])
       end
     end
 
@@ -387,14 +388,14 @@ RSpec.describe RgGen::Core::CLI do
       it '指定外のファイル形式は書き出さない' do
         expect(File).to receive(:binwrite).with(match_string('./foo_register_block_0.txt'), foo_file_content)
         expect(File).not_to receive(:binwrite).with(match_string('./bar_register_block_0.txt'), any_args)
-        cli.run(['--setup', setup_file, '--enable', 'foo', register_map_files[0]])
+        cli.run(['--plugin', setup_file, '--enable', 'foo', register_map_files[0]])
       end
     end
 
     context '--load-onlyが指定された場合' do
       it 'ファイルの書き出しは行わない' do
         expect(File).not_to receive(:binwrite)
-        cli.run(['--setup', setup_file, '--load-only', register_map_files[0]])
+        cli.run(['--plugin', setup_file, '--load-only', register_map_files[0]])
       end
     end
   end

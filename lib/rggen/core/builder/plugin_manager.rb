@@ -46,7 +46,7 @@ module RgGen
           setup_path_or_name, sub_directory =
             [setup_path_or_name, sub_directory].compact.map(&:strip)
           setup_path =
-            if File.basename(setup_path_or_name, '*.') == 'setup'
+            if File.basename(setup_path_or_name, '.*') == 'setup'
               setup_path_or_name
             else
               get_setup_path(setup_path_or_name, sub_directory)
@@ -54,9 +54,11 @@ module RgGen
           read_setup_file(setup_path, setup_path_or_name)
         end
 
-        def load_plugins(plugins, no_default_plugins = false)
+        def load_plugins(plugins, no_default_plugins, activation = true)
+          RgGen.builder(@builder)
           merge_plugins(plugins, no_default_plugins)
             .each { |plugin| load_plugin(*plugin) }
+          activation && activate_plugins
         end
 
         def setup(name, plugin_module, &block)

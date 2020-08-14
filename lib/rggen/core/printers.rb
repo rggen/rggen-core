@@ -18,18 +18,20 @@ module RgGen
       end
 
       def run(builder, options)
-        verbose? && load_setup_file(builder, options[:setup])
+        verbose? && load_plugins(builder, options)
         puts version_message(builder)
       end
 
       private
 
-      def verbose?
-        @verbose
+      def load_plugins(builder, options)
+        plugins = options[:plugins]
+        no_default_plugins = options[:no_default_plugins]
+        builder.load_plugins(plugins, no_default_plugins, false)
       end
 
-      def load_setup_file(builder, file)
-        file.nil? || file.empty? || builder.load_setup_file(file, false)
+      def verbose?
+        @verbose
       end
 
       def version_message(builder)
@@ -44,8 +46,10 @@ module RgGen
       end
 
       def verbose_version(builder)
-        ["rggen-core #{Core::VERSION}", *builder.plugins.version_info]
-          .map { |version_info| "  - #{version_info}" }
+        [
+          "rggen-core #{Core::VERSION}",
+          *builder.plugin_manager.version_info
+        ].map { |version_info| "  - #{version_info}" }
       end
     end
   end

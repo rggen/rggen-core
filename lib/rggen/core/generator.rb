@@ -4,7 +4,7 @@ module RgGen
   module Core
     class Generator
       def run(builder, options)
-        load_setup_file(builder, options[:setup])
+        load_plugins(builder, options)
         load_configuration(builder, options[:configuration])
         load_register_map(builder, options.register_map_files)
         write_files(builder, options)
@@ -15,8 +15,8 @@ module RgGen
       attr_reader :configuration
       attr_reader :register_map
 
-      def load_setup_file(builder, file)
-        builder.load_setup_file(file)
+      def load_plugins(builder, options)
+        builder.load_plugins(options[:plugins], options[:no_default_plugins])
       end
 
       def load_configuration(builder, file)

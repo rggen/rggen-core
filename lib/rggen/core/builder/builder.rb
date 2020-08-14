@@ -12,6 +12,8 @@ module RgGen
           @plugin_manager = PluginManager.new(self)
         end
 
+        attr_reader :plugin_manager
+
         def input_component_registry(name, &body)
           component_registry(:input, name, body)
         end
@@ -88,19 +90,9 @@ module RgGen
           RegisterMap.setup(self)
         end
 
-        def_delegator :@plugin_manager, :load_plugin
-        def_delegator :@plugin_manager, :setup
-        def_delegator :@plugin_manager, :activate_plugins
-
-        def load_setup_file(file, activation = true)
-          (file.nil? || file.empty?) &&
-            (raise Core::LoadError.new('no setup file is given'))
-          File.readable?(file) ||
-            (raise Core::LoadError.new("cannot load such setup file: #{file}"))
-          RgGen.builder(self)
-          load(file)
-          activation && activate_plugins
-        end
+        def_delegator :plugin_manager, :load_plugin
+        def_delegator :plugin_manager, :load_plugins
+        def_delegator :plugin_manager, :setup
 
         private
 
