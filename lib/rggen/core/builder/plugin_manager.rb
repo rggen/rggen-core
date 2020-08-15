@@ -6,10 +6,10 @@ module RgGen
       class Plugin
         DEFAULT_PLUGIN_VERSION = '0.0.0'
 
-        def initialize(name, plugin_module, &block)
-          @name = name
+        def initialize(plugin_module, &block)
           @plugin_module = plugin_module
           @block = block
+          plugin_name # check if plugin name is given
         end
 
         def default_setup(builder)
@@ -19,6 +19,16 @@ module RgGen
 
         def optional_setup(builder)
           @block && @plugin_module.instance_exec(builder, &@block)
+        end
+
+        def plugin_name
+          if @plugin_module.const_defined?(:PLUGIN_NAME)
+            @plugin_module.const_get(:PLUGIN_NAME)
+          elsif @plugin_module.respond_to?(:plugin_name)
+            @plugin_module.plugin_name
+          else
+            raise Core::PluginError.new('no plugin name is given')
+          end
         end
 
         def version
@@ -32,7 +42,7 @@ module RgGen
         end
 
         def version_info
-          "#{@name} #{version}"
+          "#{plugin_name} #{version}"
         end
       end
 
@@ -60,8 +70,8 @@ module RgGen
           activation && activate_plugins
         end
 
-        def setup(name, plugin_module, &block)
-          @plugins << Plugin.new(name, plugin_module, &block)
+        def setup(plugin_module, &block)
+          @plugins << Plugin.new(plugin_module, &block)
         end
 
         def activate_plugins(**options)

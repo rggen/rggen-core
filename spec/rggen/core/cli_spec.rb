@@ -33,6 +33,7 @@ RSpec.describe RgGen::Core::CLI do
             define_method(:version) do
               { foo: '0.0.1', bar: '0.0.2'}[component_name]
             end
+            define_method(:plugin_name) { :"rggen-#{component_name}" }
             define_method(:default_setup) do |builder|
               builder.output_component_registry(component_name) do
                 register_component :root do
@@ -77,7 +78,7 @@ RSpec.describe RgGen::Core::CLI do
           end
         end
 
-        RgGen.setup(:"rggen-#{component_name}", plugin_module) do |builder|
+        RgGen.setup(plugin_module) do |builder|
           builder.enable(:register_block, :sample_writer)
         end
       end
