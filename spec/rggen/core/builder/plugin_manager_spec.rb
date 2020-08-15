@@ -107,30 +107,16 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
 
   describe '#load_plugins' do
     let(:default_plugins) do
-      [
-        'rggen-default-register-map',
-        'rggen-systemverilog/rtl',
-        'rggen-systemverilog/ral',
-        'rggen-markdown',
-        'rggen-spreadsheet-loader'
-      ]
+      'rggen/setup'
     end
 
     before do
-      allow(plugin_manager).to receive(:require).with('rggen/default_plugins') do
-        RgGen.__send__(:const_set, :DEFAULT_PLUGINS, default_plugins)
-      end
+      allow(Gem).to receive(:find_files).with(default_plugins).and_return([default_plugins])
     end
 
     before do
       allow(ENV).to receive(:key?).with('RGGEN_NO_DEFAULT_PLUGINS').and_return(false)
       allow(ENV).to receive(:[]).with('RGGEN_PLUGINS').and_return(nil)
-    end
-
-    after do
-      RgGen.module_eval do
-        const_defined?(:DEFAULT_PLUGINS) && remove_const(:DEFAULT_PLUGINS)
-      end
     end
 
     it 'プラグインの読み込み前に、RgGen.builderに@builderを設定する' do
@@ -139,21 +125,9 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
       plugin_manager.load_plugins(['rggen-foo'], true)
     end
 
-    it 'DEFAULT_PLUGINSと引数で指定されたプラグインを読み込む' do
-      expect(plugin_manager).to receive(:load_plugin).with('rggen-default-register-map').and_call_original
-      expect(plugin_manager).to receive(:require).with('rggen/default_register_map/setup')
-
-      expect(plugin_manager).to receive(:load_plugin).with('rggen-systemverilog/rtl').and_call_original
-      expect(plugin_manager).to receive(:require).with('rggen/systemverilog/rtl/setup')
-
-      expect(plugin_manager).to receive(:load_plugin).with('rggen-systemverilog/ral').and_call_original
-      expect(plugin_manager).to receive(:require).with('rggen/systemverilog/ral/setup')
-
-      expect(plugin_manager).to receive(:load_plugin).with('rggen-markdown').and_call_original
-      expect(plugin_manager).to receive(:require).with('rggen/markdown/setup')
-
-      expect(plugin_manager).to receive(:load_plugin).with('rggen-spreadsheet-loader').and_call_original
-      expect(plugin_manager).to receive(:require).with('rggen/spreadsheet_loader/setup')
+    it '既定プラグインと引数で指定されたプラグインを読み込む' do
+      expect(plugin_manager).to receive(:load_plugin).with(default_plugins).and_call_original
+      expect(plugin_manager).to receive(:require).with(default_plugins)
 
       expect(plugin_manager).to receive(:load_plugin).with('rggen-foo').and_call_original
       expect(plugin_manager).to receive(:require).with('rggen/foo/setup')
@@ -171,13 +145,9 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
       plugin_manager.load_plugins(['rggen-foo', 'rggen-bar'], true)
     end
 
-    context 'rggen/default_pluginsが読み込めない場合' do
-      it 'default_pluginsは読み込まない' do
-        expect(plugin_manager).not_to receive(:load_plugin).with('rggen-default-register-map')
-        expect(plugin_manager).not_to receive(:load_plugin).with('rggen-systemverilog', 'rtl')
-        expect(plugin_manager).not_to receive(:load_plugin).with('rggen-systemverilog', 'ral')
-        expect(plugin_manager).not_to receive(:load_plugin).with('rggen-markdown')
-        expect(plugin_manager).not_to receive(:load_plugin).with('rggen-spreadsheet-loader')
+    context '\'rggen/setup\'が読み込めない場合' do
+      it '既定プラグインは読み込まない' do
+        expect(plugin_manager).to_not receive(:load_plugin).with(default_plugins)
 
         expect(plugin_manager).to receive(:load_plugin).with('rggen-foo').and_call_original
         expect(plugin_manager).to receive(:require).with('rggen/foo/setup')
@@ -185,18 +155,14 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
         expect(plugin_manager).to receive(:load_plugin).with('rggen-bar/baz').and_call_original
         expect(plugin_manager).to receive(:require).with('rggen/bar/baz/setup')
 
-        allow(plugin_manager).to receive(:require).with('rggen/default_plugins').and_raise(::LoadError)
+        allow(Gem).to receive(:find_files).with(default_plugins).and_return([])
         plugin_manager.load_plugins(['rggen-foo', 'rggen-bar/baz'], false)
       end
     end
 
     context '環境変数RGGEN_NO_DEFAULT_PLUGINSが設定されている場合' do
-      it 'default_pluginsは読み込まない' do
-        expect(plugin_manager).not_to receive(:load_plugin).with('rggen-default-register-map')
-        expect(plugin_manager).not_to receive(:load_plugin).with('rggen-systemverilog', 'rtl')
-        expect(plugin_manager).not_to receive(:load_plugin).with('rggen-systemverilog', 'ral')
-        expect(plugin_manager).not_to receive(:load_plugin).with('rggen-markdown')
-        expect(plugin_manager).not_to receive(:load_plugin).with('rggen-spreadsheet-loader')
+      it '既定プラグインは読み込まない' do
+        expect(plugin_manager).to_not receive(:load_plugin).with(default_plugins)
 
         expect(plugin_manager).to receive(:load_plugin).with('rggen-foo').and_call_original
         expect(plugin_manager).to receive(:require).with('rggen/foo/setup')
@@ -210,12 +176,8 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     end
 
     context '引数no_default_pluginにtrueが指定された場合' do
-      it 'default_pluginsは読み込まない' do
-        expect(plugin_manager).not_to receive(:load_plugin).with('rggen-default-register-map')
-        expect(plugin_manager).not_to receive(:load_plugin).with('rggen-systemverilog', 'rtl')
-        expect(plugin_manager).not_to receive(:load_plugin).with('rggen-systemverilog', 'ral')
-        expect(plugin_manager).not_to receive(:load_plugin).with('rggen-markdown')
-        expect(plugin_manager).not_to receive(:load_plugin).with('rggen-spreadsheet-loader')
+      it '既定プラグインは読み込まない' do
+        expect(plugin_manager).to_not receive(:load_plugin).with(default_plugins)
 
         expect(plugin_manager).to receive(:load_plugin).with('rggen-foo').and_call_original
         expect(plugin_manager).to receive(:require).with('rggen/foo/setup')

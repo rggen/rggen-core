@@ -107,13 +107,17 @@ module RgGen
           ]
         end
 
-        def default_plugins(no_default_plugins)
-          return nil if no_default_plugins || ENV.key?('RGGEN_NO_DEFAULT_PLUGINS')
+        DEFAULT_PLUGSINS = 'rggen/setup'
 
-          require 'rggen/default_plugins'
-          ::RgGen::DEFAULT_PLUGINS
-        rescue ::LoadError
-          nil
+        def default_plugins(no_default_plugins)
+          load_default_plugins?(no_default_plugins) && DEFAULT_PLUGSINS || nil
+        end
+
+        def load_default_plugins?(no_default_plugins)
+          return false if no_default_plugins
+          return false if ENV.key?('RGGEN_NO_DEFAULT_PLUGINS')
+          return false if Gem.find_files(DEFAULT_PLUGSINS).empty?
+          true
         end
 
         def plugins_from_env
