@@ -86,21 +86,21 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     end
 
     context "指定された'setup.rb'が読み込めなかった場合" do
-      it 'LoadErrorを起こす' do
+      it 'PluginErrorを起こす' do
         allow(plugin_manager).to receive(:require).with('foo/setup').and_raise(::LoadError)
         expect {
           plugin_manager.load_plugin('foo/setup')
-        }.to raise_rggen_error RgGen::Core::LoadError, 'cannot load such plugin: foo/setup'
+        }.to raise_rggen_error RgGen::Core::PluginError, 'cannot load such plugin: foo/setup'
 
         allow(plugin_manager).to receive(:require).with('rggen/foo/setup').and_raise(::LoadError)
         expect {
           plugin_manager.load_plugin('rggen-foo')
-        }.to raise_rggen_error RgGen::Core::LoadError, 'cannot load such plugin: rggen-foo (rggen/foo/setup)'
+        }.to raise_rggen_error RgGen::Core::PluginError, 'cannot load such plugin: rggen-foo (rggen/foo/setup)'
 
         allow(plugin_manager).to receive(:require).with('rggen/foo/bar/setup').and_raise(::LoadError)
         expect {
           plugin_manager.load_plugin('rggen-foo/bar')
-        }.to raise_rggen_error RgGen::Core::LoadError, 'cannot load such plugin: rggen-foo/bar (rggen/foo/bar/setup)'
+        }.to raise_rggen_error RgGen::Core::PluginError, 'cannot load such plugin: rggen-foo/bar (rggen/foo/bar/setup)'
       end
     end
   end
@@ -218,15 +218,21 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     before(:all) do
       module Foo
         VERSION = '0.0.1'
+        PLUGIN_NAME = 'foo'
         def self.default_setup(_builder); end
       end
 
       module Bar
         def self.version; '0.0.2'; end
+        def self.plugin_name; 'bar'; end
         def self.default_setup(_builder); end
       end
 
       module Baz
+        PLUGIN_NAME = 'baz'
+      end
+
+      module Qux
       end
     end
 
@@ -235,6 +241,7 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
         remove_const :Foo
         remove_const :Bar
         remove_const :Baz
+        remove_const :Qux
       end
     end
 
@@ -242,8 +249,8 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
       specify '#activate_plugins実行時に、.default_setupを実行し、既定のセットアップを行う' do
         expect(Foo).to receive(:default_setup).with(equal(builder))
         expect(Bar).to receive(:default_setup).with(equal(builder))
-        plugin_manager.setup(:foo, Foo)
-        plugin_manager.setup(:bar, Bar)
+        plugin_manager.setup(Foo)
+        plugin_manager.setup(Bar)
         plugin_manager.activate_plugins
       end
     end
@@ -251,16 +258,24 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     context 'モジュールが指定されて、.default_setupが実装されていない場合' do
       specify 'エラーなくプラグインの追加を実行できる' do
         expect {
-          plugin_manager.setup(:baz, Baz)
+          plugin_manager.setup(Baz)
           plugin_manager.activate_plugins
         }.not_to raise_error
       end
     end
 
+    context '定数PLUGIN_NAME、メソッド.plugin_nameが定義されてい場合' do
+      it 'PluginErrorを起こす' do
+        expect {
+          plugin_manager.setup(Qux)
+        }.to raise_rggen_error RgGen::Core::PluginError, 'no plugin name is given'
+      end
+    end
+
     context 'ブロックが与えられた場合' do
       specify '#activate_plugins実行時に、指定されたモジュール上でブロックを実行する' do
-        plugin_manager.setup(:foo, Foo) { |b| do_setup(b) }
-        plugin_manager.setup(:baz, Baz) { |b| do_setup(b) }
+        plugin_manager.setup(Foo) { |b| do_setup(b) }
+        plugin_manager.setup(Baz) { |b| do_setup(b) }
         expect(Foo).to receive(:do_setup).with(equal(builder))
         expect(Baz).to receive(:do_setup).with(equal(builder))
         plugin_manager.activate_plugins
@@ -271,8 +286,8 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
           expect(Foo).to have_received(:default_setup)
           expect(Bar).to have_received(:default_setup)
         end
-        plugin_manager.setup(:foo, Foo) { block.call }
-        plugin_manager.setup(:bar, Bar)
+        plugin_manager.setup(Foo) { block.call }
+        plugin_manager.setup(Bar)
 
         allow(Foo).to receive(:default_setup)
         allow(Bar).to receive(:default_setup)
@@ -283,31 +298,33 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     describe 'バージョン情報の収集' do
       context '指定されたモジュールが、定数VERSIONを持つ場合' do
         specify 'VERSIONで指定されたバージョンがプラグインのバージョンとする' do
-          plugin_manager.setup(:foo, Foo)
-          expect(plugin_manager.version_info[0]).to eq "foo #{Foo::VERSION}"
+          plugin_manager.setup(Foo)
+          expect(plugin_manager.version_info[0]).to eq "#{Foo::PLUGIN_NAME} #{Foo::VERSION}"
         end
       end
 
       context '指定されたモジュールが、メソッド.versionを持つ場合' do
         specify '.versionの戻り値をプラグインのバージョンとする' do
-          plugin_manager.setup(:bar, Bar)
-          expect(plugin_manager.version_info[0]).to eq "bar #{Bar.version}"
+          plugin_manager.setup(Bar)
+          expect(plugin_manager.version_info[0]).to eq "#{Bar.plugin_name} #{Bar.version}"
         end
       end
 
       context '指定されたモジュールに、VERSIONも.versionもない場合' do
         specify '規定バージョン0.0.0をプラグインのバージョンとする' do
-          plugin_manager.setup(:baz, Baz)
-          expect(plugin_manager.version_info[0]).to eq 'baz 0.0.0'
+          plugin_manager.setup(Baz)
+          expect(plugin_manager.version_info[0]).to eq "#{Baz::PLUGIN_NAME} 0.0.0"
         end
       end
 
       specify '#version_infoでプラグインのバージョン一覧を取得できる' do
-        plugin_manager.setup(:foo, Foo)
-        plugin_manager.setup(:bar, Bar)
-        plugin_manager.setup(:baz, Baz)
+        plugin_manager.setup(Foo)
+        plugin_manager.setup(Bar)
+        plugin_manager.setup(Baz)
         expect(plugin_manager.version_info).to match([
-          "foo #{Foo::VERSION}", "bar #{Bar.version}", 'baz 0.0.0'
+          "#{Foo::PLUGIN_NAME} #{Foo::VERSION}",
+          "#{Bar.plugin_name} #{Bar.version}",
+          "#{Baz::PLUGIN_NAME} 0.0.0"
         ])
       end
     end

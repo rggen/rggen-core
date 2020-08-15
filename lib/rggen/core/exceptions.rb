@@ -20,6 +20,9 @@ module RgGen
     class BuilderError < RgGenError
     end
 
+    class PluginError < RgGenError
+    end
+
     class RuntimeError < RgGenError
     end
 
