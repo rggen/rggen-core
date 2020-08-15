@@ -42,14 +42,13 @@ module RgGen
           @plugins = []
         end
 
-        def load_plugin(setup_path_or_name, sub_directory = nil)
-          setup_path_or_name, sub_directory =
-            [setup_path_or_name, sub_directory].compact.map(&:strip)
+        def load_plugin(setup_path_or_name)
+          setup_path_or_name = setup_path_or_name.to_s.strip
           setup_path =
-            if File.basename(setup_path_or_name, '.*') == 'setup'
+            if setup_file_directly_given?(setup_path_or_name)
               setup_path_or_name
             else
-              get_setup_path(setup_path_or_name, sub_directory)
+              get_setup_path(setup_path_or_name)
             end
           read_setup_file(setup_path, setup_path_or_name)
         end
@@ -78,9 +77,17 @@ module RgGen
 
         private
 
-        def get_setup_path(name, sub_directory)
-          base_name = name.sub(/^rggen[-_]/, '').tr('-', '_')
-          File.join(*['rggen', base_name, sub_directory, 'setup'].compact)
+        def setup_file_directly_given?(setup_path_or_name)
+          File.ext(setup_path_or_name) == 'rb' ||
+            File.basename(setup_path_or_name, '.*') == 'setup'
+        end
+
+        def get_setup_path(name)
+          base, sub_directory = name.split('/', 2)
+          base = base.sub(/^rggen[-_]/, '').tr('-', '_')
+          File.join(*[
+            'rggen', base, sub_directory || '', 'setup'
+          ].reject(&:empty?))
         end
 
         def read_setup_file(setup_path, setup_path_or_name)
@@ -110,9 +117,7 @@ module RgGen
         end
 
         def plugins_from_env
-          ENV['RGGEN_PLUGINS']
-            &.split(':')
-            &.map { |entry| entry.split(',')[0..1].compact }
+          ENV['RGGEN_PLUGINS']&.split(':')
         end
       end
     end
