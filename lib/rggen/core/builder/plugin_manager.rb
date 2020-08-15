@@ -103,7 +103,7 @@ module RgGen
         def read_setup_file(setup_path, setup_path_or_name)
           require setup_path
         rescue ::LoadError
-          raise Core::LoadError.new([
+          raise Core::PluginError.new([
             "cannot load such plugin: #{setup_path_or_name}",
             setup_path_or_name != setup_path && " (#{setup_path})" || ''
           ].join)

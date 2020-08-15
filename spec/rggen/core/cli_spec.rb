@@ -262,10 +262,10 @@ RSpec.describe RgGen::Core::CLI do
         allow(plugin_manager).to receive(:require).with(invalid_setup_file).and_raise(::LoadError)
       end
 
-      it 'Loaderエラーを起こす' do
+      it 'PluginErrorエラーを起こす' do
         expect {
           cli.run(['--verbose-version', '--plugin', invalid_setup_file])
-        }.to raise_error RgGen::Core::LoadError
+        }.to raise_error RgGen::Core::PluginError
       end
     end
   end

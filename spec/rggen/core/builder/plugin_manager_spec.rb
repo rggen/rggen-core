@@ -86,21 +86,21 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     end
 
     context "指定された'setup.rb'が読み込めなかった場合" do
-      it 'LoadErrorを起こす' do
+      it 'PluginErrorを起こす' do
         allow(plugin_manager).to receive(:require).with('foo/setup').and_raise(::LoadError)
         expect {
           plugin_manager.load_plugin('foo/setup')
-        }.to raise_rggen_error RgGen::Core::LoadError, 'cannot load such plugin: foo/setup'
+        }.to raise_rggen_error RgGen::Core::PluginError, 'cannot load such plugin: foo/setup'
 
         allow(plugin_manager).to receive(:require).with('rggen/foo/setup').and_raise(::LoadError)
         expect {
           plugin_manager.load_plugin('rggen-foo')
-        }.to raise_rggen_error RgGen::Core::LoadError, 'cannot load such plugin: rggen-foo (rggen/foo/setup)'
+        }.to raise_rggen_error RgGen::Core::PluginError, 'cannot load such plugin: rggen-foo (rggen/foo/setup)'
 
         allow(plugin_manager).to receive(:require).with('rggen/foo/bar/setup').and_raise(::LoadError)
         expect {
           plugin_manager.load_plugin('rggen-foo/bar')
-        }.to raise_rggen_error RgGen::Core::LoadError, 'cannot load such plugin: rggen-foo/bar (rggen/foo/bar/setup)'
+        }.to raise_rggen_error RgGen::Core::PluginError, 'cannot load such plugin: rggen-foo/bar (rggen/foo/bar/setup)'
       end
     end
   end
