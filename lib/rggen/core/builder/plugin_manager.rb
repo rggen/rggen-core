@@ -131,7 +131,8 @@ module RgGen
         end
 
         def plugins_from_env
-          ENV['RGGEN_PLUGINS']&.split(':')
+          ENV['RGGEN_PLUGINS']
+            &.split(':')&.map(&:strip)&.reject(&:empty?)
         end
       end
     end

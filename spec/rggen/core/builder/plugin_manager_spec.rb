@@ -202,6 +202,18 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
 
         allow(ENV).to receive(:[]).with('RGGEN_PLUGINS').and_return('bar/setup:rggen-baz/qux/foobar')
         plugin_manager.load_plugins(['rggen-foo'], true)
+
+        expect(plugin_manager).to receive(:load_plugin).with('bar/setup').and_call_original
+        expect(plugin_manager).to receive(:require).with('bar/setup')
+
+        expect(plugin_manager).to receive(:load_plugin).with('rggen-baz/qux/foobar').and_call_original
+        expect(plugin_manager).to receive(:require).with('rggen/baz/qux/foobar/setup')
+
+        expect(plugin_manager).to receive(:load_plugin).with('rggen-foo').and_call_original
+        expect(plugin_manager).to receive(:require).with('rggen/foo/setup')
+
+        allow(ENV).to receive(:[]).with('RGGEN_PLUGINS').and_return(' : bar/setup : rggen-baz/qux/foobar')
+        plugin_manager.load_plugins(['rggen-foo'], true)
       end
     end
 
