@@ -6,7 +6,7 @@ RSpec.describe RgGen::Core::Utility::ErrorUtility do
   let(:utility) { RgGen::Core::Utility::ErrorUtility }
 
   describe '#compose_error_message' do
-    let(:error) do
+    let(:error_without_verbose_info) do
       begin
         1 / 0
       rescue StandardError => e
@@ -14,19 +14,62 @@ RSpec.describe RgGen::Core::Utility::ErrorUtility do
       end
     end
 
-    context 'verboseにfalseが指定されている場合' do
+    let(:error_with_verbose_info) do
+      foo = 1
+      bar = 2
+      begin
+        baz
+      rescue NameError => e
+        def e.verbose_info
+          ['defined local variables:', *local_variables].join("\n")
+        end
+        e
+      end
+    end
+
+    context 'verobse/backtraceともにfalseが指定されている場合' do
       it 'エラーメッセージのみ表示する' do
-        message = utility.compose_error_message(error, false)
+        message = utility.compose_error_message(error_without_verbose_info, false, false)
+        expect(message).to eq '[ZeroDivisionError] divided by 0'
+
+        message = utility.compose_error_message(error_with_verbose_info, false, false)
+        expect(message).to eq "[NameError] undefined local variable or method `baz' for #{self}"
+      end
+    end
+
+    context 'verboseにtrueが設定され、例外が#verbose_infoを持たない場合' do
+      it '詳細情報は表示しない' do
+        message = utility.compose_error_message(error_without_verbose_info, true, false)
         expect(message).to eq '[ZeroDivisionError] divided by 0'
       end
     end
 
-    context 'verboseにfalseが指定されている場合' do
-      it 'エラーメッセージとバックトレースを表示する' do
-        message = utility.compose_error_message(error, true)
+    context 'verboseにtrueが設定され、例外が#verbose_infoを持つ場合' do
+      it '詳細情報を表示する' do
+        message = utility.compose_error_message(error_with_verbose_info, true, false)
+        expect(message).to eq [
+          "[NameError] undefined local variable or method `baz' for #{self}",
+          'verbose information:',
+          '    defined local variables:',
+          *error_with_verbose_info.local_variables.map { |v| "    #{v}" }
+        ].join("\n")
+      end
+    end
+
+    context 'backtraceにtrueが指定されている場合' do
+      it 'バックトレースを表示する' do
+        message = utility.compose_error_message(error_without_verbose_info, false, true)
         expect(message).to eq [
           '[ZeroDivisionError] divided by 0',
-          *error.backtrace.map { |trace| "    #{trace}" }
+          'backtrace:',
+          *error_without_verbose_info.backtrace.map { |trace| "    #{trace}" }
+        ].join("\n")
+
+        message = utility.compose_error_message(error_with_verbose_info, false, true)
+        expect(message).to eq [
+          "[NameError] undefined local variable or method `baz' for #{self}",
+          'backtrace:',
+          *error_with_verbose_info.backtrace.map { |trace| "    #{trace}" }
         ].join("\n")
       end
     end
