@@ -8,6 +8,6 @@ begin
   cli = RgGen::Core::CLI.new
   cli.run(ARGV)
 rescue ScriptError, StandardError => e
-  abort RgGen::Core::Utility::ErrorUtility
-          .compose_error_message(e, cli.options[:print_backtrace])
+  options = [cli.options[:print_verbose_info], cli.options[:print_backtrace]]
+  abort RgGen::Core::Utility::ErrorUtility.compose_error_message(e, *options)
 end

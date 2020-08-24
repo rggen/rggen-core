@@ -187,6 +187,7 @@ RSpec.describe RgGen::Core::CLI do
                 --load-only                  Load setup, configuration and register map files only; write no files
                 --enable WRITER1[,WRITER2,...]
                                              Enable only the given writer(s) to write files
+                --print-verbose-info         Print verbose information when an error occurs
                 --print-backtrace            Print backtrace when an error occurs
             -v, --version                    Display version
                 --verbose-version            Load a setup Ruby file and display verbose version

@@ -153,6 +153,22 @@ module RgGen::Core
       end
     end
 
+    describe '--print-verbose-infoオプション' do
+      context '--print-verbose-infoが指定された場合' do
+        it 'trueを返す' do
+          options.parse(['--print-verbose-info'])
+          expect(options[:print_verbose_info]).to be true
+        end
+      end
+
+      context '未指定の場合' do
+        it 'falseを返す' do
+          options.parse([])
+          expect(options[:print_verbose_info]).to be false
+        end
+      end
+    end
+
     describe '--print-backtraceオプション' do
       context '--print-backtraceが指定された場合' do
         it 'trueを返す' do
