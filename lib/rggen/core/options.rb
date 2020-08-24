@@ -150,6 +150,12 @@ module RgGen
       end
     end
 
+    Options.add_option(:print_verbose_info) do |option|
+      option.long_option '--print-verbose-info'
+      option.default false
+      option.description 'Print verbose information when an error occurs'
+    end
+
     Options.add_option(:print_backtrace) do |option|
       option.long_option '--print-backtrace'
       option.default false
