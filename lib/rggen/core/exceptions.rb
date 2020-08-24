@@ -3,17 +3,17 @@
 module RgGen
   module Core
     class RgGenError < StandardError
-      def initialize(message, additional_info = nil)
+      def initialize(message, location_info = nil)
         super(message)
         @error_message = message
-        @additional_info = additional_info
+        @location_info = location_info
       end
 
       attr_reader :error_message
-      attr_reader :additional_info
+      attr_reader :location_info
 
       def to_s
-        additional_info ? "#{super} -- #{additional_info}" : super
+        location_info && "#{super} -- #{location_info}" || super
       end
     end
 
