@@ -131,6 +131,35 @@ RSpec.describe RgGen::Core::Builder::Layer do
 
         expect(contexts.size).to eq contexts.map(&:object_id).uniq.size
       end
+
+      specify '同一フィーチャー間では、共有コンテキストは共有される' do
+        contexts = []
+
+        layer.define_simple_feature(:foo) do
+          shared_context { contexts << self }
+        end
+        layer.define_simple_feature(:foo) do
+          shared_context { contexts << self }
+        end
+        expect(contexts[0]).to equal contexts[1]
+
+        layer.define_list_feature(:bar) do
+          shared_context { contexts << self }
+        end
+        layer.define_list_feature(:bar) do
+          shared_context { contexts << self }
+        end
+        expect(contexts[2]).to equal contexts[3]
+
+        layer.define_list_feature(:baz) {}
+        layer.define_list_item_feature(:baz, :baz_0) do
+          shared_context { contexts << self }
+        end
+        layer.define_list_item_feature(:baz, :baz_0) do
+          shared_context { contexts << self }
+        end
+        expect(contexts[4]).to equal contexts[5]
+      end
     end
   end
 
