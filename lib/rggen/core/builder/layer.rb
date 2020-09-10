@@ -13,7 +13,6 @@ module RgGen
           attr_setter :method_name
           attr_setter :list_name
           attr_setter :feature_name
-          attr_setter :shared_context
 
           def register_execution(registry, &body)
             @executions ||= []
@@ -22,13 +21,13 @@ module RgGen
 
           def execute(layer)
             Docile.dsl_eval(layer, &body)
-            @executions&.each(&method(:call_execution))
+            @executions&.each { |execution| call_execution(layer, execution) }
           end
 
           private
 
-          def call_execution(execution)
-            args = [list_name, feature_name, shared_context].compact
+          def call_execution(layer, execution)
+            args = [list_name, feature_name, layer.shared_context].compact
             execution[:registry].__send__(method_name, *args, &execution[:body])
           end
         end
@@ -45,9 +44,13 @@ module RgGen
 
         def shared_context(&body)
           return unless @proxy
-          context = allocate_shared_context
-          context.instance_eval(&body) if block_given?
-          @proxy.shared_context(context)
+
+          if block_given?
+            context = current_shared_context(true)
+            context.singleton_exec(&body)
+          end
+
+          current_shared_context(false)
         end
 
         def define_simple_feature(feature_names, &body)
@@ -113,16 +116,15 @@ module RgGen
           remove_instance_variable(:@proxy)
         end
 
-        def allocate_shared_context
+        def current_shared_context(allocate)
           list_name = @proxy.list_name || @proxy.feature_name
           feature_name = @proxy.feature_name
+          allocate && (shared_contexts[list_name][feature_name] ||= Object.new)
           shared_contexts[list_name][feature_name]
         end
 
         def shared_contexts
-          @shared_contexts ||= Hash.new do |h0, k0|
-            h0[k0] = Hash.new { |h1, k1| h1[k1] = Object.new }
-          end
+          @shared_contexts ||= Hash.new { |h, k| h[k] = {} }
         end
       end
     end
