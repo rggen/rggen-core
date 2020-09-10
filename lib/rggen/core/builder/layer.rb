@@ -11,8 +11,8 @@ module RgGen
 
           attr_setter :body
           attr_setter :method_name
-          attr_setter :list_names
-          attr_setter :feature_names
+          attr_setter :list_name
+          attr_setter :feature_name
 
           def shared_context(&body)
             if block_given?
@@ -35,9 +35,8 @@ module RgGen
           private
 
           def call_execution(execution)
-            args = [list_names, feature_names, shared_context].compact
-            execution[:registry]
-              .__send__(method_name, *args, &execution[:body])
+            args = [list_name, feature_name, shared_context].compact
+            execution[:registry].__send__(method_name, *args, &execution[:body])
           end
         end
 
@@ -56,27 +55,33 @@ module RgGen
         end
 
         def define_simple_feature(feature_names, &body)
-          do_proxy_call do |proxy|
-            proxy.body(body)
-            proxy.method_name(__method__)
-            proxy.feature_names(feature_names)
+          Array(feature_names).each do |feature_name|
+            do_proxy_call do |proxy|
+              proxy.body(body)
+              proxy.method_name(__method__)
+              proxy.feature_name(feature_name)
+            end
           end
         end
 
         def define_list_feature(list_names, &body)
-          do_proxy_call do |proxy|
-            proxy.body(body)
-            proxy.method_name(__method__)
-            proxy.list_names(list_names)
+          Array(list_names).each do |list_name|
+            do_proxy_call do |proxy|
+              proxy.body(body)
+              proxy.method_name(__method__)
+              proxy.list_name(list_name)
+            end
           end
         end
 
         def define_list_item_feature(list_name, feature_names, &body)
-          do_proxy_call do |proxy|
-            proxy.body(body)
-            proxy.method_name(__method__)
-            proxy.list_names(list_name)
-            proxy.feature_names(feature_names)
+          Array(feature_names).each do |feature_name|
+            do_proxy_call do |proxy|
+              proxy.body(body)
+              proxy.method_name(__method__)
+              proxy.list_name(list_name)
+              proxy.feature_name(feature_name)
+            end
           end
         end
 
