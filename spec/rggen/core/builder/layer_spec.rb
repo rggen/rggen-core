@@ -31,8 +31,10 @@ RSpec.describe RgGen::Core::Builder::Layer do
         buzz {}
       end
 
-      expect(fizz_feature_registry).to receive(:define_simple_feature).with(match([:bar_0, :bar_1])).and_call_original
-      expect(buzz_feature_registry).to receive(:define_simple_feature).with(match([:bar_0, :bar_1])).and_call_original
+      expect(fizz_feature_registry).to receive(:define_simple_feature).with(:bar_0).and_call_original
+      expect(buzz_feature_registry).to receive(:define_simple_feature).with(:bar_0).and_call_original
+      expect(fizz_feature_registry).to receive(:define_simple_feature).with(:bar_1).and_call_original
+      expect(buzz_feature_registry).to receive(:define_simple_feature).with(:bar_1).and_call_original
       layer.define_simple_feature([:bar_0, :bar_1]) do
         fizz {}
         buzz {}
@@ -52,15 +54,19 @@ RSpec.describe RgGen::Core::Builder::Layer do
         buzz {}
       end
 
-      expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:baz, match([:baz_1, :baz_2])).and_call_original
-      expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:baz, match([:baz_1, :baz_2])).and_call_original
+      expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:baz, :baz_1).and_call_original
+      expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:baz, :baz_1).and_call_original
+      expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:baz, :baz_2).and_call_original
+      expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:baz, :baz_2).and_call_original
       layer.define_list_item_feature(:baz, [:baz_1, :baz_2]) do
         fizz {}
         buzz {}
       end
 
-      expect(fizz_feature_registry).to receive(:define_list_feature).with(match([:qux_0, :qux_1])).and_call_original
-      expect(buzz_feature_registry).to receive(:define_list_feature).with(match([:qux_0, :qux_1])).and_call_original
+      expect(fizz_feature_registry).to receive(:define_list_feature).with(:qux_0).and_call_original
+      expect(buzz_feature_registry).to receive(:define_list_feature).with(:qux_0).and_call_original
+      expect(fizz_feature_registry).to receive(:define_list_feature).with(:qux_1).and_call_original
+      expect(buzz_feature_registry).to receive(:define_list_feature).with(:qux_1).and_call_original
       layer.define_list_feature([:qux_0, :qux_1]) do
         fizz {}
         buzz {}
@@ -106,7 +112,7 @@ RSpec.describe RgGen::Core::Builder::Layer do
         expect(buzz_feature_registry).to have_received(:define_list_item_feature).with(:baz, :baz_0, equal(contexts.last))
       end
 
-      specify '各共有コンテキストは独立している' do
+      specify '異なるフィーチャー間では、共有コンテキストは独立している' do
         contexts = []
 
         layer.define_simple_feature([:foo_0, :foo_1]) do
@@ -124,6 +130,35 @@ RSpec.describe RgGen::Core::Builder::Layer do
         end
 
         expect(contexts.size).to eq contexts.map(&:object_id).uniq.size
+      end
+
+      specify '同一フィーチャー間では、共有コンテキストは共有される' do
+        contexts = []
+
+        layer.define_simple_feature(:foo) do
+          shared_context { contexts << self }
+        end
+        layer.define_simple_feature(:foo) do
+          shared_context { contexts << self }
+        end
+        expect(contexts[0]).to equal contexts[1]
+
+        layer.define_list_feature(:bar) do
+          shared_context { contexts << self }
+        end
+        layer.define_list_feature(:bar) do
+          shared_context { contexts << self }
+        end
+        expect(contexts[2]).to equal contexts[3]
+
+        layer.define_list_feature(:baz) {}
+        layer.define_list_item_feature(:baz, :baz_0) do
+          shared_context { contexts << self }
+        end
+        layer.define_list_item_feature(:baz, :baz_0) do
+          shared_context { contexts << self }
+        end
+        expect(contexts[4]).to equal contexts[5]
       end
     end
   end

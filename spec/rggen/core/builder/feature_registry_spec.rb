@@ -67,42 +67,6 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
     expect(feature.m).to eq 'default baz!'
   end
 
-  specify '複数個のフィーチャーを同時に定義できる' do
-    registry.define_simple_feature([:foo, :bar]) do |feature|
-      define_method(:m) { feature.to_s }
-    end
-    registry.define_list_feature([:baz_0, :baz_1]) do |feature|
-      default_feature do
-        define_method(:m) { feature.to_s }
-      end
-    end
-    registry.define_list_item_feature(:baz_0, [:baz_0_0, :baz_0_1]) do |feature|
-      define_method(:m) { feature.to_s }
-    end
-
-    registry.enable([:foo, :bar, :baz_0, :baz_1])
-    registry.enable(:baz_0, [:baz_0_0, :baz_0_1])
-    factories = registry.build_factories
-
-    feature = factories[:foo].create(component)
-    expect(feature.m).to eq 'foo'
-
-    feature = factories[:bar].create(component)
-    expect(feature.m).to eq 'bar'
-
-    feature = factories[:baz_0].create(component, :baz_0_0)
-    expect(feature.m).to eq 'baz_0_0'
-
-    feature = factories[:baz_0].create(component, :baz_0_1)
-    expect(feature.m).to eq 'baz_0_1'
-
-    feature = factories[:baz_0].create(component, :baz_0_2)
-    expect(feature.m).to eq 'baz_0'
-
-    feature = factories[:baz_1].create(component, :baz_1_0)
-    expect(feature.m).to eq 'baz_1'
-  end
-
   specify '#enableで指定したフィーチャーを生成できる' do
     registry.define_simple_feature(:foo_0) do
       def m; 'foo_0'; end
@@ -284,14 +248,20 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
 
   describe '#disable' do
     before do
-      registry.define_simple_feature([:foo_0, :foo_1, :foo_2]) do |feature|
-        define_method(:m) { feature }
+      [:foo_0, :foo_1, :foo_2].each do |feature|
+        registry.define_simple_feature(feature) do
+          define_method(:m) { feature }
+        end
       end
-      registry.define_list_feature([:bar_0, :bar_1]) do |feature|
-        define_default_feature { define_method(:m) { feature } }
+      [:bar_0, :bar_1].each do |feature|
+        registry.define_list_feature(feature) do
+          define_default_feature { define_method(:m) { feature } }
+        end
       end
-      registry.define_list_item_feature(:bar_0, [:bar_0_0, :bar_0_1, :bar_0_2, :bar_0_3]) do |feature|
-        define_method(:m) { feature }
+      [:bar_0_0, :bar_0_1, :bar_0_2, :bar_0_3].each do |feature|
+        registry.define_list_item_feature(:bar_0, feature) do
+          define_method(:m) { feature }
+        end
       end
       registry.enable([:foo_0, :foo_1, :foo_2, :bar_0, :bar_1])
       registry.enable(:bar_0, [:bar_0_0, :bar_0_1, :bar_0_2, :bar_0_3])
@@ -342,19 +312,27 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
 
   describe '#delete' do
     before do
-      registry.define_simple_feature([:foo, :bar, :baz]) do |feature|
-        define_method(:m) { feature }
-      end
-      registry.define_list_feature([:qux_0, :qux_1]) do |feature|
-        define_default_feature do
+      [:foo, :bar, :baz].each do |feature|
+        registry.define_simple_feature(feature) do
           define_method(:m) { feature }
         end
       end
-      registry.define_list_item_feature(:qux_0, [:qux_0_0, :qux_0_1, :qux_0_2, :qux_0_3]) do |feature|
-        define_method(:m) { feature }
+      [:qux_0, :qux_1].each do |feature|
+        registry.define_list_feature(feature) do
+          define_default_feature do
+            define_method(:m) { feature }
+          end
+        end
       end
-      registry.define_list_item_feature(:qux_1, [:qux_1_0, :qux_1_1, :qux_1_2, :qux_1_3]) do |feature|
-        define_method(:m) { feature }
+      [:qux_0_0, :qux_0_1, :qux_0_2, :qux_0_3].each do |feature|
+        registry.define_list_item_feature(:qux_0, feature) do
+          define_method(:m) { feature }
+        end
+      end
+      [:qux_1_0, :qux_1_1, :qux_1_2, :qux_1_3].each do |feature|
+        registry.define_list_item_feature(:qux_1, feature) do
+          define_method(:m) { feature }
+        end
       end
 
       registry.enable([:foo, :bar, :baz, :qux_0, :qux_1])
