@@ -82,7 +82,7 @@ RSpec.describe RgGen::Core::Builder::Layer do
         layer.define_simple_feature(:foo) do
           fizz {}
           buzz {}
-          shared_context { contexts << self }
+          contexts << shared_context {}
         end
         expect(fizz_feature_registry).to have_received(:define_simple_feature).with(:foo, equal(contexts.last))
         expect(buzz_feature_registry).to have_received(:define_simple_feature).with(:foo, equal(contexts.last))
@@ -92,7 +92,7 @@ RSpec.describe RgGen::Core::Builder::Layer do
         layer.define_list_feature(:bar) do
           fizz {}
           buzz {}
-          shared_context { contexts << self }
+          contexts << shared_context {}
         end
         expect(fizz_feature_registry).to have_received(:define_list_feature).with(:bar, equal(contexts.last))
         expect(buzz_feature_registry).to have_received(:define_list_feature).with(:bar, equal(contexts.last))
@@ -106,7 +106,7 @@ RSpec.describe RgGen::Core::Builder::Layer do
         layer.define_list_item_feature(:baz, :baz_0) do
           fizz {}
           buzz {}
-          shared_context { contexts << self }
+          contexts << shared_context {}
         end
         expect(fizz_feature_registry).to have_received(:define_list_item_feature).with(:baz, :baz_0, equal(contexts.last))
         expect(buzz_feature_registry).to have_received(:define_list_item_feature).with(:baz, :baz_0, equal(contexts.last))
