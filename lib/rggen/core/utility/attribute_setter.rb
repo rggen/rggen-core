@@ -24,6 +24,10 @@ module RgGen
               end
             end
           end
+
+          def inherited(subclass)
+            export_instance_variable(:@attributes, subclass, &:dup)
+          end
         end
 
         def self.included(class_or_module)
