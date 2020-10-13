@@ -4,12 +4,15 @@ require 'spec_helper'
 
 module RgGen::Core::Utility
   describe AttributeSetter do
-    def create_test_object(&block)
-      klass = Class.new do
+    def create_test_class(parent = Object, &block)
+      Class.new(parent) do
         include AttributeSetter
+        class_eval(&block)
       end
-      klass.class_eval(&block)
-      klass.new
+    end
+
+    def create_test_object(parent = Object, &block)
+      create_test_class(parent, &block).new
     end
 
     let(:attributes) do
@@ -70,6 +73,21 @@ module RgGen::Core::Utility
         expect(object.bar).to eq attributes[:bar]
         expect(object.baz).to eq :default_baz
       end
+    end
+
+    specify '定義したアトリビュートは子クラスにも引き継がれる' do
+      parent = create_test_class do
+        define_attribute :foo, :default_foo
+        define_attribute :bar, :default_bar
+        define_attribute :baz, :default_baz
+      end
+
+      object = Class.new(parent).new
+      object.apply_attributes(**attributes)
+
+      expect(object.foo).to eq attributes[:foo]
+      expect(object.bar).to eq attributes[:bar]
+      expect(object.baz).to eq :default_baz
     end
   end
 end
