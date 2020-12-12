@@ -149,8 +149,8 @@ module RgGen
         end
 
         def do_verify(scope)
-          Array(self.class.verifiers&.at(scope))
-            .each { |verifier| verifier.verify(self) }
+          self.class.verifiers&.[](scope)
+            &.each { |verifier| verifier.verify(self) }
           (@verified ||= {})[scope] = true
         end
 
