@@ -32,6 +32,10 @@ module RgGen
           end
         end
 
+        def register_map_layers
+          REGISTER_MAP_LAYERS
+        end
+
         def add_feature_registry(name, target_layer, registry)
           target_layers =
             if target_layer
@@ -105,15 +109,19 @@ module RgGen
           end
         end
 
+        REGISTER_MAP_LAYERS = [
+          :root, :register_block, :register_file, :register, :bit_field
+        ].freeze
+
+        ALL_LAYERS = [
+          :global, *REGISTER_MAP_LAYERS
+        ].freeze
+
         def initialize_layers
           @layers = Hash.new do |_, layer_name|
             raise BuilderError.new("unknown layer: #{layer_name}")
           end
-          [
-            :global, :root, :register_block, :register_file, :register, :bit_field
-          ].each do |layer|
-            @layers[layer] = Layer.new(layer)
-          end
+          ALL_LAYERS.each { |layer| @layers[layer] = Layer.new(layer) }
         end
 
         COMPONENT_REGISTRIES = {

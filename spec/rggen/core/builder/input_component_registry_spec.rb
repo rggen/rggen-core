@@ -23,7 +23,7 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
     end
 
     before do
-      registry.register_component do
+      registry.register_component(global: true) do
         component(
           RgGen::Core::Configuration::Component,
           RgGen::Core::Configuration::ComponentFactory

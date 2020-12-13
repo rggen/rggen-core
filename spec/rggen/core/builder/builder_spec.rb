@@ -69,68 +69,97 @@ RSpec.describe RgGen::Core::Builder::Builder do
       }.not_to change { component_registries.size }
     end
 
-    context 'フィーチャーの登録があり' do
-      context '階層の指定がない場合' do
-        it '全階層にフィーチャーの登録を追加する' do
-          layers.each_value do |layer|
-            allow(layer).to receive(:add_feature_registry).and_call_original
-          end
+    context 'フィーチャーの登録があり、global: trueが指定された場合' do
+      it '全階層にフィーチャの登録を追加する' do
+        layers.each_value do |layer|
+          allow(layer).to receive(:add_feature_registry).and_call_original
+        end
 
-          builder.input_component_registry(:configuration) do
-            register_component do
-              component(
-                RgGen::Core::Configuration::Component,
-                RgGen::Core::Configuration::ComponentFactory
-              )
-              feature(
-                RgGen::Core::Configuration::Feature,
-                RgGen::Core::Configuration::FeatureFactory
-              )
-            end
+        builder.input_component_registry(:configuration) do
+          register_component(global: true) do
+            component(
+              RgGen::Core::Configuration::Component,
+              RgGen::Core::Configuration::ComponentFactory
+            )
+            feature(
+              RgGen::Core::Configuration::Feature,
+              RgGen::Core::Configuration::FeatureFactory
+            )
           end
+        end
 
-          layers.each_value do |layer|
-            expect(layer).to have_received(:add_feature_registry).with(:configuration, equal(feature_registries.first))
+        layers.each_value do |layer|
+          expect(layer).to have_received(:add_feature_registry).with(:configuration, equal(feature_registries.first))
+        end
+      end
+    end
+
+    context 'フィーチャの登録があり、階層指定がない場合' do
+      it 'レジスタマップ階層にフィーチャの登録を追加する' do
+        layers.each_value do |layer|
+          allow(layer).to receive(:add_feature_registry).and_call_original
+        end
+
+        builder.input_component_registry(:register_map) do
+          register_component do
+            component(
+              RgGen::Core::Configuration::Component,
+              RgGen::Core::Configuration::ComponentFactory
+            )
+            feature(
+              RgGen::Core::Configuration::Feature,
+              RgGen::Core::Configuration::FeatureFactory
+            )
+          end
+        end
+
+        layers.each do |layer_name, layer|
+          index = builder.register_map_layers.index(layer_name)
+          if index
+            expect(layer).to have_received(:add_feature_registry).with(:register_map, equal(feature_registries[index]))
+          else
+            expect(layer).not_to have_received(:add_feature_registry)
           end
         end
       end
+    end
 
-      context '階層の指定がある場合' do
-        it '指定された階層にフィーチャーの登録を追加する' do
-          layers.each do |name, layer|
-            if [:register_block, :register_file, :register, :bit_field].include?(name)
-              allow(layer).to receive(:add_feature_registry).and_call_original
-            else
-              expect(layer).not_to receive(:add_feature_registry)
-            end
+    context 'フィーチャの登録があり、階層の指定がある場合' do
+      it '指定された階層にフィーチャの登録を追加する' do
+        layers.each_value do |layer|
+          allow(layer).to receive(:add_feature_registry).and_call_original
+        end
+
+        builder.input_component_registry(:register_map) do
+          register_component(:register_block) do
+            component(
+              RgGen::Core::Configuration::Component,
+              RgGen::Core::Configuration::ComponentFactory
+            )
+            feature(
+              RgGen::Core::Configuration::Feature,
+              RgGen::Core::Configuration::FeatureFactory
+            )
           end
 
-          builder.input_component_registry(:register_map) do
-            register_component(:register_block) do
-              component(
-                RgGen::Core::RegisterMap::Component,
-                RgGen::Core::RegisterMap::ComponentFactory
-              )
-              feature(
-                RgGen::Core::RegisterMap::Feature,
-                RgGen::Core::RegisterMap::FeatureFactory
-              )
-            end
-
-            register_component([:register_file, :register, :bit_field]) do
-              component(
-                RgGen::Core::RegisterMap::Component,
-                RgGen::Core::RegisterMap::ComponentFactory
-              )
-              feature(
-                RgGen::Core::RegisterMap::Feature,
-                RgGen::Core::RegisterMap::FeatureFactory
-              )
-            end
+          register_component([:register, :bit_field]) do
+            component(
+              RgGen::Core::Configuration::Component,
+              RgGen::Core::Configuration::ComponentFactory
+            )
+            feature(
+              RgGen::Core::Configuration::Feature,
+              RgGen::Core::Configuration::FeatureFactory
+            )
           end
+        end
 
-          [:register_block, :register_file, :register, :bit_field].each_with_index do |layer, i|
-            expect(layers[layer]).to have_received(:add_feature_registry).with(:register_map, equal(feature_registries[i]))
+        layers.each do |layer_name, layer|
+          index =  [:register_block, :register, :bit_field].index(layer_name)
+          if index
+            expect(layer).to have_received(:add_feature_registry).with(:register_map, equal(feature_registries[index]))
+          else
+            expect(layer).not_to have_received(:add_feature_registry)
           end
         end
       end
@@ -173,68 +202,97 @@ RSpec.describe RgGen::Core::Builder::Builder do
       }.not_to change { component_registries.size }
     end
 
-    context 'フィーチャーの登録があり' do
-      context '階層の指定がない場合' do
-        it '全階層にフィーチャーの登録を追加する' do
-          layers.each_value do |layer|
-            allow(layer).to receive(:add_feature_registry).and_call_original
-          end
+    context 'フィーチャの登録があり、global: tureの指定がある場合' do
+      it '全階層にフィーチャの登録を追加する' do
+        layers.each_value do |layer|
+          allow(layer).to receive(:add_feature_registry).and_call_original
+        end
 
-          builder.output_component_registry(:foo) do
-            register_component do
-              component(
-                RgGen::Core::OutputBase::Component,
-                RgGen::Core::OutputBase::ComponentFactory
-              )
-              feature(
-                RgGen::Core::OutputBase::Feature,
-                RgGen::Core::OutputBase::FeatureFactory
-              )
-            end
+        builder.output_component_registry(:foo) do
+          register_component(global: true) do
+            component(
+              RgGen::Core::OutputBase::Component,
+              RgGen::Core::OutputBase::ComponentFactory
+            )
+            feature(
+              RgGen::Core::OutputBase::Feature,
+              RgGen::Core::OutputBase::FeatureFactory
+            )
           end
+        end
 
-          layers.each_value do |layer|
-            expect(layer).to have_received(:add_feature_registry).with(:foo, equal(feature_registries.first))
+        layers.each_value do |layer|
+          expect(layer).to have_received(:add_feature_registry).with(:foo, equal(feature_registries.first))
+        end
+      end
+    end
+
+    context 'フィーチャの登録があり、階層の指定がない場合' do
+      it 'レジスタマップ階層にフィーチャの登録を追加する' do
+        layers.each_value do |layer|
+          allow(layer).to receive(:add_feature_registry).and_call_original
+        end
+
+        builder.output_component_registry(:foo) do
+          register_component do
+            component(
+              RgGen::Core::OutputBase::Component,
+              RgGen::Core::OutputBase::ComponentFactory
+            )
+            feature(
+              RgGen::Core::OutputBase::Feature,
+              RgGen::Core::OutputBase::FeatureFactory
+            )
+          end
+        end
+
+        layers.each do |layer_name, layer|
+          index = builder.register_map_layers.index(layer_name)
+          if index
+            expect(layer).to have_received(:add_feature_registry).with(:foo, equal(feature_registries[index]))
+          else
+            expect(layer).not_to have_received(:add_feature_registry)
           end
         end
       end
+    end
 
-      context '階層の指定がある場合' do
-        it '指定された階層にフィーチャーの登録を追加する' do
-          layers.each do |name, layer|
-            if [:register_block, :register_file, :register, :bit_field].include?(name)
-              allow(layer).to receive(:add_feature_registry).and_call_original
-            else
-              expect(layer).not_to receive(:add_feature_registry)
-            end
+    context 'フィーチャの登録があり、階層の指定がある場合' do
+      it '指定された階層に、フィーチャの登録を追加する' do
+        layers.each_value do |layer|
+          allow(layer).to receive(:add_feature_registry).and_call_original
+        end
+
+        builder.output_component_registry(:foo) do
+          register_component(:register_block) do
+            component(
+              RgGen::Core::OutputBase::Component,
+              RgGen::Core::OutputBase::ComponentFactory
+            )
+            feature(
+              RgGen::Core::OutputBase::Feature,
+              RgGen::Core::OutputBase::FeatureFactory
+            )
           end
 
-          builder.output_component_registry(:foo) do
-            register_component(:register_block) do
-              component(
-                RgGen::Core::RegisterMap::Component,
-                RgGen::Core::RegisterMap::ComponentFactory
-              )
-              feature(
-                RgGen::Core::RegisterMap::Feature,
-                RgGen::Core::RegisterMap::FeatureFactory
-              )
-            end
-
-            register_component([:register_file, :register, :bit_field]) do
-              component(
-                RgGen::Core::RegisterMap::Component,
-                RgGen::Core::RegisterMap::ComponentFactory
-              )
-              feature(
-                RgGen::Core::RegisterMap::Feature,
-                RgGen::Core::RegisterMap::FeatureFactory
-              )
-            end
+          register_component([:register, :bit_field]) do
+            component(
+              RgGen::Core::OutputBase::Component,
+              RgGen::Core::OutputBase::ComponentFactory
+            )
+            feature(
+              RgGen::Core::OutputBase::Feature,
+              RgGen::Core::OutputBase::FeatureFactory
+            )
           end
+        end
 
-          [:register_block, :register_file, :register, :bit_field].each_with_index do |layer, i|
-            expect(layers[layer]).to have_received(:add_feature_registry).with(:foo, equal(feature_registries[i]))
+        layers.each do |layer_name, layer|
+          index = [:register_block, :register, :bit_field].index(layer_name)
+          if index
+            expect(layer).to have_received(:add_feature_registry).with(:foo, equal(feature_registries[index]))
+          else
+            expect(layer).not_to have_received(:add_feature_registry)
           end
         end
       end
@@ -243,7 +301,7 @@ RSpec.describe RgGen::Core::Builder::Builder do
 
   def default_component_registration
     builder.input_component_registry(:configuration) do
-      register_component do
+      register_component(global: true) do
         component(
           RgGen::Core::Configuration::Component,
           RgGen::Core::Configuration::ComponentFactory
@@ -256,13 +314,7 @@ RSpec.describe RgGen::Core::Builder::Builder do
     end
 
     builder.input_component_registry(:register_map) do
-      register_component(:root) do
-        component(
-          RgGen::Core::RegisterMap::Component,
-          RgGen::Core::RegisterMap::ComponentFactory
-        )
-      end
-      register_component([:register_block, :register_file, :register, :bit_field]) do
+      register_component do
         component(
           RgGen::Core::RegisterMap::Component,
           RgGen::Core::RegisterMap::ComponentFactory
@@ -277,12 +329,6 @@ RSpec.describe RgGen::Core::Builder::Builder do
     [:foo, :bar, :baz].each do |component_name|
       builder.output_component_registry(component_name) do
         register_component do
-          component(
-            RgGen::Core::OutputBase::Component,
-            RgGen::Core::OutputBase::ComponentFactory
-          )
-        end
-        register_component([:register_block, :register_file, :register, :bit_field]) do
           component(
             RgGen::Core::OutputBase::Component,
             RgGen::Core::OutputBase::ComponentFactory
@@ -749,7 +795,7 @@ RSpec.describe RgGen::Core::Builder::Builder do
     end
   end
 
-  describe  '#register_input_components' do
+  describe '#register_input_components' do
     let(:configuration_file_format) do
      [:yaml, :json, :ruby].sample
     end
