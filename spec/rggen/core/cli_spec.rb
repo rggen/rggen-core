@@ -29,56 +29,45 @@ RSpec.describe RgGen::Core::CLI do
 
       [:foo, :bar].each do |component_name|
         plugin_module = Module.new do
-          singleton_exec do
-            define_method(:version) do
-              { foo: '0.0.1', bar: '0.0.2'}[component_name]
-            end
-            define_method(:plugin_name) { :"rggen-#{component_name}" }
-            define_method(:default_setup) do |builder|
-              builder.output_component_registry(component_name) do
-                register_component :root do
-                  component(
-                    RgGen::Core::OutputBase::Component,
-                    RgGen::Core::OutputBase::ComponentFactory
-                  )
-                end
-                register_component [:register_block, :register_file, :register, :bit_field] do
-                  component(
-                    RgGen::Core::OutputBase::Component,
-                    RgGen::Core::OutputBase::ComponentFactory
-                  )
-                  feature(
-                    RgGen::Core::OutputBase::Feature,
-                    RgGen::Core::OutputBase::FeatureFactory
-                  )
-                end
-              end
+          extend RgGen::Core::Plugin
 
-              RgGen.define_simple_feature(:register_block, :sample_writer) do
-                send(component_name) do
-                  write_file "#{component_name}_<%= register_block.name %>.txt" do |code|
-                    code << [configuration.prefix, "#{component_name}", register_block.name].join('_') << "\n"
-
-                    register_file = register_block.files_and_registers.first
-                    code << [configuration.prefix, "#{component_name}", register_file.name].join('_') << "\n"
-
-                    register = register_file.files_and_registers.first
-                    code << [configuration.prefix, "#{component_name}", register.name].join('_') << "\n"
-
-                    bit_field = register.bit_fields.first
-                    code << [configuration.prefix, "#{component_name}", bit_field.name].join('_') << "\n"
-                  end
-
-                  def create_blank_file(_)
-                    +''
-                  end
-                end
-              end
+          setup_plugin :"rggen-#{component_name}" do |plugin|
+            plugin.version({ foo: '0.0.1', bar: '0.0.2'}[component_name])
+            plugin.register_component(component_name) do
+              component(
+                RgGen::Core::OutputBase::Component,
+                RgGen::Core::OutputBase::ComponentFactory
+              )
+              feature(
+                RgGen::Core::OutputBase::Feature,
+                RgGen::Core::OutputBase::FeatureFactory
+              )
             end
           end
         end
 
-        RgGen.setup(plugin_module) do |builder|
+        RgGen.register_plugin(plugin_module) do |builder|
+          RgGen.define_simple_feature(:register_block, :sample_writer) do
+            send(component_name) do
+              write_file "#{component_name}_<%= register_block.name %>.txt" do |code|
+                code << [configuration.prefix, "#{component_name}", register_block.name].join('_') << "\n"
+
+                register_file = register_block.files_and_registers.first
+                code << [configuration.prefix, "#{component_name}", register_file.name].join('_') << "\n"
+
+                register = register_file.files_and_registers.first
+                code << [configuration.prefix, "#{component_name}", register.name].join('_') << "\n"
+
+                bit_field = register.bit_fields.first
+                code << [configuration.prefix, "#{component_name}", bit_field.name].join('_') << "\n"
+              end
+
+              def create_blank_file(_)
+                +''
+              end
+            end
+          end
+
           builder.enable(:register_block, :sample_writer)
         end
       end

@@ -46,6 +46,25 @@ module RgGen
         end
       end
 
+      class PluginRegistry
+        def initialize(plugin_module, &block)
+          @plugin_module = plugin_module
+          @block = block
+        end
+
+        def default_setup(builder)
+          @plugin_module.plugin_spec.activate(builder)
+        end
+
+        def optional_setup(builder)
+          @block && @plugin_module.instance_exec(builder, &@block)
+        end
+
+        def version_info
+          @plugin_module.plugin_spec.version_info
+        end
+      end
+
       class PluginManager
         def initialize(builder)
           @builder = builder
@@ -70,8 +89,10 @@ module RgGen
           activation && activate_plugins
         end
 
-        def setup(plugin_module, &block)
-          @plugins << Plugin.new(plugin_module, &block)
+        def register_plugin(plugin_module, &block)
+          plugin?(plugin_module) ||
+            (raise Core::PluginError.new('no plugin spec is given'))
+          @plugins << PluginRegistry.new(plugin_module, &block)
         end
 
         def activate_plugins(**options)
@@ -133,6 +154,10 @@ module RgGen
         def plugins_from_env
           ENV['RGGEN_PLUGINS']
             &.split(':')&.map(&:strip)&.reject(&:empty?)
+        end
+
+        def plugin?(plugin_module)
+          plugin_module.respond_to?(:plugin_spec) && plugin_module.plugin_spec
         end
       end
     end

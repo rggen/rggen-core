@@ -96,7 +96,7 @@ module RgGen
 
         def_delegator :plugin_manager, :load_plugin
         def_delegator :plugin_manager, :load_plugins
-        def_delegator :plugin_manager, :setup
+        def_delegator :plugin_manager, :register_plugin
 
         private
 
