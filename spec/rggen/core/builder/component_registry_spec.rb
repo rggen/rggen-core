@@ -49,7 +49,7 @@ RSpec.describe RgGen::Core::Builder::ComponentRegistry do
     registry
   end
 
-  describe '#register_component' do
+  describe '#register_component/#register_global_component' do
     specify '登録したコンポーネントは、生成したファクトリで生成できる' do
       registry = create_registry do |r|
         r.register_component do
@@ -59,12 +59,21 @@ RSpec.describe RgGen::Core::Builder::ComponentRegistry do
 
       components = registry.build_factory.create.all_children
       expect(components).to all(be_instance_of(base_component))
+
+      registry = create_registry do |r|
+        r.register_global_component do
+          component(base_component, base_factory)
+        end
+      end
+
+      components = registry.build_factory.create.all_children
+      expect(components).to all(be_instance_of(base_component))
     end
 
-    context 'global: trueが指定された場合' do
-      specify '階層を持たないコンポーネントとして登録される' do
+    context '#register_global_componentが使われた場合' do
+      specify '階層を持たない全域コンポーネントとして登録される' do
         registry = create_registry do |r|
-          r.register_component(global: true) do
+          r.register_global_component do
             component(base_component, base_factory)
           end
         end
@@ -105,7 +114,7 @@ RSpec.describe RgGen::Core::Builder::ComponentRegistry do
 
     specify '生成されたコンポーネントは、レジストリと同じ名前を持つ' do
       registry = create_registry do |r|
-        r.register_component(global: true) do
+        r.register_global_component do
           component(base_component, base_factory)
         end
       end
@@ -150,7 +159,7 @@ RSpec.describe RgGen::Core::Builder::ComponentRegistry do
         feature_registries = []
 
         create_registry do |r|
-          r.register_component(global: true) do
+          r.register_global_component do
             component(
               RgGen::Core::Base::Component,
               RgGen::Core::Base::ComponentFactory

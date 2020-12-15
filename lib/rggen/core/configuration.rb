@@ -5,7 +5,7 @@ module RgGen
     module Configuration
       def self.setup(builder)
         builder.input_component_registry(:configuration) do
-          register_component(global: true) do
+          register_global_component do
             component Component, ComponentFactory
             feature Feature, FeatureFactory
           end

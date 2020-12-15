@@ -10,14 +10,14 @@ module RgGen
           @entries = []
         end
 
-        def register_component(layers = nil, global: false, &block)
-          if global
-            @entries << create_new_entry(nil, &block)
-          else
-            Array(layers || @builder.register_map_layers).each do |layer|
-              @entries << create_new_entry(layer, &block)
-            end
+        def register_component(layers = nil, &block)
+          Array(layers || @builder.register_map_layers).each do |layer|
+            @entries << create_new_entry(layer, &block)
           end
+        end
+
+        def register_global_component(&block)
+          @entries << create_new_entry(nil, &block)
         end
 
         def build_factory

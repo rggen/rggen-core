@@ -69,14 +69,14 @@ RSpec.describe RgGen::Core::Builder::Builder do
       }.not_to change { component_registries.size }
     end
 
-    context 'フィーチャーの登録があり、global: trueが指定された場合' do
+    context 'フィーチャーの登録があり、全域コンポーネントの場合' do
       it '全階層にフィーチャの登録を追加する' do
         layers.each_value do |layer|
           allow(layer).to receive(:add_feature_registry).and_call_original
         end
 
         builder.input_component_registry(:configuration) do
-          register_component(global: true) do
+          register_global_component do
             component(
               RgGen::Core::Configuration::Component,
               RgGen::Core::Configuration::ComponentFactory
@@ -202,14 +202,14 @@ RSpec.describe RgGen::Core::Builder::Builder do
       }.not_to change { component_registries.size }
     end
 
-    context 'フィーチャの登録があり、global: tureの指定がある場合' do
+    context 'フィーチャの登録があり、全域コンポーネントの場合' do
       it '全階層にフィーチャの登録を追加する' do
         layers.each_value do |layer|
           allow(layer).to receive(:add_feature_registry).and_call_original
         end
 
         builder.output_component_registry(:foo) do
-          register_component(global: true) do
+          register_global_component do
             component(
               RgGen::Core::OutputBase::Component,
               RgGen::Core::OutputBase::ComponentFactory
@@ -301,7 +301,7 @@ RSpec.describe RgGen::Core::Builder::Builder do
 
   def default_component_registration
     builder.input_component_registry(:configuration) do
-      register_component(global: true) do
+      register_global_component do
         component(
           RgGen::Core::Configuration::Component,
           RgGen::Core::Configuration::ComponentFactory
