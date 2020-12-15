@@ -15,11 +15,11 @@ module RgGen
         attr_reader :plugin_manager
 
         def input_component_registry(name, &body)
-          component_registry(:input, name, body)
+          component_registry(:input, name, &body)
         end
 
         def output_component_registry(name, &body)
-          component_registry(:output, name, body)
+          component_registry(:output, name, &body)
         end
 
         [
@@ -128,11 +128,11 @@ module RgGen
           input: InputComponentRegistry, output: OutputComponentRegistry
         }.freeze
 
-        def component_registry(type, name, body)
+        def component_registry(type, name, &body)
           registries = @component_registries[type]
           klass = COMPONENT_REGISTRIES[type]
           registries.key?(name) || (registries[name] = klass.new(name, self))
-          Docile.dsl_eval(registries[name], &body)
+          block_given? && Docile.dsl_eval(registries[name], &body) || registries[name]
         end
       end
     end
