@@ -20,7 +20,7 @@ module RgGen
         :disable_all,
         :disable,
         :delete,
-        :setup,
+        :register_plugin,
         :load_plugin
       ].each do |method_name|
         def_delegator :'RgGen.builder', method_name

@@ -5,11 +5,9 @@ module RgGen
     module RegisterMap
       def self.setup(builder)
         builder.input_component_registry(:register_map) do
-          register_component [
-            :root, :register_block, :register_file, :register, :bit_field
-          ] do |layer|
+          register_component do
             component Component, ComponentFactory
-            feature Feature, FeatureFactory if layer != :root
+            feature Feature, FeatureFactory
           end
 
           register_loader :ruby, RubyLoader

@@ -15,11 +15,11 @@ module RgGen
         attr_reader :plugin_manager
 
         def input_component_registry(name, &body)
-          component_registry(:input, name, body)
+          component_registry(:input, name, &body)
         end
 
         def output_component_registry(name, &body)
-          component_registry(:output, name, body)
+          component_registry(:output, name, &body)
         end
 
         [
@@ -30,6 +30,10 @@ module RgGen
             @component_registries[:input][component]
               .__send__(__method__, *args, &block)
           end
+        end
+
+        def register_map_layers
+          REGISTER_MAP_LAYERS
         end
 
         def add_feature_registry(name, target_layer, registry)
@@ -92,7 +96,7 @@ module RgGen
 
         def_delegator :plugin_manager, :load_plugin
         def_delegator :plugin_manager, :load_plugins
-        def_delegator :plugin_manager, :setup
+        def_delegator :plugin_manager, :register_plugin
 
         private
 
@@ -105,26 +109,30 @@ module RgGen
           end
         end
 
+        REGISTER_MAP_LAYERS = [
+          :root, :register_block, :register_file, :register, :bit_field
+        ].freeze
+
+        ALL_LAYERS = [
+          :global, *REGISTER_MAP_LAYERS
+        ].freeze
+
         def initialize_layers
           @layers = Hash.new do |_, layer_name|
             raise BuilderError.new("unknown layer: #{layer_name}")
           end
-          [
-            :global, :root, :register_block, :register_file, :register, :bit_field
-          ].each do |layer|
-            @layers[layer] = Layer.new(layer)
-          end
+          ALL_LAYERS.each { |layer| @layers[layer] = Layer.new(layer) }
         end
 
         COMPONENT_REGISTRIES = {
           input: InputComponentRegistry, output: OutputComponentRegistry
         }.freeze
 
-        def component_registry(type, name, body)
+        def component_registry(type, name, &body)
           registries = @component_registries[type]
           klass = COMPONENT_REGISTRIES[type]
           registries.key?(name) || (registries[name] = klass.new(name, self))
-          Docile.dsl_eval(registries[name], &body)
+          block_given? && Docile.dsl_eval(registries[name], &body) || registries[name]
         end
       end
     end
