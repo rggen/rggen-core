@@ -3,49 +3,6 @@
 module RgGen
   module Core
     module Builder
-      class Plugin
-        DEFAULT_PLUGIN_VERSION = '0.0.0'
-
-        def initialize(plugin_module, &block)
-          @plugin_module = plugin_module
-          @block = block
-          plugin_name # check if plugin name is given
-        end
-
-        def default_setup(builder)
-          @plugin_module.respond_to?(:default_setup) &&
-            @plugin_module.default_setup(builder)
-        end
-
-        def optional_setup(builder)
-          @block && @plugin_module.instance_exec(builder, &@block)
-        end
-
-        def plugin_name
-          if @plugin_module.const_defined?(:PLUGIN_NAME)
-            @plugin_module.const_get(:PLUGIN_NAME)
-          elsif @plugin_module.respond_to?(:plugin_name)
-            @plugin_module.plugin_name
-          else
-            raise Core::PluginError.new('no plugin name is given')
-          end
-        end
-
-        def version
-          if @plugin_module.const_defined?(:VERSION)
-            @plugin_module.const_get(:VERSION)
-          elsif @plugin_module.respond_to?(:version)
-            @plugin_module.version
-          else
-            DEFAULT_PLUGIN_VERSION
-          end
-        end
-
-        def version_info
-          "#{plugin_name} #{version}"
-        end
-      end
-
       class PluginRegistry
         def initialize(plugin_module, &block)
           @plugin_module = plugin_module
