@@ -11,8 +11,9 @@ module RgGen
           end
 
           register_loader :ruby, RubyLoader
-          register_loader :yaml, YAMLLoader
           register_loader :json, JSONLoader
+          register_loader :toml, TOMLLoader
+          register_loader :yaml, YAMLLoader
         end
       end
     end
