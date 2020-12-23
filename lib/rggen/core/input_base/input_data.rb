@@ -79,14 +79,11 @@ module RgGen
 
         def position_from_caller
           locations = caller_locations(3, 2)
-          if Docile::VERSION == '1.3.3' && locations[0].path.include?('(eval)')
-            # workaround for ms-ati/docile#50
-            locations[1]
-          elsif locations[0].path.include?('docile')
-            locations[1]
-          else
-            locations[0]
-          end
+          include_docile_path?(locations[0]) && locations[1] || locations[0]
+        end
+
+        def include_docile_path?(caller_location)
+          caller_location.path.include?('docile')
         end
 
         def create_child_data(layer, &block)
