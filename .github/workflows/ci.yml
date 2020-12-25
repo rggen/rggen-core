@@ -37,7 +37,7 @@ jobs:
 
       - name: Checkout RgGen libraries
         run: |
-          ${RGGEN_ROOT}/rggen-checkout/bin/checkout
+          ${RGGEN_ROOT}/rggen-checkout/bin/checkout.sh
 
       - name: Cache gems
         uses: actions/cache@v1
