@@ -41,8 +41,7 @@ module RgGen
 
         def load_plugins(plugins, no_default_plugins, activation = true)
           RgGen.builder(@builder)
-          merge_plugins(plugins, no_default_plugins)
-            .each { |plugin| load_plugin(*plugin) }
+          merge_plugins(plugins, no_default_plugins).each(&method(:load_plugin))
           activation && activate_plugins
         end
 
@@ -73,18 +72,19 @@ module RgGen
         def get_setup_path(name)
           base, sub_directory = name.split('/', 2)
           base = base.sub(/^rggen[-_]/, '').tr('-', '_')
-          File.join(*[
-            'rggen', base, sub_directory || '', 'setup'
-          ].reject(&:empty?))
+          File.join(*['rggen', base, sub_directory, 'setup'].compact)
         end
 
         def read_setup_file(setup_path, setup_path_or_name)
           require setup_path
         rescue ::LoadError
-          raise Core::PluginError.new([
-            "cannot load such plugin: #{setup_path_or_name}",
-            setup_path_or_name != setup_path && " (#{setup_path})" || ''
-          ].join)
+          message =
+            if setup_path_or_name == setup_path
+              "cannot load such plugin: #{setup_path_or_name}"
+            else
+              "cannot load such plugin: #{setup_path_or_name} (#{setup_path})"
+            end
+          raise Core::PluginError.new(message)
         end
 
         def merge_plugins(plugins, no_default_plugins)

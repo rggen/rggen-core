@@ -36,7 +36,7 @@ module RgGen
 
         def register_files(files)
           root = File.dirname(caller_locations(1, 1).first.path)
-          @files.concat(files.map { |file| File.join(root, file) })
+          files.each { |file| @files << File.join(root, file) }
         end
 
         alias_method :files, :register_files
@@ -75,7 +75,7 @@ module RgGen
         end
 
         def load_files
-          @files.each { |file| require file }
+          @files.each(&method(:require))
         end
       end
     end
