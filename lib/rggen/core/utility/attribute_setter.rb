@@ -26,6 +26,7 @@ module RgGen
           end
 
           def inherited(subclass)
+            super
             export_instance_variable(:@attributes, subclass, &:dup)
           end
         end
