@@ -31,7 +31,7 @@ module RgGen
           if block.arity.zero?
             code << context.instance_exec(&block)
           else
-            context .instance_exec(code, &block)
+            context.instance_exec(code, &block)
           end
         end
 
