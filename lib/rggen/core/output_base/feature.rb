@@ -40,17 +40,21 @@ module RgGen
 
           [:pre_code, :main_code, :post_code].each do |phase|
             define_method(phase) do |kind, **options, &body|
-              block =
-                if options[:from_template]
-                  caller_location = caller_locations(1, 1).first
-                  template_path = extract_template_path(options)
-                  -> { process_template(template_path, caller_location) }
-                else
-                  body
-                end
-              code_generators[__method__] ||= CodeGenerator.new
-              code_generators[__method__].register(kind, block)
+              register_code_generator(__method__, kind, **options, &body)
             end
+          end
+
+          def register_code_generator(phase, kind, **options, &body)
+            block =
+              if options[:from_template]
+                path = extract_template_path(options)
+                location = caller_locations(2, 1).first
+                -> { process_template(path, location) }
+              else
+                body
+              end
+            (code_generators[phase] ||= CodeGenerator.new)
+              .register(kind, block)
           end
 
           def extract_template_path(options)

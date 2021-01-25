@@ -29,14 +29,13 @@ module RgGen
         end
 
         def format_array_layer_data(read_data, layer, file)
-          read_data.each_with_object({}) do |data, layer_data|
-            layer_data.merge!(fomrat_hash_layer_data(data, layer, file))
-          end
+          read_data
+            .map { |data| fomrat_hash_layer_data(data, layer, file) }
+            .inject(&:merge)
         end
 
         def fomrat_hash_layer_data(read_data, layer, file)
-          convert_to_hash(read_data, file)
-            .reject { |key, _| SUB_LAYER_KEYS[layer]&.include?(key) }
+          convert_to_hash(read_data, file).except(*SUB_LAYER_KEYS[layer])
         end
 
         def format_sub_layer_data(read_data, layer, file)
@@ -55,10 +54,8 @@ module RgGen
 
         def format_hash_sub_layer_data(read_data, layer, file, sub_layer_data = {})
           convert_to_hash(read_data, file)
-            .select { |key, _| SUB_LAYER_KEYS[layer]&.include?(key) }
-            .each do |key, value|
-              merge_sub_layer_data(sub_layer_data, layer, key, value)
-            end
+            .slice(*SUB_LAYER_KEYS[layer])
+            .each { |k, v| merge_sub_layer_data(sub_layer_data, layer, k, v) }
           sub_layer_data
         end
 

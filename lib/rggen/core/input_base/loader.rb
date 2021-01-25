@@ -53,25 +53,24 @@ module RgGen
         end
 
         def format_layer_data_by_extractors(read_data, layer)
-          layer_data = {}
-          valid_values(layer).each do |value|
-            @extractors
-              .select { |extractor| extractor.target_value?(layer, value) }
-              .each do |extractor|
-                extract_value(read_data, extractor, layer_data, value)
-              end
-          end
+          layer_data =
+            valid_values(layer)
+              .map { |value_name| extract_value(read_data, layer, value_name) }
+              .compact.to_h
           layer_data.empty? ? nil : layer_data
         end
 
-        def extract_value(read_data, extractor, layer_data, value)
-          data = extractor.extract(read_data)
-          data && (layer_data[value] = data)
+        def extract_value(read_data, layer, value_name)
+          value =
+            @extractors
+              .select { |extractor| extractor.target_value?(layer, value_name) }
+              .map { |extractor| extractor.extract(read_data) }
+              .compact.last
+          value && [value_name, value]
         end
 
         def filter_layer_data(layer_data, layer)
-          layer_data
-            .select { |key, _| valid_values(layer).include?(key) }
+          layer_data.slice(*valid_values(layer))
         end
 
         def format_sub_layer_data(_read_data, _layer, _file)

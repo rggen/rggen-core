@@ -19,8 +19,7 @@ module RgGen
         end
 
         def define_value_extractor(layers, value, &body)
-          @extractors <<
-            create_extractor(layers, value, &body)
+          @extractors << create_extractor(layers, value, &body)
         end
 
         def ignore_value(layers, value)

@@ -17,14 +17,8 @@ module RgGen
 
         def value(value_name, value, position = nil)
           symbolized_name = value_name.to_sym
-          return unless valid_value?(symbolized_name)
-          @values[symbolized_name] =
-            case value
-            when InputValue
-              value
-            else
-              InputValue.new(value, position)
-            end
+          valid_value?(symbolized_name) &&
+            assign_value(symbolized_name, value, position)
         end
 
         def []=(value_name, position_or_value, value = nil)
@@ -62,6 +56,16 @@ module RgGen
           @valid_value_lists[layer].include?(value_name)
         end
 
+        def assign_value(value_name, value, position)
+          @values[value_name] =
+            case value
+            when InputValue
+              value
+            else
+              InputValue.new(value, position)
+            end
+        end
+
         def define_setter_methods
           @valid_value_lists[layer].each(&method(:define_setter_method))
         end
@@ -73,8 +77,7 @@ module RgGen
         end
 
         def value_setter(value_name, value, position)
-          position ||= position_from_caller
-          value(value_name, value, position)
+          value(value_name, value, position || position_from_caller)
         end
 
         def position_from_caller

@@ -88,10 +88,9 @@ module RgGen
         end
 
         def build_factories
-          @enabled_features
-            .select { |n, _| @feature_entries.key?(n) }
-            .map { |n, f| [n, @feature_entries[n].build_factory(f)] }
-            .to_h
+          @feature_entries
+            .slice(*@enabled_features.keys)
+            .transform_values(&method(:build_factory))
         end
 
         private
@@ -116,6 +115,10 @@ module RgGen
           return false unless @feature_entries[list_name]
                                 .feature?(feature_name)
           @enabled_features[list_name].include?(feature_name)
+        end
+
+        def build_factory(entry)
+          entry.build_factory(@enabled_features[entry.name])
         end
       end
     end

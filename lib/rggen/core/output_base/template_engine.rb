@@ -11,15 +11,14 @@ module RgGen
             caller_location ||= caller_locations(1, 1).first
             path = File.ext(caller_location.path, file_extension.to_s)
           end
-          render(context, templates[path])
+          render(context, template(path))
         end
 
         private
 
-        def templates
-          @templates ||= Hash.new do |templates, path|
-            templates[path] = parse_template(path)
-          end
+        def template(path)
+          @templates ||= {}
+          (@templates[path] ||= parse_template(path))
         end
       end
     end

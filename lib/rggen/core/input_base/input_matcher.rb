@@ -11,9 +11,10 @@ module RgGen
         end
 
         def match(rhs)
-          rhs = rhs.to_s
-          rhs = delete_blanks(rhs) if ignore_blanks?
-          match_patterns(rhs)
+          rhs
+            .to_s
+            .yield_self { |s| ignore_blanks? && delete_blanks(s) || s }
+            .yield_self(&method(:match_patterns))
         end
 
         def match_automatically?
@@ -64,8 +65,7 @@ module RgGen
           index, match_data =
             @patterns
               .transform_values { |pattern| pattern.match(rhs) }
-              .compact
-              .max_by { |_, m| m[0].length }
+              .max_by { |_, m| m && m[0].length || 0 }
           match_data && [convert_match_data(match_data), index]
         end
 

@@ -49,9 +49,8 @@ module RgGen
           @features[feature_name] ||= Class.new(@base_feature)
           feature = @features[feature_name]
           if context
-            feature.method_defined?(:shared_context) && (
-              raise BuilderError.new('shared context has already been set')
-            )
+            feature.method_defined?(:shared_context) &&
+              (raise BuilderError.new('shared context has already been set'))
             feature.attach_context(context)
           end
           body && feature.class_exec(feature_name, &body)
@@ -87,10 +86,7 @@ module RgGen
         end
 
         def target_features(enabled_features)
-          enabled_features
-            .select { |n| @features.key?(n) }
-            .map { |n| [n, @features[n]] }
-            .to_h
+          @features.slice(*enabled_features)
         end
       end
     end
