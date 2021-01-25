@@ -2,7 +2,7 @@
 
 RSpec.describe RgGen::Core::OutputBase::FileWriter do
   def create_file_writer(pattern, &block)
-    described_class.new(pattern, block || nil)
+    described_class.new(pattern, &block)
   end
 
   def create_context(&body)

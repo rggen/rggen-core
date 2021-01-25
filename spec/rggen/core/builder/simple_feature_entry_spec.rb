@@ -19,7 +19,7 @@ RSpec.describe RgGen::Core::Builder::SimpleFeatureEntry do
 
   def create_entry(shared_context, &body)
     entry = described_class.new(feature_registry, feature_name)
-    entry.setup(feature_base_class, factory_class, shared_context, body)
+    entry.setup(feature_base_class, factory_class, shared_context, &body)
     entry
   end
 

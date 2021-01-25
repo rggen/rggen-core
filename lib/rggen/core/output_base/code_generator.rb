@@ -4,14 +4,13 @@ module RgGen
   module Core
     module OutputBase
       class CodeGenerator
-        def register(kind, block)
-          return unless block
-          code_blocks[kind] << block
+        def register(kind, &block)
+          block_given? && (code_blocks[kind] << block)
         end
 
         def generate(context, code, kind)
           code_blocks[kind].each do |block|
-            execute_code_block(context, code, block)
+            execute_code_block(context, code, &block)
           end
         end
 
@@ -27,7 +26,7 @@ module RgGen
           @code_blocks ||= Hash.new { |blocks, kind| blocks[kind] = [] }
         end
 
-        def execute_code_block(context, code, block)
+        def execute_code_block(context, code, &block)
           if block.arity.zero?
             code << context.instance_exec(&block)
           else

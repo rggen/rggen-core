@@ -4,7 +4,7 @@ module RgGen
   module Core
     module OutputBase
       class FileWriter
-        def initialize(pattern, body)
+        def initialize(pattern, &body)
           @pattern = Erubi::Engine.new(pattern)
           @body = body
         end

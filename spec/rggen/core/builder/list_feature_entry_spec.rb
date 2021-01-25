@@ -23,7 +23,7 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
 
   def create_entry(context = nil, &body)
     entry = described_class.new(feature_registry, feature_name)
-    entry.setup(feature_base, factory_base, context, body)
+    entry.setup(feature_base, factory_base, context, &body)
     entry
   end
 
