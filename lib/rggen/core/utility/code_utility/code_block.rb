@@ -15,11 +15,13 @@ module RgGen
           attr_reader :indent
 
           def <<(rhs)
-            return push_string(rhs) if rhs.is_a?(String)
-            return push_code_block(rhs) if rhs.is_a?(CodeBlock)
-            return rhs.inject(self, :<<) if rhs.is_a?(Array)
-            return self << rhs.to_code if rhs.respond_to?(:to_code)
-            push_word(rhs)
+            case rhs
+            when String then push_string(rhs)
+            when CodeBlock then push_code_block(rhs)
+            when Array then rhs.inject(self, :<<)
+            when code? then self << rhs.to_code
+            else push_word(rhs)
+            end
           end
 
           def indent=(indent)
@@ -72,6 +74,10 @@ module RgGen
           def push_word(word)
             last_line << word
             self
+          end
+
+          def code?
+            ->(rhs) { rhs.respond_to?(:to_code) }
           end
 
           def newline

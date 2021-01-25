@@ -88,8 +88,7 @@ module RgGen
         end
 
         def create_child(component, *args)
-          factory = find_child_factory(*args)
-          factory.create(component, *args)
+          find_child_factory(*args).create(component, *args)
         end
       end
     end

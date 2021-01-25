@@ -43,9 +43,8 @@ module RgGen
             else
               @layers.values
             end
-          target_layers.each do |layer|
-            layer.add_feature_registry(name, registry)
-          end
+          target_layers
+            .each { |layer| layer.add_feature_registry(name, registry) }
         end
 
         [
@@ -79,8 +78,7 @@ module RgGen
             if targets.empty?
               @component_registries[type]
             else
-              @component_registries[type]
-                .select { |name, _| targets.include?(name) }
+              @component_registries[type].slice(*targets)
             end
           registries.each_value.map(&:build_factory)
         end
@@ -130,9 +128,9 @@ module RgGen
 
         def component_registry(type, name, &body)
           registries = @component_registries[type]
-          klass = COMPONENT_REGISTRIES[type]
-          registries.key?(name) || (registries[name] = klass.new(name, self))
-          block_given? && Docile.dsl_eval(registries[name], &body) || registries[name]
+          registries.key?(name) ||
+            (registries[name] = COMPONENT_REGISTRIES[type].new(name, self))
+          body && Docile.dsl_eval(registries[name], &body) || registries[name]
         end
       end
     end

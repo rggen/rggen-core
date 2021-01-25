@@ -63,7 +63,7 @@ module RgGen
         end
 
         def default_property(feature)
-          varible_name = "@#{@name[-1] == '?' ? @name[0..-2] : @name}"
+          varible_name = "@#{@name.to_s.delete_suffix('?')}"
           if feature.instance_variable_defined?(varible_name)
             feature.instance_variable_get(varible_name)
           elsif @options.key?(:initial)
@@ -74,8 +74,9 @@ module RgGen
         end
 
         def set_initial_value(feature, varible_name)
-          value = evaluate_default_initial_value(feature, @options[:initial])
-          feature.instance_variable_set(varible_name, value)
+          @options[:initial]
+            .yield_self { |v| evaluate_default_initial_value(feature, v) }
+            .yield_self { |v| feature.instance_variable_set(varible_name, v) }
         end
 
         def evaluate_default_initial_value(feature, value)
