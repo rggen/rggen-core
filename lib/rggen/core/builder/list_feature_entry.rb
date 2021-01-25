@@ -15,11 +15,11 @@ module RgGen
         attr_reader :registry
         attr_reader :name
 
-        def setup(base_feature, base_factory, context, body)
+        def setup(base_feature, base_factory, context, &body)
           @base_feature = Class.new(base_feature)
           @factory = Class.new(base_factory)
           context && attach_shared_context(context)
-          body && Docile.dsl_eval(self, @name, &body)
+          block_given? && Docile.dsl_eval(self, @name, &body)
         end
 
         def match_entry_type?(entry_type)

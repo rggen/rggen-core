@@ -5,13 +5,18 @@ module RgGen
     module InputBase
       class Property
         def self.define(feature, name, **options, &body)
-          new(name, options, body).define(feature)
+          new(name, options, &body).define(feature)
         end
 
-        def initialize(name, options, body)
+        def initialize(name, options, &body)
           @name = name
           @options = options
-          @costom_property = create_costom_property(@options[:body] || body)
+          @costom_property =
+            if options[:body]
+              create_costom_property(&options[:body])
+            elsif block_given?
+              create_costom_property(&body)
+            end
         end
 
         attr_reader :name
@@ -19,15 +24,15 @@ module RgGen
         def define(feature)
           feature.class_exec(self) do |property|
             define_method(property.name) do |*args, &block|
-              property.evaluate(self, args, block)
+              property.evaluate(self, args, &block)
             end
           end
         end
 
-        def evaluate(feature, args, block)
+        def evaluate(feature, args, &block)
           feature.verify(@options[:verify]) if @options.key?(:verify)
           if proxy_property?
-            proxy_property(feature, args, block)
+            proxy_property(feature, args, &block)
           else
             default_property(feature)
           end
@@ -35,7 +40,7 @@ module RgGen
 
         private
 
-        def create_costom_property(body)
+        def create_costom_property(&body)
           body && Module.new.module_eval do
             define_method(:__costom_property__, &body)
             instance_method(:__costom_property__)
@@ -50,7 +55,7 @@ module RgGen
           ].any?
         end
 
-        def proxy_property(feature, args, block)
+        def proxy_property(feature, args, &block)
           receiver, method =
             if @costom_property
               [@costom_property.bind(feature), :call]

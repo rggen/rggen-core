@@ -38,14 +38,14 @@ module RgGen
 
         def child(layer, value_list = nil, &block)
           create_child_data(layer) do |child_data|
-            child_data.build_by_block(block)
+            child_data.build_by_block(&block)
             child_data.values(value_list)
             @children << child_data
           end
         end
 
         def load_file(file)
-          build_by_block(instance_eval(<<~BODY, file, 1))
+          build_by_block(&instance_eval(<<~BODY, file, 1))
             -> { #{File.binread(file)} }  # -> { File.binread(file) }
           BODY
         end
@@ -99,8 +99,8 @@ module RgGen
 
         protected
 
-        def build_by_block(block)
-          block && Docile.dsl_eval(self, &block)
+        def build_by_block(&block)
+          block_given? && Docile.dsl_eval(self, &block)
         end
       end
     end

@@ -102,7 +102,7 @@ module RgGen
         def printables
           helper
             .printables
-            &.map { |name, body| [name, printable(name, body)] }
+            &.map { |name, body| [name, printable(name, &body)] }
         end
 
         def printable?
@@ -154,8 +154,8 @@ module RgGen
           (@verified ||= {})[scope] = true
         end
 
-        def printable(name, body)
-          body ? instance_exec(&body) : __send__(name)
+        def printable(name, &body)
+          block_given? ? instance_exec(&body) : __send__(name)
         end
       end
     end

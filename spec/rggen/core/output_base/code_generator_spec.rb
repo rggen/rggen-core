@@ -24,8 +24,8 @@ RSpec.describe RgGen::Core::OutputBase::CodeGenerator do
   describe '#generate' do
     it '#registerで登録されたブロックをコンテキスト上で実行して、コードの生成を行う' do
       generator = create_generator do |g|
-        g.register(:foo, ->(c) { c << foo })
-        g.register(:bar, -> { bar })
+        g.register(:foo) { |c| c << foo }
+        g.register(:bar) { bar }
       end
 
       expect(context).to receive(:foo).and_call_original
@@ -39,9 +39,9 @@ RSpec.describe RgGen::Core::OutputBase::CodeGenerator do
 
     specify '同名のコード生成ブロックを複数個登録できる' do
       generator = create_generator do |g|
-        g.register(:foo, -> { foo * 1 })
-        g.register(:foo, -> { foo * 2 })
-        g.register(:foo, -> { foo * 3 })
+        g.register(:foo) { foo * 1 }
+        g.register(:foo) { foo * 2 }
+        g.register(:foo) { foo * 3 }
       end
 
       expect(code).to receive(:<<).with('foo')
@@ -53,7 +53,7 @@ RSpec.describe RgGen::Core::OutputBase::CodeGenerator do
     context '登録されたコード生成ブロックが指定されなかった場合' do
       let(:generator) do
         create_generator do |g|
-          g.register(:foo, -> { foo })
+          g.register(:foo) { foo }
         end
       end
 
@@ -88,8 +88,8 @@ RSpec.describe RgGen::Core::OutputBase::CodeGenerator do
   context '#copy' do
     let(:foo_generator) do
       create_generator do |g|
-        g.register(:foo, -> { foo })
-        g.register(:bar, -> { bar })
+        g.register(:foo) { foo }
+        g.register(:bar) { bar }
       end
     end
 
@@ -105,7 +105,7 @@ RSpec.describe RgGen::Core::OutputBase::CodeGenerator do
 
     specify 'コピー変更は、コピー元に影響しない' do
       bar_generator = foo_generator.copy
-      bar_generator.register(:foo, proc { foo * 2 })
+      bar_generator.register(:foo) { foo * 2 }
 
       expect(code).to receive(:<<).with('foo')
       expect(code).to receive(:<<).with('foofoo')

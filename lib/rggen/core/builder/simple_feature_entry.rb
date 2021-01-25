@@ -12,8 +12,8 @@ module RgGen
         attr_reader :registry
         attr_reader :name
 
-        def setup(base_feature, factory, context, body)
-          @feature = define_feature(base_feature, context, body)
+        def setup(base_feature, factory, context, &body)
+          @feature = define_feature(base_feature, context, &body)
           @factory = factory
         end
 
@@ -27,10 +27,10 @@ module RgGen
 
         private
 
-        def define_feature(base, context, body)
+        def define_feature(base, context, &body)
           feature = Class.new(base)
           context && feature.attach_context(context)
-          body && feature.class_exec(@name, &body)
+          block_given? && feature.class_exec(@name, &body)
           feature
         end
       end

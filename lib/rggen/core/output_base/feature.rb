@@ -54,7 +54,7 @@ module RgGen
                 body
               end
             (code_generators[phase] ||= CodeGenerator.new)
-              .register(kind, block)
+              .register(kind, &block)
           end
 
           def extract_template_path(options)
@@ -63,7 +63,7 @@ module RgGen
           end
 
           def write_file(file_name_pattern, &body)
-            @file_writer = FileWriter.new(file_name_pattern, body)
+            @file_writer = FileWriter.new(file_name_pattern, &body)
           end
 
           def export(*methods)

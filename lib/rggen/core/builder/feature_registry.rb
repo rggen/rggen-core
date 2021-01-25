@@ -12,11 +12,11 @@ module RgGen
         end
 
         def define_simple_feature(name, context = nil, &body)
-          create_new_entry(:simple, name, context, body)
+          create_new_entry(:simple, name, context, &body)
         end
 
         def define_list_feature(list_name, context = nil, &body)
-          create_new_entry(:list, list_name, context, body)
+          create_new_entry(:list, list_name, context, &body)
         end
 
         def define_list_item_feature(list_name, feature_name, context = nil, &body)
@@ -99,9 +99,9 @@ module RgGen
           simple: SimpleFeatureEntry, list: ListFeatureEntry
         }.freeze
 
-        def create_new_entry(type, name, context, body)
+        def create_new_entry(type, name, context, &body)
           entry = FEATURE_ENTRIES[type].new(self, name)
-          entry.setup(@base_feature, @factory, context, body)
+          entry.setup(@base_feature, @factory, context, &body)
           @feature_entries[name] = entry
         end
 
