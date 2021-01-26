@@ -79,7 +79,7 @@ module RgGen
         def valid_values(layer)
           list = @valid_value_lists[layer]
           ignore_values = @ignore_values[layer]
-          ignore_values && list.difference(ignore_values) || list
+          ignore_values && (list - ignore_values) || list
         end
       end
     end
