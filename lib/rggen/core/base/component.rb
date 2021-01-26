@@ -70,15 +70,14 @@ module RgGen
 
         def define_proxy_calls(receiver, methods)
           Array(methods)
-            .map(&:to_sym)
             .each { |method| define_proxy_call(receiver, method) }
         end
 
-        def define_proxy_call(receiver, method)
-          @proxy_calls ||= {}
-          @proxy_calls[method] = ProxyCall.new(receiver, method)
-          define_singleton_method(method) do |*args, &block|
-            @proxy_calls[__method__].call(*args, &block)
+        def define_proxy_call(receiver, method_name)
+          (@proxy_receivers ||= {})[method_name.to_sym] = receiver
+          define_singleton_method(method_name) do |*args, &block|
+            name = __method__
+            @proxy_receivers[name].__send__(name, *args, &block)
           end
         end
       end

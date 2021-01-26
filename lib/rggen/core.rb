@@ -27,7 +27,6 @@ require_relative 'core/utility/regexp_patterns'
 
 require_relative 'core/exceptions'
 
-require_relative 'core/base/proxy_call'
 require_relative 'core/base/internal_struct'
 require_relative 'core/base/shared_context'
 require_relative 'core/base/component'
