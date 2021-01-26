@@ -77,8 +77,9 @@ module RgGen
         end
 
         def valid_values(layer)
-          @valid_value_lists[layer]
-            .reject { |value| @ignore_values[layer]&.include?(value) }
+          list = @valid_value_lists[layer]
+          ignore_values = @ignore_values[layer]
+          ignore_values && list.difference(ignore_values) || list
         end
       end
     end
