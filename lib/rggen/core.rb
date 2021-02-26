@@ -86,6 +86,8 @@ require_relative 'core/output_base/file_writer'
 require_relative 'core/output_base/raise_error'
 require_relative 'core/output_base/component'
 require_relative 'core/output_base/component_factory'
+require_relative 'core/output_base/source_file_component_factory'
+require_relative 'core/output_base/document_component_factory'
 require_relative 'core/output_base/feature'
 require_relative 'core/output_base/feature_factory'
 

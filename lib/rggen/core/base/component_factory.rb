@@ -43,11 +43,15 @@ module RgGen
 
         def create_component(parent, sources, &block)
           actual_sources = Array(select_actual_sources(*sources))
-          @target_component
-            .new(parent, component_name, layer, *actual_sources, &block)
+          create_component?(*actual_sources) &&
+            @target_component.new(parent, component_name, layer, *actual_sources, &block)
         end
 
-        def select_actual_sources(*sources)
+        def select_actual_sources(*_sources)
+        end
+
+        def create_component?(*_sources)
+          true
         end
 
         def build_component(parent, component, sources)
