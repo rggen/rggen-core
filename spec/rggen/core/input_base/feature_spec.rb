@@ -162,6 +162,41 @@ RSpec.describe RgGen::Core::InputBase::Feature do
     end
   end
 
+  describe '#post_build' do
+    let(:feature) do
+      create_feature do
+        post_build { foo }
+      end
+    end
+
+    let(:child_feature) do
+      create_feature(feature.class) do
+        post_build { bar }
+      end
+    end
+
+    let(:grandchild_feature) do
+      create_feature(child_feature.class)
+    end
+
+    it 'フィーチャー組み立て後の後処理として、.post_buildで登録したブロックを実行しする' do
+      expect(feature).to receive(:foo)
+      feature.post_build
+    end
+
+    specify '登録された後処理ブロックは継承される' do
+      expect(grandchild_feature).to receive(:foo)
+      expect(grandchild_feature).to receive(:bar)
+      grandchild_feature.post_build
+    end
+
+    it '後処理ブロックの登録がなくても、実行できる' do
+      expect {
+        create_feature.post_build
+      }.not_to raise_error
+    end
+  end
+
   describe '#match_pattern' do
     it '.input_patternで登録されたパターンで、一致比較を行う' do
       feature = create_feature { input_pattern /foo/ }

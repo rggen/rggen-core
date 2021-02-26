@@ -111,7 +111,8 @@ RSpec.describe RgGen::Core::InputBase::ComponentFactory do
         end
       end
 
-      it '#verifyを呼び出して、コンポーネントの検証を行う' do
+      it '#post_build/#verifyを呼び出して、組み立て後の後処理とコンポーネントの検証を行う' do
+        expect(component).to receive(:post_build).ordered.and_call_original
         expect(component).to receive(:verify).with(:component).ordered.and_call_original
         expect(parent).to receive(:add_child).ordered.and_call_original
         foo_factory.create(parent, other_input_data, input_data)

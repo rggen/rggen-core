@@ -34,6 +34,13 @@ module RgGen
 
           attr_reader :builders
 
+          def post_build(&block)
+            @post_builders ||= []
+            @post_builders << block
+          end
+
+          attr_reader :post_builders
+
           def active_feature?
             !passive_feature?
           end
@@ -68,6 +75,7 @@ module RgGen
             export_instance_variable(:@properties, subclass, &:dup)
             export_instance_variable(:@ignore_empty_value, subclass)
             export_instance_variable(:@builders, subclass, &:dup)
+            export_instance_variable(:@post_builders, subclass, &:dup)
             export_instance_variable(:@input_matcher, subclass)
             export_instance_variable(:@printables, subclass, &:dup)
             export_verifiers(subclass) if @verifiers
@@ -93,6 +101,12 @@ module RgGen
 
         def build(*args)
           self.class.builders && do_build(args)
+        end
+
+        def post_build
+          self.class.post_builders&.each do |post_builder|
+            instance_exec(&post_builder)
+          end
         end
 
         def verify(scope)

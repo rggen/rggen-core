@@ -63,6 +63,34 @@ RSpec.describe RgGen::Core::InputBase::Component do
     end
   end
 
+  describe '#post_build' do
+    let(:foo_component) do
+      described_class.new(nil, 'component', nil)
+    end
+
+    let(:bar_component) do
+      described_class.new(foo_component, 'component', nil)
+    end
+
+    let(:features) do
+      [foo_component, bar_component].flat_map.with_index do |component, i|
+        Array.new(2) do |j|
+          feature = RgGen::Core::InputBase::Feature.new("feature_#{i}_#{j}", nil, component)
+          component.add_feature(feature)
+          feature
+        end
+      end
+    end
+
+    it '直下のフィーチャーの#post_buildを呼んで、組み立て後の後処理を行う' do
+      expect(features[0]).to receive(:post_build)
+      expect(features[1]).to receive(:post_build)
+      expect(features[2]).not_to receive(:post_build)
+      expect(features[3]).not_to receive(:post_build)
+      foo_component.post_build
+    end
+  end
+
   describe '#verify' do
     let(:foo_component) { described_class.new(nil, 'component', nil) }
 

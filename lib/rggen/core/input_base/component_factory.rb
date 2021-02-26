@@ -79,6 +79,7 @@ module RgGen
         def post_build(component)
           exist_no_children?(component) &&
             raise_no_children_error(component)
+          component.post_build
           component.verify(:component)
         end
 
