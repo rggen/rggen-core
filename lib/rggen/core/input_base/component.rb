@@ -21,6 +21,10 @@ module RgGen
           features.flat_map(&:properties)
         end
 
+        def post_build
+          features.each(&:post_build)
+        end
+
         def verify(scope)
           features.each { |feature| feature.verify(scope) }
           children.each { |child| child.verify(scope) } if scope == :all
