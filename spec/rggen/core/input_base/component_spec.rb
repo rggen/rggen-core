@@ -28,6 +28,20 @@ RSpec.describe RgGen::Core::InputBase::Component do
     end
   end
 
+  describe '#document_only?' do
+    let(:components) do
+      [
+        described_class.new(nil, 'component', nil),
+        described_class.new(nil, 'component', nil) { |c| c.document_only }
+      ]
+    end
+
+    it 'ドキュメント用のコンポーネントかどうかを示す' do
+      expect(components[0]).not_to be_document_only
+      expect(components[1]).to be_document_only
+    end
+  end
+
   describe '#properties' do
     let(:component) { described_class.new(nil, 'component', nil) }
 
