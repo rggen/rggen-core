@@ -9,6 +9,14 @@ module RgGen
           define_proxy_calls(feature, feature.properties)
         end
 
+        def document_only
+          @document_only = true
+        end
+
+        def document_only?
+          instance_variable_defined?(:@document_only) && @document_only
+        end
+
         def properties
           features.flat_map(&:properties)
         end
