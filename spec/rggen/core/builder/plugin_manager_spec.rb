@@ -10,6 +10,10 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
   end
 
   describe '#load_plugin' do
+    before do
+      allow(plugin_manager).to receive(:require)
+    end
+
     context "'setup.rb'へのパスが指定された場合" do
       it '指定されたsetup.rbを読み込む' do
         expect(plugin_manager).to receive(:require).with('setup')
@@ -26,6 +30,39 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
 
         expect(plugin_manager).to receive(:require).with('foo/bar/setup')
         plugin_manager.load_plugin('foo/bar/setup ')
+      end
+
+      context 'lib/rggen内にあるsetup.rbへのパスが指定された場合' do
+        it 'ディレクトリを$LOAD_PATHに追加する' do
+          expect($LOAD_PATH).to receive(:unshift).with('./lib')
+          plugin_manager.load_plugin('./lib/rggen/foo/setup')
+
+          expect($LOAD_PATH).to receive(:unshift).with('./lib')
+          plugin_manager.load_plugin('./lib/rggen/foo/bar/setup')
+
+          expect($LOAD_PATH).to receive(:unshift).with('/lib/ruby/rggen-foo/lib')
+          plugin_manager.load_plugin('/lib/ruby/rggen-foo/lib/rggen/foo/setup')
+
+          expect($LOAD_PATH).to receive(:unshift).with('./lib')
+          plugin_manager.load_plugin('./lib/rggen/foo/bar.rb')
+
+          expect($LOAD_PATH).to receive(:unshift).with('./lib')
+          plugin_manager.load_plugin('./lib/rggen/foo/bar/baz.rb')
+
+          expect($LOAD_PATH).to receive(:unshift).with('/lib/ruby/rggen-foo/lib')
+          plugin_manager.load_plugin('/lib/ruby/rggen-foo/lib/rggen/foo/bar.rb')
+        end
+      end
+
+      context 'lib/rggen以外にあるsetup.rbへのパスが指定された場合' do
+        specify '$LOAD_PATHへのディレクトリの追加は行わない' do
+          expect {
+            plugin_manager.load_plugin('setup')
+            plugin_manager.load_plugin('foo.rb')
+            plugin_manager.load_plugin('./lib/foo/setup')
+            plugin_manager.load_plugin('/lib/foo/setup')
+          }.not_to change { $LOAD_PATH.size }
+        end
       end
     end
 
@@ -51,6 +88,18 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
 
         expect(plugin_manager).to receive(:require).with('rggen/foo_bar/setup')
         plugin_manager.load_plugin('rggen_foo_bar')
+      end
+
+      it '$LOAD_PATHを変更しない' do
+        expect {
+          plugin_manager.load_plugin('foo')
+          plugin_manager.load_plugin(:foo)
+          plugin_manager.load_plugin('rggen-foo')
+          plugin_manager.load_plugin(:'rggen-foo')
+          plugin_manager.load_plugin('rggen_foo')
+          plugin_manager.load_plugin('rggen-foo-bar')
+          plugin_manager.load_plugin('rggen_foo_bar')
+        }.not_to change { $LOAD_PATH.size }
       end
     end
 
@@ -82,6 +131,20 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
 
         expect(plugin_manager).to receive(:require).with('rggen/foo/bar-baz/setup')
         plugin_manager.load_plugin('rggen_foo/bar-baz')
+      end
+
+      it '$LOAD_PATHを変更しない' do
+        expect {
+          plugin_manager.load_plugin('foo/bar')
+          plugin_manager.load_plugin('rggen-foo/bar')
+          plugin_manager.load_plugin('rggen_foo/bar')
+          plugin_manager.load_plugin('rggen-foo-bar/baz')
+          plugin_manager.load_plugin('rggen_foo_bar/baz')
+          plugin_manager.load_plugin('rggen-foo/bar/baz')
+          plugin_manager.load_plugin('rggen_foo/bar/baz')
+          plugin_manager.load_plugin('rggen-foo/bar-baz')
+          plugin_manager.load_plugin('rggen_foo/bar-baz')
+        }.not_to change { $LOAD_PATH.size }
       end
     end
 

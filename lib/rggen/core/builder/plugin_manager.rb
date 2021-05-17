@@ -30,13 +30,13 @@ module RgGen
 
         def load_plugin(setup_path_or_name)
           setup_path_or_name = setup_path_or_name.to_s.strip
-          setup_path =
+          setup_path, root_dir =
             if setup_file_directly_given?(setup_path_or_name)
-              setup_path_or_name
+              [setup_path_or_name, extract_root_dir(setup_path_or_name)]
             else
-              get_setup_path(setup_path_or_name)
+              [get_setup_path(setup_path_or_name), nil]
             end
-          read_setup_file(setup_path, setup_path_or_name)
+          read_setup_file(setup_path, setup_path_or_name, root_dir)
         end
 
         def load_plugins(plugins, no_default_plugins, activation = true)
@@ -69,13 +69,26 @@ module RgGen
             File.basename(setup_path_or_name, '.*') == 'setup'
         end
 
+        def extract_root_dir(setup_path)
+          Pathname
+            .new(setup_path)
+            .ascend.find(&method(:rggen_dir?))
+            &.parent
+            &.to_s
+        end
+
+        def rggen_dir?(path)
+          path.each_filename.to_a[-2..-1] == ['lib', 'rggen']
+        end
+
         def get_setup_path(name)
           base, sub_directory = name.split('/', 2)
           base = base.sub(/^rggen[-_]/, '').tr('-', '_')
           File.join(*['rggen', base, sub_directory, 'setup'].compact)
         end
 
-        def read_setup_file(setup_path, setup_path_or_name)
+        def read_setup_file(setup_path, setup_path_or_name, root_dir)
+          root_dir && $LOAD_PATH.unshift(root_dir)
           require setup_path
         rescue ::LoadError
           message =
