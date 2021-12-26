@@ -170,7 +170,7 @@ RSpec.describe RgGen::Core::CLI do
       <<~'HELP'
         Usage: rggen [options] register_map_files
                 --no-default-plugins         Do not load default plugins
-                --plugin PLUGIN              Load a RgGen plugin (name of plugin/path to 'setup.rb' file)
+                --plugin PLUGIN[:VERSION]    Load a RgGen plugin (name of plugin/path to 'setup.rb' file)
             -c, --configuration FILE         Specify a configuration file
             -o, --output DIRECTORY           Specify the directory where generated file(s) will be written
                 --load-only                  Load setup, configuration and register map files only; write no files
@@ -223,7 +223,7 @@ RSpec.describe RgGen::Core::CLI do
       end
 
       it 'プラグインを読んだ上で、詳細なバージョン情報を出力する' do
-        expect(builder).to receive(:load_plugins).with([setup_file], false, false).and_call_original
+        expect(builder).to receive(:load_plugins).with([[setup_file]], false, false).and_call_original
         expect {
           cli.run(['--verbose-version', '--plugin', setup_file])
         }.to output(version).to_stdout
@@ -262,7 +262,7 @@ RSpec.describe RgGen::Core::CLI do
 
   describe 'プラグインの読み込み' do
     it '指定されたプラグインを読み込んで、セットアップを実行する' do
-      expect(builder).to receive(:load_plugins).with([setup_file], false).and_call_original
+      expect(builder).to receive(:load_plugins).with([[setup_file]], false).and_call_original
       cli.run(['--plugin', setup_file, *register_map_files])
     end
   end
