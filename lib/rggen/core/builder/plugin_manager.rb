@@ -148,7 +148,8 @@ module RgGen
 
         def plugins_from_env
           ENV['RGGEN_PLUGINS']
-            &.split(':')&.map(&:strip)&.reject(&:empty?)
+            &.split(':')
+            &.reject(&:blank?)
             &.map { |entry| entry.split(',', 2) }
         end
 
