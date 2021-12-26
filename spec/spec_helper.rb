@@ -2,6 +2,8 @@
 
 require 'bundler/setup'
 require 'rggen/devtools/spec_helper'
+require 'tmpdir'
+require 'fileutils'
 
 RSpec.configure do |config|
   RgGen::Devtools::SpecHelper.setup(config)
@@ -11,3 +13,5 @@ RSpec.configure do |config|
 end
 
 require 'rggen/core'
+
+RGGEN_CORE_ROOT = File.expand_path('..', __dir__)

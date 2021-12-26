@@ -109,9 +109,9 @@ module RgGen
     end
 
     Options.add_option(:plugins) do |option|
-      option.long_option '--plugin PLUGIN'
+      option.long_option '--plugin PLUGIN[:VERSION]'
       option.default { [] }
-      option.action { |value, options| options[:plugins] << value }
+      option.action { |value, options| options[:plugins] << value.split(':', 2) }
       option.description 'Load a RgGen plugin ' \
                          "(name of plugin/path to 'setup.rb' file)"
     end

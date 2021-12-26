@@ -40,12 +40,21 @@ module RgGen::Core
 
     describe 'pluginオプション' do
       let(:plugins) do
-        ['foo/setup', 'rggen-bar', 'rggen-buz:qux'].shuffle
+        [['foo/setup'], ['rggen-bar'], ['rggen-buz/qux'], ['rggen-foo-bar', '0.1.0']].shuffle
+      end
+
+      let(:plugin_args) do
+        plugins.map { |plugin| Array(plugin).join(':') }
       end
 
       context '--pluginが引数で指定された場合' do
-        it 'オプションで指定されtプラグインを返す' do
-          options.parse(['--plugin', plugins[0], '--plugin', plugins[1], '--plugin', plugins[2]])
+        it 'オプションで指定されたプラグインを返す' do
+          options.parse([
+            '--plugin', plugin_args[0],
+            '--plugin', plugin_args[1],
+            '--plugin', plugin_args[2],
+            '--plugin', plugin_args[3]
+          ])
           expect(options[:plugins]).to match(plugins)
         end
       end
