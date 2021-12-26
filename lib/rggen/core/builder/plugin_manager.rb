@@ -22,26 +22,80 @@ module RgGen
         end
       end
 
+      class PluginInfo
+        attr_reader :name
+        attr_reader :setup_path
+        attr_reader :gem_name
+        attr_reader :version
+
+        def parse(setup_path_or_name, version)
+          setup_path_or_name = setup_path_or_name.to_s.strip
+          @name, @setup_path, @gem_name, @version =
+            if setup_file_directly_given?(setup_path_or_name)
+              [nil, setup_path_or_name, *find_plugin_gem(setup_path_or_name)]
+            else
+              [
+                setup_path_or_name, get_setup_path(setup_path_or_name),
+                extract_gem_name(setup_path_or_name), version
+              ]
+            end
+          self
+        end
+
+        def to_s
+          if name && version
+            "#{name} (#{version})"
+          elsif name
+            name
+          else
+            setup_path
+          end
+        end
+
+        private
+
+        def setup_file_directly_given?(setup_path_or_name)
+          File.ext(setup_path_or_name) == 'rb' ||
+            File.basename(setup_path_or_name, '.*') == 'setup'
+        end
+
+        def find_plugin_gem(setup_path)
+          gemspec =
+            Gem::Specification
+              .each.find { |spec| match_gemspec?(spec, setup_path) }
+          gemspec && [gemspec.name, gemspec.version]
+        end
+
+        def match_gemspec?(gemspec, setup_path)
+          gemspec.full_require_paths.any?(&setup_path.method(:start_with?))
+        end
+
+        def extract_gem_name(plugin_name)
+          plugin_name.split('/', 2).first
+        end
+
+        def get_setup_path(plugin_name)
+          base, sub_directory = plugin_name.split('/', 2)
+          base = base.sub(/^rggen[-_]/, '').tr('-', '_')
+          File.join(*['rggen', base, sub_directory, 'setup'].compact)
+        end
+      end
+
       class PluginManager
         def initialize(builder)
           @builder = builder
           @plugins = []
         end
 
-        def load_plugin(setup_path_or_name)
-          setup_path_or_name = setup_path_or_name.to_s.strip
-          setup_path, root_dir =
-            if setup_file_directly_given?(setup_path_or_name)
-              [setup_path_or_name, extract_root_dir(setup_path_or_name)]
-            else
-              [get_setup_path(setup_path_or_name), nil]
-            end
-          read_setup_file(setup_path, setup_path_or_name, root_dir)
+        def load_plugin(setup_path_or_name, version = nil)
+          info = PluginInfo.new.parse(setup_path_or_name, version)
+          read_setup_file(info)
         end
 
         def load_plugins(plugins, no_default_plugins, activation = true)
           RgGen.builder(@builder)
-          merge_plugins(plugins, no_default_plugins).each(&method(:load_plugin))
+          merge_plugins(plugins, no_default_plugins)
+            .each { |plugin| load_plugin(*plugin) }
           activation && activate_plugins
         end
 
@@ -64,40 +118,11 @@ module RgGen
 
         private
 
-        def setup_file_directly_given?(setup_path_or_name)
-          File.ext(setup_path_or_name) == 'rb' ||
-            File.basename(setup_path_or_name, '.*') == 'setup'
-        end
-
-        def extract_root_dir(setup_path)
-          Pathname
-            .new(setup_path)
-            .ascend.find(&method(:rggen_dir?))
-            &.parent
-            &.to_s
-        end
-
-        def rggen_dir?(path)
-          path.each_filename.to_a[-2..-1] == ['lib', 'rggen']
-        end
-
-        def get_setup_path(name)
-          base, sub_directory = name.split('/', 2)
-          base = base.sub(/^rggen[-_]/, '').tr('-', '_')
-          File.join(*['rggen', base, sub_directory, 'setup'].compact)
-        end
-
-        def read_setup_file(setup_path, setup_path_or_name, root_dir)
-          root_dir && $LOAD_PATH.unshift(root_dir)
-          require setup_path
+        def read_setup_file(info)
+          info.gem_name && gem(info.gem_name, info.version)
+          require info.setup_path
         rescue ::LoadError
-          message =
-            if setup_path_or_name == setup_path
-              "cannot load such plugin: #{setup_path_or_name}"
-            else
-              "cannot load such plugin: #{setup_path_or_name} (#{setup_path})"
-            end
-          raise Core::PluginError.new(message)
+          raise Core::PluginError.new("cannot load such plugin: #{info}")
         end
 
         def merge_plugins(plugins, no_default_plugins)
@@ -124,6 +149,7 @@ module RgGen
         def plugins_from_env
           ENV['RGGEN_PLUGINS']
             &.split(':')&.map(&:strip)&.reject(&:empty?)
+            &.map { |entry| entry.split(',', 2) }
         end
 
         def plugin?(plugin_module)
