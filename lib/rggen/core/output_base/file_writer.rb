@@ -32,7 +32,7 @@ module RgGen
 
         def create_directory(path)
           directory = path.dirname
-          directory.directory? || directory.mkpath
+          directory.directory? || FileUtils.mkpath(directory)
         end
       end
     end
