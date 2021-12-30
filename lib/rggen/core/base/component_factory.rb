@@ -27,7 +27,7 @@ module RgGen
             if root_factory?
               [nil, preprocess(args)]
             else
-              [args.first, preprocess(args[1..-1])]
+              [args.first, preprocess(args[1..])]
             end
           create_component(parent, sources) do |component|
             build_component(parent, component, sources)

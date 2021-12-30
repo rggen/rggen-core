@@ -42,7 +42,7 @@ module RgGen
           factories =
             @entries
               .map(&:build_factory)
-              .map { |f| [f.layer, f] }.to_h
+              .to_h { |f| [f.layer, f] }
           factories.each_value { |f| f.component_factories factories }
           factories.values
         end
