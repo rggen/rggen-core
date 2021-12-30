@@ -16,6 +16,7 @@ Gem::Specification.new do |spec|
   spec.metadata = {
     'bug_tracker_uri' => 'https://github.com/rggen/rggen-core/issues',
     'mailing_list_uri' => 'https://groups.google.com/d/forum/rggen',
+    'rubygems_mfa_required' => 'true',
     'source_code_uri' => 'https://github.com/rggen/rggen-core',
     'wiki_uri' => 'https://github.com/rggen/rggen/wiki'
   }
@@ -25,7 +26,7 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.required_ruby_version = '>= 2.5'
+  spec.required_ruby_version = '>= 2.6'
 
   spec.add_runtime_dependency 'docile', '>= 1.1.5', '!= 1.3.3'
   spec.add_runtime_dependency 'erubi', '>= 1.7'
