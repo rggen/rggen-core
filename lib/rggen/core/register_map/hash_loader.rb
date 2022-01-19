@@ -47,12 +47,12 @@ module RgGen
         end
 
         def format_array_sub_layer_data(read_data, layer, file)
-          read_data.each_with_object({}) do |data, sub_layer_data|
+          read_data.each_with_object([]) do |data, sub_layer_data|
             format_hash_sub_layer_data(data, layer, file, sub_layer_data)
           end
         end
 
-        def format_hash_sub_layer_data(read_data, layer, file, sub_layer_data = {})
+        def format_hash_sub_layer_data(read_data, layer, file, sub_layer_data = [])
           convert_to_hash(read_data, file)
             .slice(*SUB_LAYER_KEYS[layer])
             .each { |k, v| merge_sub_layer_data(sub_layer_data, layer, k, v) }
@@ -61,9 +61,10 @@ module RgGen
 
         def merge_sub_layer_data(sub_layer_data, layer, key, value)
           if SUB_LAYER_KEY_MAP[layer].key?(key)
-            (sub_layer_data[SUB_LAYER_KEY_MAP[layer][key]] ||= []).concat(value)
+            sub_layer_data
+              .concat([SUB_LAYER_KEY_MAP[layer][key]].product(value))
           else
-            (sub_layer_data[key] ||= []) << value
+            sub_layer_data << [key, value]
           end
         end
 

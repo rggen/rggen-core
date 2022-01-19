@@ -89,9 +89,9 @@ RSpec.describe RgGen::Core::InputBase::Loader do
         end
         def format_sub_layer_data(read_data, layer, _file)
           if layer == :foo
-            { bar: read_data[1..-1] }
+            read_data[1..].map { |d| [:bar, d] }
           elsif layer == :bar
-            { baz: read_data[1..-1] }
+            read_data[1..].map { |d| [:baz, d] }
           end
         end
       end

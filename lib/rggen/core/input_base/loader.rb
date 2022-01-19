@@ -42,11 +42,9 @@ module RgGen
         end
 
         def format_sub_layer(read_data, input_data, layer, file)
-          format_sub_layer_data(read_data, layer, file)
-            &.flat_map { |sub_layer, data_array| [sub_layer].product(data_array) }
-            &.each do |(sub_layer, data)|
-              format(data, input_data.child(sub_layer), sub_layer, file)
-            end
+          format_sub_layer_data(read_data, layer, file)&.each do |(sub_layer, data)|
+            format(data, input_data.child(sub_layer), sub_layer, file)
+          end
         end
 
         def format_layer_data(_read_data, _layer, _file)
