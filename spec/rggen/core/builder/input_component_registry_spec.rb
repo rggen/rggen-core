@@ -40,46 +40,15 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
           build { |v| instance_variable_set("@#{property_name}", v.to_i) }
         end
       end
-
-      builder.feature_registres[0].enable([:foo, :bar, :baz, :qux])
     end
 
     specify '#register_loader/#register_loadersで登録したローダーを使うことができる' do
-      registry.register_loader(:ruby, RgGen::Core::Configuration::RubyLoader)
-      registry.register_loader(:hash_based, RgGen::Core::Configuration::YAMLLoader)
-      registry.register_loader(:hash_based, RgGen::Core::Configuration::JSONLoader)
-
-      values = [rand(99), rand(99), rand(99), rand(99)]
-      setup_file_access('test.rb', "foo #{values[0]}; bar #{values[1]}; baz #{values[2]}; qux #{values[3]}")
-      component = registry.build_factory.create(['test.rb'])
-      expect(component.foo).to eq values[0]
-      expect(component.bar).to eq values[1]
-      expect(component.baz).to eq values[2]
-      expect(component.qux).to eq values[3]
-
-      values = [rand(99), rand(99), rand(99), rand(99)]
-      setup_file_access('test.yaml', "{foo: #{values[0]}, bar: #{values[1]}, baz: #{values[2]}, qux: #{values[3]}}")
-      component = registry.build_factory.create(['test.yaml'])
-      expect(component.foo).to eq values[0]
-      expect(component.bar).to eq values[1]
-      expect(component.baz).to eq values[2]
-      expect(component.qux).to eq values[3]
-
-      values = [rand(99), rand(99), rand(99), rand(99)]
-      setup_file_access('test.json', "{\"foo\": #{values[0]}, \"bar\": #{values[1]}, \"baz\": #{values[2]}, \"qux\": #{values[3]}}")
-      component = registry.build_factory.create(['test.json'])
-      expect(component.foo).to eq values[0]
-      expect(component.bar).to eq values[1]
-      expect(component.baz).to eq values[2]
-      expect(component.qux).to eq values[3]
-    end
-
-    specify '#register_loadersで登録したローダーを使うことができる' do
-      registry.register_loaders(:ruby, [RgGen::Core::Configuration::RubyLoader])
-      registry.register_loaders(:hash_based, [
-        RgGen::Core::Configuration::YAMLLoader,
-        RgGen::Core::Configuration::JSONLoader
-      ])
+      registry.setup_loader(:ruby_based) do |entry|
+        entry.register_loader RgGen::Core::Configuration::RubyLoader
+      end
+      registry.setup_loader(:hash_based) do |entry|
+        entry.register_loaders [RgGen::Core::Configuration::YAMLLoader, RgGen::Core::Configuration::JSONLoader]
+      end
 
       values = [rand(99), rand(99), rand(99), rand(99)]
       setup_file_access('test.rb', "foo #{values[0]}; bar #{values[1]}; baz #{values[2]}; qux #{values[3]}")
@@ -107,10 +76,12 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
     end
 
     specify '#ignore_valueで無視する値を指定できる' do
-      registry.register_loader(:hash_based, RgGen::Core::Configuration::YAMLLoader)
-      registry.ignore_value(:hash_based, :foo)
-      registry.ignore_value(:hash_based, nil, :bar)
-      registry.ignore_value(:hash_based, [nil], :baz)
+      registry.setup_loader(:hash_based) do |entry|
+        entry.register_loader RgGen::Core::Configuration::YAMLLoader
+        entry.ignore_value :foo
+        entry.ignore_value nil, :bar
+        entry.ignore_value [nil], :baz
+      end
 
       values = [rand(99), rand(99), rand(99), rand(99)]
       setup_file_access('test.yaml', "{foo: #{values[0]}, bar: #{values[1]}, baz: #{values[2]}, qux: #{values[3]}}")
@@ -122,10 +93,12 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
     end
 
     specify '#ignore_valuesで無視する値を指定できる' do
-      registry.register_loader(:hash_based, RgGen::Core::Configuration::YAMLLoader)
-      registry.ignore_values(:hash_based, [:foo])
-      registry.ignore_values(:hash_based, nil, [:bar])
-      registry.ignore_values(:hash_based, [nil], [:baz])
+      registry.setup_loader(:hash_based) do |entry|
+        entry.register_loader RgGen::Core::Configuration::YAMLLoader
+        entry.ignore_values [:foo]
+        entry.ignore_values nil, [:bar]
+        entry.ignore_values [nil], [:baz]
+      end
 
       values = [rand(99), rand(99), rand(99), rand(99)]
       setup_file_access('test.yaml', "{foo: #{values[0]}, bar: #{values[1]}, baz: #{values[2]}, qux: #{values[3]}}")
@@ -144,7 +117,7 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
         end
       end
 
-      registry.register_loader(:hash_based, loader)
+      registry.setup_loader(:hash_based) { |entry| entry.register_loader loader }
       registry.define_value_extractor(:hash_based, :foo) do
         extract { |data| data['foo'].to_i * 2 }
       end
