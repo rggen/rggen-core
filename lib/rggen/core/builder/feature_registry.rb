@@ -13,10 +13,12 @@ module RgGen
 
         def define_simple_feature(name, context = nil, &body)
           create_new_entry(:simple, name, context, &body)
+          enable(name)
         end
 
         def define_list_feature(list_name, context = nil, &body)
           create_new_entry(:list, list_name, context, &body)
+          enable(list_name)
         end
 
         def define_list_item_feature(list_name, feature_name, context = nil, &body)
@@ -24,12 +26,12 @@ module RgGen
           entry&.match_entry_type?(:list) ||
             (raise BuilderError.new("unknown list feature: #{list_name}"))
           entry.define_feature(feature_name, context, &body)
+          enable(list_name, feature_name)
         end
 
         def enable(feature_or_list_names, feature_names = nil)
           if feature_names
-            @enabled_features[feature_or_list_names]
-              &.merge!(Array(feature_names))
+            @enabled_features[feature_or_list_names]&.merge!(Array(feature_names))
           else
             Array(feature_or_list_names).each do |name|
               @enabled_features[name] ||= []
@@ -50,8 +52,7 @@ module RgGen
             @enabled_features[feature_or_list_names]
               &.delete_if { |key, _| Array(feature_names).include?(key) }
           elsif feature_or_list_names
-            Array(feature_or_list_names)
-              .each(&@enabled_features.method(:delete))
+            Array(feature_or_list_names).each(&@enabled_features.method(:delete))
           else
             @enabled_features.clear
           end
@@ -61,8 +62,7 @@ module RgGen
           if feature_names
             @feature_entries[feature_or_list_names]&.delete(feature_names)
           elsif feature_or_list_names
-            Array(feature_or_list_names)
-              .each(&@feature_entries.method(:delete))
+            Array(feature_or_list_names).each(&@feature_entries.method(:delete))
           else
             @feature_entries.clear
           end

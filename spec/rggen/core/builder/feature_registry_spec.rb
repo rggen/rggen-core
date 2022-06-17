@@ -41,11 +41,6 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
     registry.define_list_item_feature(:baz, :baz_2) do
       def m; 'baz 2!'; end
     end
-
-    registry.enable(:foo)
-    registry.enable([:bar, :baz])
-    registry.enable(:baz, :baz_0)
-    registry.enable(:baz, [:baz_1, :baz_2])
     factories = registry.build_factories
 
     feature = factories[:foo].create(component)
@@ -65,6 +60,26 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
 
     feature = factories[:baz].create(component, :baz_3)
     expect(feature.m).to eq 'default baz!'
+  end
+
+  specify '定義したフィーチャーは自動で有効化される' do
+    registry.define_simple_feature(:foo) do
+    end
+    registry.define_simple_feature(:bar) do
+    end
+    registry.define_list_feature(:baz) do
+      default_feature do
+      end
+    end
+    registry.define_list_item_feature(:baz, :baz_0) do
+    end
+    registry.define_list_item_feature(:baz, :baz_1) do
+    end
+    registry.define_list_item_feature(:baz, :baz_2) do
+    end
+
+    expect(registry.enabled_features).to match([:foo, :bar, :baz])
+    expect(registry.enabled_features(:baz)).to match([:baz_0, :baz_1, :baz_2])
   end
 
   specify '#enableで指定したフィーチャーを生成できる' do
@@ -99,6 +114,7 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
       def m; 'baz_2'; end
     end
 
+    registry.disable
     registry.enable([:foo_0, :bar_0, :baz])
     registry.enable(:baz, [:baz_0, :baz_1])
     factories = registry.build_factories
@@ -153,8 +169,6 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
       registry.define_simple_feature(:bar_1) do
         def m; 'bar_1!!'; end
       end
-
-      registry.enable([:foo_0, :foo_1, :bar_0, :bar_1])
       factories = registry.build_factories
 
       feature = factories[:foo_0].create(component)
@@ -186,10 +200,6 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
       end
       registry.define_list_item_feature(:baz, :baz_0, context) do
       end
-
-      registry.enable([:foo, :bar, :baz])
-      registry.enable(:bar, :bar_0)
-      registry.enable(:baz, :baz_0)
       factories = registry.build_factories
 
       feature = factories[:foo].create(component)
@@ -263,8 +273,6 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
           define_method(:m) { feature }
         end
       end
-      registry.enable([:foo_0, :foo_1, :foo_2, :bar_0, :bar_1])
-      registry.enable(:bar_0, [:bar_0_0, :bar_0_1, :bar_0_2, :bar_0_3])
     end
 
     context '無引数で呼び出した場合' do
@@ -334,10 +342,6 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
           define_method(:m) { feature }
         end
       end
-
-      registry.enable([:foo, :bar, :baz, :qux_0, :qux_1])
-      registry.enable(:qux_0, [:qux_0_0, :qux_0_1, :qux_0_2, :qux_0_3])
-      registry.enable(:qux_1, [:qux_1_0, :qux_1_1, :qux_1_2, :qux_1_3])
     end
 
     context '無引数で呼び出した場合' do
@@ -378,6 +382,7 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
       registry.define_list_feature(:bar_1)
       registry.define_list_item_feature(:bar_1, :bar_1_0)
 
+      registry.disable
       registry.enable([:foo_0, :bar_0, :baz_0])
       registry.enable(:foo_0, :foo_0_0)
       registry.enable(:bar_0, [:bar_0_0, :bar_0_2])
