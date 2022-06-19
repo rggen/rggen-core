@@ -11,6 +11,14 @@ module RgGen
           end
         end
 
+        def register_loader(loader_type, loader)
+          @loader_registries[loader_type].register_loader(loader)
+        end
+
+        def register_loaders(loader_type, loaders)
+          @loader_registries[loader_type].register_loaders(loaders)
+        end
+
         def setup_loader(loader_type)
           block_given? && yield(@loader_registries[loader_type])
         end
