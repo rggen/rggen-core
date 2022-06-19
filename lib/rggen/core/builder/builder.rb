@@ -24,11 +24,10 @@ module RgGen
 
         [
           :register_loader, :register_loaders,
-          :define_value_extractor, :ignore_value, :ignore_values
+          :setup_loader, :define_value_extractor
         ].each do |method_name|
           define_method(method_name) do |component, *args, &block|
-            @component_registries[:input][component]
-              .__send__(__method__, *args, &block)
+            @component_registries[:input][component].__send__(__method__, *args, &block)
           end
         end
 
@@ -94,7 +93,7 @@ module RgGen
 
         def_delegator :plugin_manager, :load_plugin
         def_delegator :plugin_manager, :load_plugins
-        def_delegator :plugin_manager, :register_plugin
+        def_delegator :plugin_manager, :setup_plugin
 
         private
 

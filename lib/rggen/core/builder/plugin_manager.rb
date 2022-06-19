@@ -3,81 +3,65 @@
 module RgGen
   module Core
     module Builder
-      class PluginRegistry
-        def initialize(plugin_module, &block)
-          @plugin_module = plugin_module
-          @block = block
-        end
-
-        def default_setup(builder)
-          @plugin_module.plugin_spec.activate(builder)
-        end
-
-        def optional_setup(builder)
-          @block && @plugin_module.instance_exec(builder, &@block)
-        end
-
-        def version_info
-          @plugin_module.plugin_spec.version_info
-        end
-      end
+      DEFAULT_PLUGSINS = 'rggen/default'
 
       class PluginInfo
-        attr_reader :name
-        attr_reader :setup_path
-        attr_reader :gem_name
+        attr_reader :path
+        attr_reader :gemname
         attr_reader :version
 
-        def parse(setup_path_or_name, version)
-          setup_path_or_name = setup_path_or_name.to_s.strip
-          @name, @setup_path, @gem_name, @version =
-            if setup_file_directly_given?(setup_path_or_name)
-              [nil, setup_path_or_name, *find_plugin_gem(setup_path_or_name)]
+        def self.parse(path_or_name, version)
+          info = new
+          info.parse(path_or_name.to_s.strip, version)
+          info
+        end
+
+        def parse(path_or_name, version)
+          @name, @path, @gemname, @version =
+            if plugin_path?(path_or_name)
+              [nil, path_or_name, *find_gemspec_by_path(path_or_name)]
             else
               [
-                setup_path_or_name, get_setup_path(setup_path_or_name),
-                extract_gem_name(setup_path_or_name), version
+                path_or_name, get_plugin_path(path_or_name),
+                get_gemname(path_or_name), version
               ]
             end
-          self
         end
 
         def to_s
-          if name && version
-            "#{name} (#{version})"
-          elsif name
-            name
+          if @name && @version
+            "#{@name} (#{@version})"
+          elsif @name
+            @name
           else
-            setup_path
+            @path
           end
         end
 
         private
 
-        def setup_file_directly_given?(setup_path_or_name)
-          File.ext(setup_path_or_name) == 'rb' ||
-            File.basename(setup_path_or_name, '.*') == 'setup'
+        def plugin_path?(path_or_name)
+          path_or_name == DEFAULT_PLUGSINS || File.ext(path_or_name) == 'rb'
         end
 
-        def find_plugin_gem(setup_path)
-          gemspec =
-            Gem::Specification
-              .each.find { |spec| match_gemspec?(spec, setup_path) }
-          gemspec && [gemspec.name, gemspec.version]
+        def find_gemspec_by_path(path)
+          Gem::Specification
+            .each.find { |spec| match_gemspec_path?(spec, path) }
+            .yield_self { |spec| spec && [spec.name, spec.version] }
         end
 
-        def match_gemspec?(gemspec, setup_path)
-          gemspec.full_require_paths.any?(&setup_path.method(:start_with?))
+        def match_gemspec_path?(gemspec, path)
+          gemspec.full_require_paths.any?(&path.method(:start_with?))
         end
 
-        def extract_gem_name(plugin_name)
-          plugin_name.split('/', 2).first
+        def get_plugin_path(name)
+          base_name, sub_name = name.split('/', 2)
+          base_name = base_name.sub(/^rggen[-_]/, '').tr('-', '_')
+          File.join(*['rggen', base_name, sub_name].compact)
         end
 
-        def get_setup_path(plugin_name)
-          base, sub_directory = plugin_name.split('/', 2)
-          base = base.sub(/^rggen[-_]/, '').tr('-', '_')
-          File.join(*['rggen', base, sub_directory, 'setup'].compact)
+        def get_gemname(name)
+          name.split('/', 2).first
         end
       end
 
@@ -87,9 +71,9 @@ module RgGen
           @plugins = []
         end
 
-        def load_plugin(setup_path_or_name, version = nil)
-          info = PluginInfo.new.parse(setup_path_or_name, version)
-          read_setup_file(info)
+        def load_plugin(path_or_name, version = nil)
+          info = PluginInfo.parse(path_or_name, version)
+          read_plugin_file(info)
         end
 
         def load_plugins(plugins, no_default_plugins, activation = true)
@@ -99,17 +83,12 @@ module RgGen
           activation && activate_plugins
         end
 
-        def register_plugin(plugin_module, &block)
-          plugin?(plugin_module) ||
-            (raise Core::PluginError.new('no plugin spec is given'))
-          @plugins << PluginRegistry.new(plugin_module, &block)
+        def setup_plugin(plugin_name, &block)
+          @plugins << PluginSpec.new(plugin_name, &block)
         end
 
-        def activate_plugins(**options)
-          options[:no_default_setup] ||
-            @plugins.each { |plugin| plugin.default_setup(@builder) }
-          options[:no_optional_setup] ||
-            @plugins.each { |plugin| plugin.optional_setup(@builder) }
+        def activate_plugins
+          @plugins.each { |plugin| plugin.activate(@builder) }
         end
 
         def version_info
@@ -118,9 +97,9 @@ module RgGen
 
         private
 
-        def read_setup_file(info)
-          info.gem_name && gem(info.gem_name, info.version)
-          require info.setup_path
+        def read_plugin_file(info)
+          info.gemname && gem(info.gemname, info.version)
+          require info.path
         rescue ::LoadError
           raise Core::PluginError.new("cannot load such plugin: #{info}")
         end
@@ -132,8 +111,6 @@ module RgGen
             *plugins
           ]
         end
-
-        DEFAULT_PLUGSINS = 'rggen/setup'
 
         def default_plugins(no_default_plugins)
           load_default_plugins?(no_default_plugins) && DEFAULT_PLUGSINS || nil
@@ -151,10 +128,6 @@ module RgGen
             &.split(':')
             &.reject(&:blank?)
             &.map { |entry| entry.split(',', 2) }
-        end
-
-        def plugin?(plugin_module)
-          plugin_module.respond_to?(:plugin_spec) && plugin_module.plugin_spec
         end
       end
     end

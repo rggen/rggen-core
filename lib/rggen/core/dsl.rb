@@ -11,6 +11,7 @@ module RgGen
         :input_component_registry,
         :output_component_registry,
         :register_loader,
+        :setup_loader,
         :define_loader,
         :define_simple_feature,
         :define_list_feature,
@@ -20,8 +21,7 @@ module RgGen
         :disable_all,
         :disable,
         :delete,
-        :register_plugin,
-        :load_plugin
+        :setup_plugin
       ].each do |method_name|
         def_delegator :'RgGen.builder', method_name
       end
