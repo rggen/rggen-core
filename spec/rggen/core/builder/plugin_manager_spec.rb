@@ -244,12 +244,20 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
       plugin_manager.setup_plugin(:bar) { |plugin| list << plugin; plugin.version '0.2.0' }
     end
 
-    specify 'activate_plugins実行時に、各プラグインの有効化を行う' do
+    specify '#activate_plugins実行時に、各プラグインの有効化を行う' do
       expect(plugins[0]).to receive(:activate).with(equal(builder)).ordered
       expect(plugins[1]).to receive(:activate).with(equal(builder)).ordered
       expect(plugins[0]).to receive(:activate_additionally).with(equal(builder)).ordered
       expect(plugins[1]).to receive(:activate_additionally).with(equal(builder)).ordered
       plugin_manager.activate_plugins
+    end
+
+    specify '#activate_plugin_by_name実行時に指定したプラグインの有効化を行う' do
+      expect(plugins[0]).to receive(:activate).with(equal(builder)).ordered
+      expect(plugins[0]).to receive(:activate_additionally).with(equal(builder)).ordered
+      expect(plugins[1]).not_to receive(:activate)
+      expect(plugins[1]).not_to receive(:activate_additionally)
+      plugin_manager.activate_plugin_by_name(:foo)
     end
 
     describe 'バージョン情報の収集' do

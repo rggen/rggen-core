@@ -92,6 +92,12 @@ module RgGen
           @plugins.each { |plugin| plugin.activate_additionally(@builder) }
         end
 
+        def activate_plugin_by_name(plugin_name)
+          target_plugin = @plugins.find { |plugin| plugin.name == plugin_name }
+          target_plugin&.activate(@builder)
+          target_plugin&.activate_additionally(@builder)
+        end
+
         def version_info
           @plugins.map(&:version_info)
         end

@@ -12,6 +12,8 @@ module RgGen
           block_given? && yield(self)
         end
 
+        attr_reader :name
+
         def version(value = nil)
           @version = value if value
           version_value
