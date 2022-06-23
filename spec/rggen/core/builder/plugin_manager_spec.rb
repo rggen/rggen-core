@@ -245,8 +245,10 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     end
 
     specify 'activate_plugins実行時に、各プラグインの有効化を行う' do
-      expect(plugins[0]).to receive(:activate).with(equal(builder))
-      expect(plugins[1]).to receive(:activate).with(equal(builder))
+      expect(plugins[0]).to receive(:activate).with(equal(builder)).ordered
+      expect(plugins[1]).to receive(:activate).with(equal(builder)).ordered
+      expect(plugins[0]).to receive(:activate_additionally).with(equal(builder)).ordered
+      expect(plugins[1]).to receive(:activate_additionally).with(equal(builder)).ordered
       plugin_manager.activate_plugins
     end
 

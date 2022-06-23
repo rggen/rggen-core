@@ -89,6 +89,7 @@ module RgGen
 
         def activate_plugins
           @plugins.each { |plugin| plugin.activate(@builder) }
+          @plugins.each { |plugin| plugin.activate_additionally(@builder) }
         end
 
         def version_info

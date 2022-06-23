@@ -44,6 +44,9 @@ module RgGen
           activate_components(builder)
           activate_loaders(builder)
           load_files
+        end
+
+        def activate_additionally(builder)
           @addtional_setup&.call(builder)
         end
 

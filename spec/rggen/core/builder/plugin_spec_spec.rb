@@ -92,11 +92,20 @@ RSpec.describe RgGen::Core::Builder::PluginSpec do
   end
 
   describe '#addtional_setup' do
-    specify '#activate実行時に、指定したブロックが実行される' do
+    specify '#activate_additionally実行時に、指定したブロックが実行される' do
       expect { |b|
         spec = create_spec { |s| s.addtional_setup(&b) }
-        spec.activate(builder)
+        spec.activate_additionally(builder)
       }.to yield_with_args(equal(builder))
+    end
+
+    context 'ブロックの登録がない場合' do
+      specify '#activate_additionallyをエラーなく実行できる' do
+        expect {
+          spec = create_spec
+          spec.activate_additionally(builder)
+        }.not_to raise_error
+      end
     end
   end
 end
