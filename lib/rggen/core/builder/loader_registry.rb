@@ -11,22 +11,25 @@ module RgGen
         end
 
         def register_loader(loader)
-          register_loaders([loader])
+          @loaders << loader
         end
 
         def register_loaders(loaders)
           @loaders.concat(Array(loaders))
         end
 
-        def define_value_extractor(layers, value, &body)
+        def define_value_extractor(layers_or_value, value = nil, &body)
+          value, layers = [value, layers_or_value].compact
           @extractors << create_extractor(layers, value, &body)
         end
 
-        def ignore_value(layers, value)
+        def ignore_value(layers_or_value, value = nil)
+          value, layers = [value, layers_or_value].compact
           ignore_values(layers, [value])
         end
 
-        def ignore_values(layers, values)
+        def ignore_values(layers_or_values, values = nil)
+          values, layers = [values, layers_or_values].compact
           [layers].flatten.each do |layer|
             (@ignore_values[layer] ||= []).concat(Array(values))
           end

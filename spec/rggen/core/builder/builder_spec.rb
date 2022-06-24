@@ -461,46 +461,6 @@ RSpec.describe RgGen::Core::Builder::Builder do
     end
   end
 
-  describe '#ignore_value/#ignore_values' do
-    let(:target_component) do
-      [:configuration, :register_map].sample
-    end
-
-    let(:component_registry) { component_registries[target_component] }
-
-    before do
-      default_component_registration
-    end
-
-    before do
-      loader = {
-        configuration: RgGen::Core::Configuration::YAMLLoader,
-        register_map: RgGen::Core::RegisterMap::YAMLLoader
-      }[target_component]
-      builder.register_loader(target_component, :hash_based, loader)
-    end
-
-    it '対象コンポーネントの無視値の設定を行う' do
-      allow(component_registry).to receive(:ignore_value).and_call_original
-      allow(component_registry).to receive(:ignore_values).and_call_original
-      builder.ignore_value(target_component, :fizz, :foo)
-      builder.ignore_values(target_component, :buzz, [:bar, :baz])
-      expect(component_registry).to have_received(:ignore_value).with(:fizz, :foo)
-      expect(component_registry).to have_received(:ignore_values).with(:buzz, match([:bar, :baz]))
-    end
-
-    context '未登録のコンポーネントが指定された場合' do
-      it 'BuilderErrorを起こす' do
-        expect {
-          builder.ignore_value(:foo, :fizz, :foo)
-        }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: foo'
-        expect {
-          builder.ignore_values(:foo, :fizz, [:foo])
-        }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: foo'
-      end
-    end
-  end
-
   describe '#define_simple_feature/#define_list_feature' do
     let(:target_layer) do
       [:global, :register_block, :register, :bit_field].sample
@@ -582,79 +542,16 @@ RSpec.describe RgGen::Core::Builder::Builder do
     end
   end
 
-  describe '#disable_all' do
+  describe '#enable_all' do
     before do
       default_component_registration
     end
 
-    it '全フィーチャーを無効化する' do
+    it '全フィーチャーを有効化する' do
       layers.each_value do |layer|
-        expect(layer).to receive(:disable).with(no_args)
+        expect(layer).to receive(:enable_all).with(no_args).and_call_original
       end
-      builder.disable_all
-    end
-  end
-
-  describe '#disable' do
-    before do
-      default_component_registration
-    end
-
-    let(:target_layer) do
-      [:global, :register_block, :register, :bit_field].sample
-    end
-
-    let(:layer) { layers[target_layer] }
-
-    context '階層名のみ指定された場合' do
-      it '指定された階層のフィーチャーを全て無効化する' do
-        expect(layer).to receive(:disable).with(no_args)
-        builder.disable(target_layer)
-      end
-    end
-
-    context '階層名とフィーチャー名が指定された場合' do
-      it '指定された階層の、指定されたフィーチャーを無効化する' do
-        expect(layer).to receive(:disable).with(:fizz_0)
-        builder.disable(target_layer, :fizz_0)
-
-        expect(layer).to receive(:disable).with(match([:fizz_1, :fizz_2]))
-        builder.disable(target_layer, [:fizz_1, :fizz_2])
-
-        expect(layer).to receive(:disable).with(:buzz, :buzz_0)
-        builder.disable(target_layer, :buzz, :buzz_0)
-
-        expect(layer).to receive(:disable).with(:buzz, match([:buzz_1, :buzz_2]))
-        builder.disable(target_layer, :buzz, [:buzz_1, :buzz_2])
-      end
-    end
-
-    context '未定義の階層が指定された場合' do
-      it 'エラーを起こさない' do
-        expect {
-          builder.disable(:foo)
-        }.not_to raise_error
-
-        expect {
-          builder.disable(:foo, :foo)
-        }.not_to raise_error
-
-        expect {
-          builder.disable(:foo, [:foo_0, :foo_1])
-        }.not_to raise_error
-
-        expect {
-          builder.disable(:foo, [:foo_0, :foo_1])
-        }.not_to raise_error
-
-        expect {
-          builder.disable(:foo, :foo, :foo_0)
-        }.not_to raise_error
-
-        expect {
-          builder.disable(:foo, :foo, [:foo_0, :foo_1])
-        }.not_to raise_error
-      end
+      builder.enable_all
     end
   end
 

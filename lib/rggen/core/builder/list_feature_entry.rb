@@ -32,9 +32,9 @@ module RgGen
 
         alias_method :factory, :define_factory
 
-        def build_factory(enabled_features)
+        def build_factory(targets)
           @factory.new(@name) do |f|
-            f.target_features(target_features(enabled_features))
+            f.target_features(target_features(targets))
             f.target_feature(@default_feature)
           end
         end
@@ -85,8 +85,8 @@ module RgGen
           end
         end
 
-        def target_features(enabled_features)
-          @features.slice(*enabled_features)
+        def target_features(targets)
+          targets && @features.slice(*targets) || @features
         end
       end
     end

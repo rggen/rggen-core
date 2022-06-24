@@ -89,7 +89,6 @@ RSpec.describe RgGen::Core::Builder::ComponentEntry do
         registry.define_simple_feature(:bar) do
           property(:bar) { @v }
         end
-        registry.enable([:foo, :bar])
       end
 
       factory = entry.build_factory

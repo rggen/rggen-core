@@ -9,9 +9,9 @@ Gem::Specification.new do |spec|
   spec.summary = 'RgGen dummy plugin'
 
   spec.files  = [
+    'lib/rggen/foo_bar.rb',
     'lib/rggen/foo_bar/version.rb',
-    'lib/rggen/foo_bar/setup.rb',
-    'lib/rggen/foo_bar/baz/setup.rb'
+    'lib/rggen/foo_bar/baz.rb'
   ]
 
   spec.require_paths = ['lib']

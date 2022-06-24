@@ -9,39 +9,34 @@ RSpec.describe RgGen::Core::Builder::PluginSpec do
     :foo
   end
 
-  let(:plugin_module) do
-    Module.new
-  end
-
   let(:builder) do
     RgGen::Core::Builder::Builder.new
+  end
+
+  def create_spec(&body)
+    described_class.new(plugin_name, &body)
   end
 
   describe '#version' do
     context '#versionでバージョンが指定された場合' do
       it '指定されたバージョンを返す' do
-        plugin_spec.version '0.0.1'
-        expect(plugin_spec.version).to eq '0.0.1'
-      end
-    end
-
-    context 'プラグインモジュールが定数VERSIONを持つ場合' do
-      it 'VERSIONを返す' do
-        plugin_module.const_set(:VERSION, '0.0.1')
-        expect(plugin_spec.version).to eq '0.0.1'
+        spec = create_spec { |s| s.version '0.0.1' }
+        expect(spec.version).to eq '0.0.1'
       end
     end
 
     context '上記２つを満たさない場合' do
       it 'デフォルトのバージョンとして0.0.0を返す' do
-        expect(plugin_spec.version).to eq '0.0.0'
+        spec = create_spec
+        expect(spec.version).to eq '0.0.0'
       end
     end
   end
 
   describe '#version_info' do
     it 'プラグイン名込みのバージョン情報を返す' do
-      expect(plugin_spec.version_info).to eq "#{plugin_name} 0.0.0"
+      spec = create_spec
+      expect(spec.version_info).to eq "#{plugin_name} 0.0.0"
     end
   end
 
@@ -50,62 +45,67 @@ RSpec.describe RgGen::Core::Builder::PluginSpec do
       foo_registry = builder.output_component_registry(:foo)
       bar_registry = builder.output_component_registry(:bar)
 
-      plugin_spec.register_component(:foo) {}
-      plugin_spec.register_component(:bar, :register_block)
-      plugin_spec.register_component(:bar, [:register, :bit_field])
+      spec = create_spec do |s|
+        s.register_component(:foo) {}
+        s.register_component(:bar, :register_block)
+        s.register_component(:bar, [:register, :bit_field])
+      end
 
       expect(foo_registry).to receive(:register_component).with(be_nil)
       expect(bar_registry).to receive(:register_component).with(:register_block)
       expect(bar_registry).to receive(:register_component).with(match([:register, :bit_field]))
-      plugin_spec.activate(builder)
+      spec.activate(builder)
     end
   end
 
-  describe '#register_loader/register_loaders' do
-    let(:foo_loader) do
-      Class.new(RgGen::Core::InputBase::Loader)
-    end
-
-    let(:bar_loader) do
-      Class.new(RgGen::Core::InputBase::Loader)
-    end
-
-    let(:baz_loader) do
-      Class.new(RgGen::Core::InputBase::Loader)
-    end
-
-    let(:qux_loader) do
-      Class.new(RgGen::Core::InputBase::Loader)
-    end
-
+  describe '#setup_loader' do
     it 'ローダーの登録を行う' do
-      plugin_spec.register_loader(:register_map, :foo_bar, foo_loader)
-      plugin_spec.register_loader(:register_map, :foo_bar, bar_loader)
-      plugin_spec.register_loaders(:configuration, :baz_qux, [baz_loader, qux_loader])
+      registries = [
+        builder.input_component_registry(:register_map),
+        builder.input_component_registry(:configuration)
+      ]
 
-      expect(builder).to receive(:register_loader).with(:register_map, :foo_bar, equal(foo_loader))
-      expect(builder).to receive(:register_loader).with(:register_map, :foo_bar, equal(bar_loader))
-      expect(builder).to receive(:register_loader).with(:configuration, :baz_qux, equal(baz_loader))
-      expect(builder).to receive(:register_loader).with(:configuration, :baz_qux, equal(qux_loader))
-      plugin_spec.activate(builder)
+      spec = create_spec do |s|
+        s.setup_loader(:register_map, :foo) {}
+        s.setup_loader(:configuration, :bar) {}
+      end
+
+      expect(registries[0]).to receive(:setup_loader).with(:foo)
+      expect(registries[1]).to receive(:setup_loader).with(:bar)
+      spec.activate(builder)
     end
   end
 
   describe '#files' do
     it '読み込むファイルを、パスを拡張したうえで、登録する' do
-      plugin_spec.files [
-        'foo.rb',
-        'bar/bar.rb'
-      ]
-      plugin_spec.files [
-        'baz/baz/baz.rb'
-      ]
-
-      ['foo.rb', 'bar/bar.rb', 'baz/baz/baz.rb'].each do |path|
-        expect(plugin_spec).to receive(:require).with(File.join(__dir__, path))
+      spec = create_spec do |s|
+        s.files ['foo.rb', 'bar/bar.rb']
+        s.files ['baz/baz/baz.rb']
       end
 
-      plugin_spec.activate(builder)
+      ['foo.rb', 'bar/bar.rb', 'baz/baz/baz.rb'].each do |path|
+        expect(spec).to receive(:require).with(File.join(__dir__, path))
+      end
+
+      spec.activate(builder)
+    end
+  end
+
+  describe '#addtional_setup' do
+    specify '#activate_additionally実行時に、指定したブロックが実行される' do
+      expect { |b|
+        spec = create_spec { |s| s.addtional_setup(&b) }
+        spec.activate_additionally(builder)
+      }.to yield_with_args(equal(builder))
+    end
+
+    context 'ブロックの登録がない場合' do
+      specify '#activate_additionallyをエラーなく実行できる' do
+        expect {
+          spec = create_spec
+          spec.activate_additionally(builder)
+        }.not_to raise_error
+      end
     end
   end
 end

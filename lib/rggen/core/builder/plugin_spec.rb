@@ -4,13 +4,15 @@ module RgGen
   module Core
     module Builder
       class PluginSpec
-        def initialize(name, plugin_module)
+        def initialize(name)
           @name = name
-          @plugin_module = plugin_module
           @component_registrations = []
           @loader_registrations = []
           @files = []
+          block_given? && yield(self)
         end
+
+        attr_reader :name
 
         def version(value = nil)
           @version = value if value
@@ -25,13 +27,8 @@ module RgGen
           @component_registrations << [component, layers, body]
         end
 
-        def register_loader(component, loader_type, loader)
-          @loader_registrations << [component, loader_type, loader]
-        end
-
-        def register_loaders(component, loader_type, loaders)
-          Array(loaders)
-            .each { |loader| register_loader(component, loader_type, loader) }
+        def setup_loader(component, loader_type, &body)
+          @loader_registrations << [component, loader_type, body]
         end
 
         def register_files(files)
@@ -41,10 +38,18 @@ module RgGen
 
         alias_method :files, :register_files
 
+        def addtional_setup(&body)
+          @addtional_setup = body
+        end
+
         def activate(builder)
           activate_components(builder)
           activate_loaders(builder)
           load_files
+        end
+
+        def activate_additionally(builder)
+          @addtional_setup&.call(builder)
         end
 
         private
@@ -52,12 +57,7 @@ module RgGen
         DEFAULT_VERSION = '0.0.0'
 
         def version_value
-          @version || const_version || DEFAULT_VERSION
-        end
-
-        def const_version
-          @plugin_module.const_defined?(:VERSION) &&
-            @plugin_module.const_get(:VERSION)
+          @version || DEFAULT_VERSION
         end
 
         def activate_components(builder)
@@ -69,8 +69,10 @@ module RgGen
         end
 
         def activate_loaders(builder)
-          @loader_registrations.each do |component, loader_type, loader|
-            builder.register_loader(component, loader_type, loader)
+          @loader_registrations.each do |component, loader_type, body|
+            builder
+              .input_component_registry(component)
+              .setup_loader(loader_type, &body)
           end
         end
 

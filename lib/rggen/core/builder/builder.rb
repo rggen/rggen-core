@@ -24,11 +24,10 @@ module RgGen
 
         [
           :register_loader, :register_loaders,
-          :define_value_extractor, :ignore_value, :ignore_values
+          :setup_loader, :define_value_extractor
         ].each do |method_name|
           define_method(method_name) do |component, *args, &block|
-            @component_registries[:input][component]
-              .__send__(__method__, *args, &block)
+            @component_registries[:input][component].__send__(__method__, *args, &block)
           end
         end
 
@@ -61,12 +60,8 @@ module RgGen
           @layers[layer].enable(*args)
         end
 
-        def disable_all
-          @layers.each_value(&:disable)
-        end
-
-        def disable(layer, *args)
-          @layers.key?(layer) && @layers[layer].disable(*args)
+        def enable_all
+          @layers.each_value(&:enable_all)
         end
 
         def build_factory(type, component)
@@ -94,7 +89,7 @@ module RgGen
 
         def_delegator :plugin_manager, :load_plugin
         def_delegator :plugin_manager, :load_plugins
-        def_delegator :plugin_manager, :register_plugin
+        def_delegator :plugin_manager, :setup_plugin
 
         private
 
