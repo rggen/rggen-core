@@ -105,7 +105,6 @@ require_relative 'core/builder/plugin_manager'
 require_relative 'core/builder/builder'
 require_relative 'core/builder'
 
-require_relative 'core/plugin'
 require_relative 'core/printers'
 require_relative 'core/options'
 require_relative 'core/dsl'
