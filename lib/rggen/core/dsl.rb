@@ -18,8 +18,7 @@ module RgGen
         :define_list_item_feature,
         :define_value_extractor,
         :enable,
-        :disable_all,
-        :disable,
+        :enable_all,
         :delete,
         :setup_plugin
       ].each do |method_name|

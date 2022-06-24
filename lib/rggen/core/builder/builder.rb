@@ -60,12 +60,8 @@ module RgGen
           @layers[layer].enable(*args)
         end
 
-        def disable_all
-          @layers.each_value(&:disable)
-        end
-
-        def disable(layer, *args)
-          @layers.key?(layer) && @layers[layer].disable(*args)
+        def enable_all
+          @layers.each_value(&:enable_all)
         end
 
         def build_factory(type, component)

@@ -180,66 +180,27 @@ RSpec.describe RgGen::Core::Builder::Layer do
     end
 
     specify '#enableで指定したフィーチャーを有効にする' do
-      expect(fizz_feature_registry).to receive(:enable).with(:foo_0, nil)
-      expect(buzz_feature_registry).to receive(:enable).with(:foo_0, nil)
+      expect(fizz_feature_registry).to receive(:enable).with(:foo_0, nil).and_call_original
+      expect(buzz_feature_registry).to receive(:enable).with(:foo_0, nil).and_call_original
       layer.enable(:foo_0)
 
-      expect(fizz_feature_registry).to receive(:enable).with([:foo_1, :bar_0], nil)
-      expect(buzz_feature_registry).to receive(:enable).with([:foo_1, :bar_0], nil)
+      expect(fizz_feature_registry).to receive(:enable).with([:foo_1, :bar_0], nil).and_call_original
+      expect(buzz_feature_registry).to receive(:enable).with([:foo_1, :bar_0], nil).and_call_original
       layer.enable([:foo_1, :bar_0])
 
-      expect(fizz_feature_registry).to receive(:enable).with(:bar_0, :bar_0_0)
-      expect(buzz_feature_registry).to receive(:enable).with(:bar_0, :bar_0_0)
+      expect(fizz_feature_registry).to receive(:enable).with(:bar_0, :bar_0_0).and_call_original
+      expect(buzz_feature_registry).to receive(:enable).with(:bar_0, :bar_0_0).and_call_original
       layer.enable(:bar_0, :bar_0_0)
 
-      expect(fizz_feature_registry).to receive(:enable).with(:bar_0, [:bar_0_1, :bar_0_2])
-      expect(buzz_feature_registry).to receive(:enable).with(:bar_0, [:bar_0_1, :bar_0_2])
+      expect(fizz_feature_registry).to receive(:enable).with(:bar_0, [:bar_0_1, :bar_0_2]).and_call_original
+      expect(buzz_feature_registry).to receive(:enable).with(:bar_0, [:bar_0_1, :bar_0_2]).and_call_original
       layer.enable(:bar_0, [:bar_0_1, :bar_0_2])
     end
-  end
 
-  describe 'フィーチャーの無効化' do
-    before do
-      layer.define_simple_feature([:foo_0, :foo_1, :foo_2]) do
-        fizz {}
-        buzz {}
-      end
-      layer.define_list_feature([:bar_0, :bar_1, :bar_2]) do
-        fizz {}
-        buzz {}
-      end
-      layer.define_list_item_feature(:bar_0, [:bar_0_0, :bar_0_1, :bar_0_2, :bar_0_3]) do
-        fizz {}
-        buzz {}
-      end
-    end
-
-    context '#deleteを無引数で呼び出した場合' do
-      it 'フィーチャーを全て無効化する' do
-        expect(fizz_feature_registry).to receive(:disable).with(no_args)
-        expect(buzz_feature_registry).to receive(:disable).with(no_args)
-        layer.disable
-      end
-    end
-
-    context '引数でフィーチャー名が指定された場合' do
-      it '指定されたフィーチャーを無効化する' do
-        expect(fizz_feature_registry).to receive(:disable).with(:foo_0)
-        expect(buzz_feature_registry).to receive(:disable).with(:foo_0)
-        layer.disable(:foo_0)
-
-        expect(fizz_feature_registry).to receive(:disable).with(match([:foo_1, :bar_1]))
-        expect(buzz_feature_registry).to receive(:disable).with(match([:foo_1, :bar_1]))
-        layer.disable([:foo_1, :bar_1])
-
-        expect(fizz_feature_registry).to receive(:disable).with(:bar_0, :bar_0_0)
-        expect(buzz_feature_registry).to receive(:disable).with(:bar_0, :bar_0_0)
-        layer.disable(:bar_0, :bar_0_0)
-
-        expect(fizz_feature_registry).to receive(:disable).with(:bar_0, match([:bar_0_1, :bar_0_2]))
-        expect(buzz_feature_registry).to receive(:disable).with(:bar_0, match([:bar_0_1, :bar_0_2]))
-        layer.disable(:bar_0, [:bar_0_1, :bar_0_2])
-      end
+    specify '#enable_allで定義した全フィーチャーを有効化する' do
+      expect(fizz_feature_registry).to receive(:enable_all).and_call_original
+      expect(buzz_feature_registry).to receive(:enable_all).and_call_original
+      layer.enable_all
     end
   end
 

@@ -542,79 +542,16 @@ RSpec.describe RgGen::Core::Builder::Builder do
     end
   end
 
-  describe '#disable_all' do
+  describe '#enable_all' do
     before do
       default_component_registration
     end
 
-    it '全フィーチャーを無効化する' do
+    it '全フィーチャーを有効化する' do
       layers.each_value do |layer|
-        expect(layer).to receive(:disable).with(no_args)
+        expect(layer).to receive(:enable_all).with(no_args).and_call_original
       end
-      builder.disable_all
-    end
-  end
-
-  describe '#disable' do
-    before do
-      default_component_registration
-    end
-
-    let(:target_layer) do
-      [:global, :register_block, :register, :bit_field].sample
-    end
-
-    let(:layer) { layers[target_layer] }
-
-    context '階層名のみ指定された場合' do
-      it '指定された階層のフィーチャーを全て無効化する' do
-        expect(layer).to receive(:disable).with(no_args)
-        builder.disable(target_layer)
-      end
-    end
-
-    context '階層名とフィーチャー名が指定された場合' do
-      it '指定された階層の、指定されたフィーチャーを無効化する' do
-        expect(layer).to receive(:disable).with(:fizz_0)
-        builder.disable(target_layer, :fizz_0)
-
-        expect(layer).to receive(:disable).with(match([:fizz_1, :fizz_2]))
-        builder.disable(target_layer, [:fizz_1, :fizz_2])
-
-        expect(layer).to receive(:disable).with(:buzz, :buzz_0)
-        builder.disable(target_layer, :buzz, :buzz_0)
-
-        expect(layer).to receive(:disable).with(:buzz, match([:buzz_1, :buzz_2]))
-        builder.disable(target_layer, :buzz, [:buzz_1, :buzz_2])
-      end
-    end
-
-    context '未定義の階層が指定された場合' do
-      it 'エラーを起こさない' do
-        expect {
-          builder.disable(:foo)
-        }.not_to raise_error
-
-        expect {
-          builder.disable(:foo, :foo)
-        }.not_to raise_error
-
-        expect {
-          builder.disable(:foo, [:foo_0, :foo_1])
-        }.not_to raise_error
-
-        expect {
-          builder.disable(:foo, [:foo_0, :foo_1])
-        }.not_to raise_error
-
-        expect {
-          builder.disable(:foo, :foo, :foo_0)
-        }.not_to raise_error
-
-        expect {
-          builder.disable(:foo, :foo, [:foo_0, :foo_1])
-        }.not_to raise_error
-      end
+      builder.enable_all
     end
   end
 
