@@ -12,6 +12,7 @@ module RgGen
         :output_component_registry,
         :register_loader,
         :setup_loader,
+        :load_plugin,
         :define_loader,
         :define_simple_feature,
         :define_list_feature,
