@@ -69,6 +69,15 @@ module RgGen
           end
         end
 
+        def enabled_features(list_name = nil)
+          if list_name
+            enabled_list_features(list_name)
+          else
+            @enabled_features.empty? && @feature_entries.keys ||
+              @enabled_features.keys & @feature_entries.keys
+          end
+        end
+
         def build_factories
           target_features =
             (@enabled_features.empty? && @feature_entries || @enabled_features).keys
@@ -87,6 +96,19 @@ module RgGen
           entry = FEATURE_ENTRIES[type].new(self, name)
           entry.setup(@base_feature, @factory, context, &body)
           @feature_entries[name] = entry
+        end
+
+        def enabled_list_features(list_name)
+          return [] unless enabled_list?(list_name)
+          features = @feature_entries[list_name].features
+          (@enabled_features[list_name] || features) & features
+        end
+
+        def enabled_list?(list_name)
+          return false unless list_feature?(list_name)
+          return true if @enabled_features.empty?
+          return true if @enabled_features.key?(list_name)
+          false
         end
 
         def build_factory(entry)
