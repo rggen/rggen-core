@@ -77,6 +77,10 @@ module RgGen
           @features.key?(feature)
         end
 
+        def features
+          @features.keys
+        end
+
         private
 
         def attach_shared_context(context)

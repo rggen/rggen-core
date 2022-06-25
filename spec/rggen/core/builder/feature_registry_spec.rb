@@ -284,4 +284,53 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
       expect(registry.feature?(:bar_1, :bar_1_0)).to be false
     end
   end
+
+  describe '#enabled_features' do
+    before do
+      [:foo_0, :foo_1, :foo_2].each do |feature|
+        registry.define_simple_feature(feature) {}
+      end
+      [:bar_0].each do |feature|
+        registry.define_list_feature(feature) {}
+      end
+      [:bar_0_0, :bar_0_1, :bar_0_2].each do |feature|
+        registry.define_list_item_feature(:bar_0, feature) {}
+      end
+      [:bar_1].each do |feature|
+        registry.define_list_feature(feature) {}
+      end
+      [:bar_1_0, :bar_1_1, :bar_1_2].each do |feature|
+        registry.define_list_item_feature(:bar_1, feature) {}
+      end
+    end
+
+    context '無引数の場合' do
+      it '定義済みかつ有効になっているフィーチャーの一覧を返す' do
+        expect(registry.enabled_features).to match([:foo_0, :foo_1, :foo_2, :bar_0, :bar_1])
+
+        registry.enable([:bar_0, :foo_2, :foo_0, :baz_0])
+        expect(registry.enabled_features).to match([:bar_0, :foo_2, :foo_0])
+
+        registry.enable_all
+        registry.enable([:baz_0, :qux_0])
+        expect(registry.enabled_features).to be_empty
+      end
+    end
+
+    context 'リスト名が与えられた場合' do
+      it 'リスト内で定義済みかつ有効になっているフィーチャー名を返す' do
+        expect(registry.enabled_features(:foo_0)).to be_empty
+        expect(registry.enabled_features(:bar_0)).to match([:bar_0_0, :bar_0_1, :bar_0_2])
+        expect(registry.enabled_features(:bar_1)).to match([:bar_1_0, :bar_1_1, :bar_1_2])
+        expect(registry.enabled_features(:baz_0)).to be_empty
+
+        registry.enable(:bar_0)
+        expect(registry.enabled_features(:bar_0)).to match([:bar_0_0, :bar_0_1, :bar_0_2])
+        expect(registry.enabled_features(:bar_1)).to be_empty
+
+        registry.enable(:bar_0, [:bar_0_2, :bar_0_0])
+        expect(registry.enabled_features(:bar_0)).to match([:bar_0_2, :bar_0_0])
+      end
+    end
+  end
 end
