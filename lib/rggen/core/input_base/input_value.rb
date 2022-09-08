@@ -3,18 +3,22 @@
 module RgGen
   module Core
     module InputBase
-      class InputValue
+      class InputValue < ::SimpleDelegator
         def initialize(value, position)
-          @value = (value.is_a?(String) && value.strip) || value
+          super((value.is_a?(String) && value.strip) || value)
           @position = position
         end
 
-        attr_accessor :value
+        alias_method :value, :__getobj__
         attr_reader :position
 
+        def match_class?(klass)
+          __getobj__.is_a?(klass)
+        end
+
         def empty_value?
-          return true if @value.nil?
-          return true if @value.respond_to?(:empty?) && @value.empty?
+          return true if value.nil?
+          return true if value.respond_to?(:empty?) && value.empty?
           false
         end
 

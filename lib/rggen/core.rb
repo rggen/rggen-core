@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'delegate'
 require 'docile'
 require 'erubi'
 require 'fileutils'
@@ -14,6 +15,7 @@ require 'yaml'
 require_relative 'core/version'
 
 require_relative 'core/facets'
+require_relative 'core/core_extensions/kernel'
 require_relative 'core/core_extensions/object'
 
 require_relative 'core/utility/attribute_setter'

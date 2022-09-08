@@ -39,7 +39,7 @@ module RgGen
         end
 
         def format_sub_layer_data(read_data, layer, file)
-          if read_data.is_a?(Array)
+          if array?(read_data)
             format_array_sub_layer_data(read_data, layer, file)
           else
             format_hash_sub_layer_data(read_data, layer, file)
@@ -66,6 +66,11 @@ module RgGen
           else
             sub_layer_data << [key, value]
           end
+        end
+
+        def array?(read_data)
+          return read_data.match_class?(Array) if read_data.respond_to?(:match_class?)
+          read_data.is_a?(Array)
         end
 
         def convert_to_hash(read_data, file)
