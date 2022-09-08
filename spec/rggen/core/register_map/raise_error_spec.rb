@@ -14,9 +14,9 @@ RSpec.describe RgGen::Core::RegisterMap::RaiseError do
       Class.new do
         include RgGen::Core::RegisterMap::RaiseError
         attr_writer :position
-        def error_test(message, position = nil)
-          if position
-            error message, position
+        def error_test(message, input_value = nil)
+          if input_value
+            error message, input_value
           else
             error message
           end
@@ -25,7 +25,7 @@ RSpec.describe RgGen::Core::RegisterMap::RaiseError do
     end
 
     context '位置情報がない場合' do
-      it '与えられたメッセージで、RegisterMapError を発生させる' do
+      it '与えられたメッセージでRegisterMapErrorを発生させる' do
         expect {
           object.error_test(message)
         }.to raise_rggen_error register_map_error, message
@@ -33,7 +33,7 @@ RSpec.describe RgGen::Core::RegisterMap::RaiseError do
     end
 
     context 'エラーの発生元が位置情報を持つ場合' do
-      it '位置情報と与えられたメッセージで、RegisterMapError を発生させる' do
+      it '位置情報と与えられたメッセージでRegisterMapErrorを発生させる' do
         object.position = positions[0]
         expect {
           object.error_test(message)
@@ -41,16 +41,37 @@ RSpec.describe RgGen::Core::RegisterMap::RaiseError do
       end
     end
 
-    context '位置情報が与えられた場合' do
-      it '与えられた位置情報とメッセージで、RegisterMapError を発生させる' do
+    context '与えられた入力値が位置情報を持つ場合' do
+      let(:input_value) do
+        RgGen::Core::InputBase::InputValue.new(0, positions[1])
+      end
+
+      it '入力値が持つ位置情報と与えられたメッセージでRegisterMapErrorを発生させる' do
         expect {
-          object.error_test(message, positions[1])
+          object.error_test(message, input_value)
         }.to raise_rggen_error register_map_error, message, positions[1]
 
         object.position = positions[0]
         expect {
-          object.error_test(message, positions[1])
+          object.error_test(message, input_value)
         }.to raise_rggen_error register_map_error, message, positions[1]
+      end
+    end
+
+    context '与えられた入力値が位置情報を持たない場合' do
+      let(:input_value) do
+        0
+      end
+
+      it '与えられたメッセージでRegisterMapErrorを発生させる' do
+        expect {
+          object.error_test(message, input_value)
+        }.to raise_rggen_error register_map_error, message
+
+        object.position = positions[0]
+        expect {
+          object.error_test(message, input_value)
+        }.to raise_rggen_error register_map_error, message, positions[0]
       end
     end
   end
