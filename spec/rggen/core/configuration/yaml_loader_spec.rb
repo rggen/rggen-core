@@ -48,11 +48,18 @@ RSpec.describe RgGen::Core::Configuration::YAMLLoader do
       allow(File).to receive(:binread).and_return(file_content)
     end
 
+    def position(line, column)
+      RgGen::Core::InputBase::YAMLLoader::Position.new(file, line, column)
+    end
+
     it '入力ファイルを元に、入力データを組み立てる' do
       loader.load_file(file, input_data, valid_value_lists)
       expect(input_data).to have_values(
-        [:foo, 0, file], [:bar, 1, file], [:baz, 2, file],
-        [:fizz, 'fizz', file], [:buzz, :buzz, file]
+        [:foo, 0, position(1, 6)],
+        [:bar, 1, position(2, 6)],
+        [:baz, 2, position(3, 6)],
+        [:fizz, 'fizz', position(4, 7)],
+        [:buzz, :buzz, position(5, 7)]
       )
     end
   end
