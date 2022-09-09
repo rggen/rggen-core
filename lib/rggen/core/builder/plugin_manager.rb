@@ -47,7 +47,7 @@ module RgGen
         def find_gemspec_by_path(path)
           Gem::Specification
             .each.find { |spec| match_gemspec_path?(spec, path) }
-            .yield_self { |spec| spec && [spec.name, spec.version] }
+            .then { |spec| spec && [spec.name, spec.version] }
         end
 
         def match_gemspec_path?(gemspec, path)

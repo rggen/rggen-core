@@ -13,8 +13,8 @@ module RgGen
         def match(rhs)
           rhs
             .to_s
-            .yield_self { |s| ignore_blanks? && delete_blanks(s) || s }
-            .yield_self(&method(:match_patterns))
+            .then { |s| ignore_blanks? && delete_blanks(s) || s }
+            .then(&method(:match_patterns))
         end
 
         def match_automatically?
