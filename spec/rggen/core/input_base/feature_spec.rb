@@ -85,13 +85,13 @@ RSpec.describe RgGen::Core::InputBase::Feature do
   describe '#build' do
     let(:feature) do
       create_feature do
-        build { |*args| foo(*args) }
+        build { |*args| foo(*args.map(&:value)) }
       end
     end
 
     let(:child_feature) do
       create_feature(feature.class) do
-        build { |*args| bar(*args) }
+        build { |*args| bar(*args.map(&:value)) }
       end
     end
 
@@ -116,9 +116,12 @@ RSpec.describe RgGen::Core::InputBase::Feature do
       feature.build(input_value)
     end
 
-    specify '入力データの#valueが組み立てブロックに渡される' do
+    specify '入力データが組み立てブロックに渡される' do
       expect(feature).to receive(:foo).with(equal(value))
       feature.build(input_value)
+
+      expect(feature).to receive(:foo).with(equal(other_value), equal(value))
+      feature.build(other_input_value, input_value)
     end
 
     specify '入力データの#positionは、フィーチャー内に#positionとして保持される' do
@@ -127,8 +130,8 @@ RSpec.describe RgGen::Core::InputBase::Feature do
       expect(feature.send(:position)).to eq position
     end
 
-    specify '#value/#positionの取り出しは、末尾の入力値に対して行われる' do
-      expect(feature).to receive(:foo).with(equal(other_input_value), equal(value))
+    specify '#positionの取り出しは、末尾の入力値に対して行われる' do
+      allow(feature).to receive(:foo)
       feature.build(other_input_value, input_value)
       expect(feature.send(:position)).to eq position
     end
@@ -272,7 +275,7 @@ RSpec.describe RgGen::Core::InputBase::Feature do
         end
 
         it '#build実行時に、自動で末尾の引数に対して一致比較を行う' do
-          expect(feature).to receive(:match_pattern).with(:bar)
+          expect(feature).to receive(:match_pattern).with(eq(:bar))
           feature.build(*input_values)
         end
       end

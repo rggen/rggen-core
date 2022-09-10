@@ -133,10 +133,9 @@ module RgGen
 
         def do_build(args)
           @position = args.last.position
-          value = args.last.value
-          match_automatically? && match_pattern(value)
+          match_automatically? && match_pattern(args.last)
           Array(self.class.builders)
-            .each { |builder| instance_exec(*args[0..-2], value, &builder) }
+            .each { |builder| instance_exec(*args, &builder) }
         end
 
         attr_reader :position
