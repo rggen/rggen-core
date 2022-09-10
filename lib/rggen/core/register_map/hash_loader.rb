@@ -4,6 +4,8 @@ module RgGen
   module Core
     module RegisterMap
       module HashLoader
+        include Utility::TypeChecker
+
         private
 
         SUB_LAYER_KEYS = {
@@ -21,7 +23,7 @@ module RgGen
         }.freeze
 
         def format_layer_data(read_data, layer, file)
-          if read_data.is_a?(Array)
+          if array?(read_data)
             format_array_layer_data(read_data, layer, file)
           else
             fomrat_hash_layer_data(read_data, layer, file)
@@ -66,11 +68,6 @@ module RgGen
           else
             sub_layer_data << [key, value]
           end
-        end
-
-        def array?(read_data)
-          return read_data.match_class?(Array) if read_data.respond_to?(:match_class?)
-          read_data.is_a?(Array)
         end
 
         def convert_to_hash(read_data, file)

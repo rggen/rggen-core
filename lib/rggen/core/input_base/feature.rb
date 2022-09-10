@@ -5,6 +5,7 @@ module RgGen
     module InputBase
       class Feature < Base::Feature
         include Utility::RegexpPatterns
+        include Utility::TypeChecker
 
         class << self
           def property(name, **options, &body)

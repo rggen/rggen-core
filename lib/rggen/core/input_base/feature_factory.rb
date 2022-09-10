@@ -4,6 +4,8 @@ module RgGen
   module Core
     module InputBase
       class FeatureFactory < Base::FeatureFactory
+        include Utility::TypeChecker
+
         class << self
           def convert_value(&block)
             @value_converter = block

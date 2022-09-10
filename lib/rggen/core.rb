@@ -26,6 +26,7 @@ require_relative 'core/utility/code_utility/structure_definition'
 require_relative 'core/utility/code_utility'
 require_relative 'core/utility/error_utility'
 require_relative 'core/utility/regexp_patterns'
+require_relative 'core/utility/type_checker'
 
 require_relative 'core/exceptions'
 
