@@ -50,8 +50,8 @@ module RgGen
 
         class Visitor < ::Psych::Visitors::ToRuby
           if ::Psych::VERSION >= '3.2.0'
-            def initialize(ss, class_loader)
-              super(ss, class_loader, symbolize_names: true)
+            def initialize(scalar_scanner, class_loader)
+              super(scalar_scanner, class_loader, symbolize_names: true)
             end
           end
 
@@ -100,7 +100,8 @@ module RgGen
           return result if ::Psych::VERSION >= '3.2.0'
 
           if result.match_class?(Hash)
-            result.keys.each do |key|
+            keys = result.keys
+            keys.each do |key|
               result[key.to_sym] = symbolize_names(result.delete(key))
             end
           elsif result.match_class?(Array)

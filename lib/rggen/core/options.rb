@@ -119,7 +119,7 @@ module RgGen
     Options.add_option(:configuration) do |option|
       option.short_option '-c'
       option.long_option '--configuration FILE'
-      option.default { ENV['RGGEN_DEFAULT_CONFIGURATION_FILE'] }
+      option.default { ENV.fetch('RGGEN_DEFAULT_CONFIGURATION_FILE', nil) }
       option.description 'Specify a configuration file'
     end
 

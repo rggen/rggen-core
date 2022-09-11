@@ -88,8 +88,8 @@ module RgGen
         end
 
         def activate_plugins
-          @plugins.each { |plugin| plugin.activate(@builder) }
-          @plugins.each { |plugin| plugin.activate_additionally(@builder) }
+          do_normal_activation
+          do_addtional_activation
         end
 
         def activate_plugin_by_name(plugin_name)
@@ -135,6 +135,14 @@ module RgGen
             &.split(':')
             &.reject(&:blank?)
             &.map { |entry| entry.split(',', 2) }
+        end
+
+        def do_normal_activation
+          @plugins.each { |plugin| plugin.activate(@builder) }
+        end
+
+        def do_addtional_activation
+          @plugins.each { |plugin| plugin.activate_additionally(@builder) }
         end
       end
     end
