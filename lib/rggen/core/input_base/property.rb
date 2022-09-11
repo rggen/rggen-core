@@ -80,8 +80,8 @@ module RgGen
 
         def set_initial_value(feature, varible_name)
           @options[:initial]
-            .yield_self { |v| evaluate_default_initial_value(feature, v) }
-            .yield_self { |v| feature.instance_variable_set(varible_name, v) }
+            .then { |v| evaluate_default_initial_value(feature, v) }
+            .then { |v| feature.instance_variable_set(varible_name, v) }
         end
 
         def evaluate_default_initial_value(feature, value)

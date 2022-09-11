@@ -7,7 +7,8 @@ module RgGen
       end
 
       module RaiseError
-        def error(message, position = nil)
+        def error(message, input_value = nil)
+          position = input_value.position if input_value.respond_to?(:position)
           raise RegisterMapError.new(message, position || @position)
         end
       end

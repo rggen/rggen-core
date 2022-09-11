@@ -87,7 +87,7 @@ module RgGen::Core
           let(:configuration_file) { configuration_files.sample }
 
           before do
-            allow(ENV).to receive(:[]).with('RGGEN_DEFAULT_CONFIGURATION_FILE').and_return(configuration_file)
+            allow(ENV).to receive(:fetch).with('RGGEN_DEFAULT_CONFIGURATION_FILE', nil).and_return(configuration_file)
           end
 
           it '当該環境変数で指定されたファイルのパスを返す' do

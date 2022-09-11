@@ -9,3 +9,15 @@ inherit_gem:
 inherit_from:
   - .rubocop_todo.yml
 <% end %>
+
+Metrics/ParameterLists:
+  Exclude:
+    - lib/rggen/core/input_base/yaml_loader.rb
+
+Naming/AccessorMethodName:
+  Exclude:
+    - lib/rggen/core/input_base/yaml_loader.rb
+
+Naming/MethodName:
+  Exclude:
+    - lib/rggen/core/core_extensions/kernel.rb
