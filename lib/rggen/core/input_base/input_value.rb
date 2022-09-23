@@ -4,13 +4,27 @@ module RgGen
   module Core
     module InputBase
       class InputValue < ::SimpleDelegator
-        def initialize(value, position)
+        NoValue = Object.new
+
+        def initialize(value, options_or_position, position = NoValue)
           super((value.is_a?(String) && value.strip) || value)
-          @position = position
+          @options, @position =
+            if position.equal?(NoValue)
+              [NoValue, options_or_position]
+            else
+              [options_or_position, position]
+            end
         end
 
         alias_method :value, :__getobj__
+
         attr_reader :position
+        attr_reader :options
+
+        def ==(other)
+          __getobj__ == other ||
+            other.is_a?(InputValue) && __getobj__ == other.__getobj__
+        end
 
         def match_class?(klass)
           __getobj__.is_a?(klass)
@@ -20,6 +34,10 @@ module RgGen
           return true if value.nil?
           return true if value.respond_to?(:empty?) && value.empty?
           false
+        end
+
+        def with_options?
+          !@options.equal?(NoValue)
         end
 
         def available?

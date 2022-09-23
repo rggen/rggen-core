@@ -51,8 +51,7 @@ module RgGen
           end
 
           def input_pattern(pattern_or_patterns, **options, &converter)
-            @input_matcher =
-              InputMatcher.new(pattern_or_patterns, **options, &converter)
+            @input_matcher = InputMatcher.new(pattern_or_patterns, **options, &converter)
           end
 
           attr_reader :input_matcher
@@ -89,9 +88,8 @@ module RgGen
           end
 
           def export_verifiers(subclass)
-            subclass.instance_variable_set(
-              :@verifiers, @verifiers.transform_values(&:dup)
-            )
+            subclass
+              .instance_variable_set(:@verifiers, @verifiers.transform_values(&:dup))
           end
         end
 
@@ -105,9 +103,7 @@ module RgGen
         end
 
         def post_build
-          self.class.post_builders&.each do |post_builder|
-            instance_exec(&post_builder)
-          end
+          self.class.post_builders&.each { |block| instance_exec(&block) }
         end
 
         def verify(scope)
@@ -115,9 +111,7 @@ module RgGen
         end
 
         def printables
-          helper
-            .printables
-            &.map { |name, body| [name, printable(name, &body)] }
+          helper.printables&.map { |name, body| [name, printable(name, &body)] }
         end
 
         def printable?
@@ -135,8 +129,12 @@ module RgGen
         def do_build(args)
           @position = args.last.position
           match_automatically? && match_pattern(args.last)
-          Array(self.class.builders)
-            .each { |builder| instance_exec(*args, &builder) }
+          execute_build_blocks(args)
+        end
+
+        def execute_build_blocks(args)
+          args = [*args, args.last.options] if args.last.with_options?
+          self.class.builders.each { |builder| instance_exec(*args, &builder) }
         end
 
         attr_reader :position
