@@ -17,10 +17,18 @@ module RgGen
             @default_value = block if block_given?
             @default_value
           end
+
+          def allow_options
+            @allow_options = true
+          end
+
+          def allow_options?
+            @allow_options || false
+          end
         end
 
         def create(component, *args)
-          input_value = preprocess(args.last)
+          input_value = process_input_value(args.last)
           create_feature(component, *args[0..-2], input_value) do |feature|
             build_feature(feature, input_value)
             feature.verify(:feature)
@@ -37,20 +45,60 @@ module RgGen
 
         private
 
-        def preprocess(input_value)
-          converted_value =
-            active_feature_factory? && convert_value(input_value)
-          converted_value || input_value
+        def process_input_value(input_value)
+          if passive_feature_factory?
+            input_value
+          elsif self.class.allow_options?
+            process_input_value_with_options(input_value)
+          else
+            process_input_value_without_options(input_value)
+          end
         end
 
-        def convert_value(input_value)
-          new_value =
-            if input_value.empty_value?
-              evaluate_defalt_value(input_value.position)
+        def process_input_value_with_options(input_value)
+          value, options =
+            if string?(input_value)
+              parse_string_value(input_value)
             else
-              convert(input_value.value, input_value.position)
+              Array(input_value).then { |values| [values.first, values[1..]] }
             end
-          new_value && InputValue.new(new_value, input_value.position)
+          value = convert_value(value, input_value.position) || value
+          InputValue.new(value, options || [], input_value.position)
+        end
+
+        def parse_string_value(input_value)
+          value, options = split_string(input_value, ':', 2)
+          [value, parse_option_string(options)]
+        end
+
+        def parse_option_string(option_string)
+          split_string(option_string, /[,\n]/, 0)&.map do |option|
+            name, value = split_string(option, ':', 2)
+            value && [name, value] || name
+          end
+        end
+
+        def split_string(string, separator, limit)
+          string&.split(separator, limit)&.map(&:strip)
+        end
+
+        def process_input_value_without_options(input_value)
+          value = convert_value(input_value.value, input_value.position)
+          value && InputValue.new(value, input_value.position) || input_value
+        end
+
+        def convert_value(value, position)
+          if empty_value?(value)
+            evaluate_defalt_value(position)
+          else
+            convert(value, position)
+          end
+        end
+
+        def empty_value?(value)
+          return true if value.nil?
+          return value.empty? if value.respond_to?(:empty?)
+          false
         end
 
         def evaluate_defalt_value(position)

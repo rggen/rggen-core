@@ -22,6 +22,10 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
 
     let(:position) { Struct.new(:x, :y).new(0, 1) }
 
+    def create_input_value(value)
+      RgGen::Core::InputBase::InputValue.new(value, position)
+    end
+
     it '#create_featureを呼んで、フィーチャーを生成する' do
       expect(active_factory).to receive(:create_feature).and_call_original
       expect(passive_factory).to receive(:create_feature).and_call_original
@@ -219,6 +223,115 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
       it '対象フィーチャーが受動フィーチャーの場合は、入力値の変換を行わない' do
         expect(passive_factory).not_to receive(:upcase)
         passive_factory.create(component, input_value)
+      end
+    end
+
+    describe 'オプションの受け入れ' do
+      let(:feature_class) do
+        Class.new(RgGen::Core::InputBase::Feature) do
+          property :value
+          property :options
+          build { |value, options| @value, @options = [value, options] }
+        end
+      end
+
+      let(:factory_class) do
+        Class.new(described_class) do
+          allow_options
+        end
+      end
+
+      let(:factory) do
+        factory_class.new(feature_name) { |f| f.target_feature feature_class }
+      end
+
+      context '入力値が配列で与えられた場合' do
+        specify '先頭要素を入力値、残りをオプションとして扱う' do
+          value = :foo
+          options = [:bar, [:baz, 1], :qux]
+
+          feature = factory.create(component, create_input_value([value, *options]))
+          expect(feature.value).to eq value
+          expect(feature.options[0]).to eq options[0]
+          expect(feature.options[1]).to match(options[1])
+          expect(feature.options[2]).to eq options[2]
+        end
+      end
+
+      context '入力値が文字列で与えられた場合' do
+        specify '入力値とオプションは:で区切られる' do
+          value = 'foo'
+          option = 'bar'
+
+          feature = factory.create(component, create_input_value("#{value}:#{option}"))
+          expect(feature.value).to eq value
+          expect(feature.options[0]).to eq option
+        end
+
+        specify 'オプション間はコンマまたは改行で区切られる' do
+          value = 'foo'
+          options = ['bar', 'baz', 'qux']
+
+          option_string = options.inject { |s, o| s + [',', "\n"].sample + o }
+          feature = factory.create(component, create_input_value("#{value}:#{option_string}"))
+          expect(feature.value).to eq value
+          expect(feature.options).to match(options)
+        end
+
+        specify 'オプション名と値はコロンで区切られる' do
+          value = 'foo'
+          options = ['bar', ['baz', '1'], 'qux']
+
+          option_string = options.map { |o| Array(o).join(':') }.join([',', "\n"].sample)
+          feature = factory.create(component, create_input_value("#{value}:#{option_string}"))
+          expect(feature.value).to eq value
+          expect(feature.options[0]).to eq options[0]
+          expect(feature.options[1]).to match(options[1])
+          expect(feature.options[2]).to eq options[2]
+        end
+      end
+
+      context 'オプションが未指定の場合' do
+        specify 'オプションに空の配列が渡される' do
+          feature = factory.create(component, create_input_value(:foo))
+          expect(feature.options).to eq []
+
+          feature = factory.create(component, create_input_value([:foo]))
+          expect(feature.options).to eq []
+
+          feature = factory.create(component, create_input_value('foo'))
+          expect(feature.options).to eq []
+
+          feature = factory.create(component, create_input_value('foo:'))
+          expect(feature.options).to eq []
+        end
+      end
+
+      specify '位置情報は維持される' do
+        feature = factory.create(component, create_input_value(:foo))
+        expect(feature.send(:position)). to eq position
+
+        feature = factory.create(component, create_input_value('foo'))
+        expect(feature.send(:position)). to eq position
+      end
+
+      context '入力値の変換が与えられている場合' do
+        specify 'オプションには適用されない' do
+          factory_class.class_eval do
+            convert_value { |value| value.upcase }
+          end
+
+          value = 'foo'
+          options = ['bar', 'baz']
+
+          feature = factory.create(component, create_input_value([value, *options]))
+          expect(feature.value).to eq value.upcase
+          expect(feature.options).to match(options)
+
+          feature = factory.create(component, create_input_value("#{value}:#{options.join(',')}"))
+          expect(feature.value).to eq value.upcase
+          expect(feature.options).to match(options)
+        end
       end
     end
   end

@@ -11,8 +11,12 @@ RSpec.describe RgGen::Core::InputBase::Feature do
     klass.new(:feature, nil, component)
   end
 
-  def create_input_value(value, position = nil)
-    RgGen::Core::InputBase::InputValue.new(value, position)
+  def create_input_value(value, *args)
+    if args.empty?
+      RgGen::Core::InputBase::InputValue.new(value, nil)
+    else
+      RgGen::Core::InputBase::InputValue.new(value, *args)
+    end
   end
 
   describe '.property' do
@@ -85,13 +89,17 @@ RSpec.describe RgGen::Core::InputBase::Feature do
   describe '#build' do
     let(:feature) do
       create_feature do
-        build { |*args| foo(*args.map(&:value)) }
+        build { |*args| foo(*args.map(&method(:extract_value))) }
+
+        def extract_value(arg)
+          arg.respond_to?(:value) && arg.value || arg
+        end
       end
     end
 
     let(:child_feature) do
       create_feature(feature.class) do
-        build { |*args| bar(*args.map(&:value)) }
+        build { |*args| bar(*args.map(&method(:extract_value))) }
       end
     end
 
@@ -103,7 +111,11 @@ RSpec.describe RgGen::Core::InputBase::Feature do
 
     let(:position) { Struct.new(:x, :y).new(0, 1) }
 
-    let(:input_value) { create_input_value(value, position) }
+    let(:options) { [[], nil, false, Object.new].sample }
+
+    let(:input_value_with_options) { create_input_value(value, options, position) }
+
+    let(:input_value_without_options) { create_input_value(value, position) }
 
     let(:other_value) { Object.new }
 
@@ -113,38 +125,61 @@ RSpec.describe RgGen::Core::InputBase::Feature do
 
     it '.buildで登録されたブロックを実行し、フィーチャーの組み立てを行う' do
       expect(feature).to receive(:foo)
-      feature.build(input_value)
+      feature.build(input_value_with_options)
+
+      expect(feature).to receive(:foo)
+      feature.build(input_value_without_options)
     end
 
-    specify '入力データが組み立てブロックに渡される' do
-      expect(feature).to receive(:foo).with(equal(value))
-      feature.build(input_value)
+    context '入力データがオプションを持たない場合' do
+      specify '入力データが組み立てブロックに渡される' do
+        expect(feature).to receive(:foo).with(equal(value))
+        feature.build(input_value_without_options)
 
-      expect(feature).to receive(:foo).with(equal(other_value), equal(value))
-      feature.build(other_input_value, input_value)
+        expect(feature).to receive(:foo).with(equal(other_value), equal(value))
+        feature.build(other_input_value, input_value_without_options)
+      end
+    end
+
+    context '入力データがオプションを持つ場合' do
+      specify '入力データとオプションが組み立てブロックに渡される' do
+        expect(feature).to receive(:foo).with(equal(value), equal(options))
+        feature.build(input_value_with_options)
+
+        expect(feature).to receive(:foo).with(equal(other_value), equal(value), equal(options))
+        feature.build(other_input_value, input_value_with_options)
+      end
     end
 
     specify '入力データの#positionは、フィーチャー内に#positionとして保持される' do
       allow(feature).to receive(:foo)
-      feature.build(input_value)
+
+      feature.build(input_value_without_options)
+      expect(feature.send(:position)).to eq position
+
+      feature.build(input_value_with_options)
       expect(feature.send(:position)).to eq position
     end
 
     specify '#positionの取り出しは、末尾の入力値に対して行われる' do
       allow(feature).to receive(:foo)
-      feature.build(other_input_value, input_value)
+
+      feature.build(other_input_value, input_value_without_options)
+      expect(feature.send(:position)).to eq position
+
+      feature.build(other_input_value, input_value_with_options)
       expect(feature.send(:position)).to eq position
     end
 
     specify '登録された組み立てブロックは、継承される' do
       expect(grandchild_feature).to receive(:foo).with(equal(value))
       expect(grandchild_feature).to receive(:bar).with(equal(value))
-      grandchild_feature.build(input_value)
+      grandchild_feature.build(input_value_without_options)
     end
 
     it '組み立てブロックの登録がなくても、実行できる' do
       expect {
-        create_feature.build(input_value)
+        create_feature.build(input_value_without_options)
       }.not_to raise_error
     end
 

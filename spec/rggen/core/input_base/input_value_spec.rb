@@ -53,6 +53,25 @@ RSpec.describe RgGen::Core::InputBase::InputValue do
     expect(hash_value).to match(foo: 1)
   end
 
+  describe '#==' do
+    it '入力値と右辺値が一致するかを返す' do
+      expect(integer_value).to eq integer
+      expect(integer_value).to eq described_class.new(integer, position)
+
+      expect(string_value).to eq string
+      expect(string_value).to eq described_class.new(string, position)
+
+      expect(symbol_value).to eq symbol
+      expect(symbol_value).to eq described_class.new(symbol, position)
+
+      expect(array_value).to eq array
+      expect(array_value).to eq described_class.new(array, position)
+
+      expect(hash_value).to eq hash
+      expect(hash_value).to eq described_class.new(hash, position)
+    end
+  end
+
   describe '#match_class?' do
     it '入力値が指定されたクラスのインスタンスかどうかを返す' do
       expect(integer_value.match_class?(Integer)).to be true
@@ -104,6 +123,29 @@ RSpec.describe RgGen::Core::InputBase::InputValue do
       expect(array_value).not_to be_empty_value
       hash_value[:foo] = 1
       expect(hash_value).not_to be_empty_value
+    end
+  end
+
+  describe '#with_options?' do
+    let(:value) do
+      [integer, string, symbol, array, hash, object, nil].sample
+    end
+
+    let(:options) do
+      [[], nil, false, Object.new]
+    end
+
+    let(:value_with_options) do
+      described_class.new(value, options, position)
+    end
+
+    let(:value_without_options) do
+      described_class.new(value, position)
+    end
+
+    it '入力値がオプションを持つかどうかを示す' do
+      expect(value_with_options).to be_with_options
+      expect(value_without_options).not_to be_with_options
     end
   end
 
