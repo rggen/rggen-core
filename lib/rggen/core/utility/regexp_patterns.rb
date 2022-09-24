@@ -32,6 +32,18 @@ module RgGen
         def integer
           INTEGER_PATTERN
         end
+
+        TRUTHY_PATTERN = /true|on|yes/i.freeze
+
+        def truthy_pattern
+          TRUTHY_PATTERN
+        end
+
+        FALSEY_PATTERN = /false|off|no/i.freeze
+
+        def falsey_pattern
+          FALSEY_PATTERN
+        end
       end
     end
   end

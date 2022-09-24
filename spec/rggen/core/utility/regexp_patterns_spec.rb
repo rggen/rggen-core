@@ -131,5 +131,41 @@ module RgGen::Core::Utility
         end
       end
     end
+
+    describe '#truthy_pattern' do
+      it 'true/on/yesにマッチする' do
+        [
+          /true/i, /on/i, /yes/i
+        ].each do |pattern|
+          string = random_string(pattern)
+          expect(string).to match(regexp_pattern(:truthy_pattern))
+        end
+
+        [
+          /false/i, /off/i, /no/i, /foo/i, /\s*/i
+        ].each do |pattern|
+          string  = random_string(pattern)
+          expect(string).not_to match(regexp_pattern(:truthy_pattern))
+        end
+      end
+    end
+
+    describe '#falsey_pattern' do
+      it 'false/off/noにマッチする' do
+        [
+          /false/i, /off/i, /no/i
+        ].each do |pattern|
+          string = random_string(pattern)
+          expect(string).to match(regexp_pattern(:falsey_pattern))
+        end
+
+        [
+          /true/i, /on/i, /yes/i, /foo/i, /\s*/i
+        ].each do |pattern|
+          string  = random_string(pattern)
+          expect(string).not_to match(regexp_pattern(:falsey_pattern))
+        end
+      end
+    end
   end
 end
