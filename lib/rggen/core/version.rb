@@ -2,7 +2,7 @@
 
 module RgGen
   module Core
-    VERSION = '0.27.0'
+    VERSION = '0.28.0'
     MAJOR, MINOR, PATCH = VERSION.split('.').map(&:to_i)
   end
 end
