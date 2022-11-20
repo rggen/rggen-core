@@ -55,18 +55,16 @@ module RgGen
             end
           end
 
-          def register(node, object)
-            obj =
-              if override_object?(node)
-                file = node.filename
-                line = node.start_line + 1
-                column = node.start_column + 1
-                position = Position.new(file, line, column)
-                InputValue.new(object, position)
-              else
-                object
-              end
-            super(node, obj)
+          def accept(node)
+            object = super
+            if override_object?(node)
+              file = node.filename
+              line = node.start_line + 1
+              column = node.start_column + 1
+              InputValue.new(object, Position.new(file, line, column))
+            else
+              object
+            end
           end
 
           private
@@ -100,10 +98,9 @@ module RgGen
           return result if ::Psych::VERSION >= '3.2.0'
 
           if result.match_class?(Hash)
-            keys = result.keys
-            keys.each do |key|
-              result[key.to_sym] = symbolize_names(result.delete(key))
-            end
+            result
+              .transform_keys!(&:to_sym)
+              .transform_values!(&method(:symbolize_names))
           elsif result.match_class?(Array)
             result.map! { |value| symbolize_names(value) }
           end
