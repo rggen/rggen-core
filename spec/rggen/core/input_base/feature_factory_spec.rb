@@ -226,7 +226,7 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
       end
     end
 
-    describe 'オプションの受け入れ' do
+    context 'value_formatにvalue_with_optionsが指定されている場合' do
       let(:feature_class) do
         Class.new(RgGen::Core::InputBase::Feature) do
           property :value
@@ -237,7 +237,7 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
 
       let(:factory_class) do
         Class.new(described_class) do
-          allow_options
+          value_format :value_with_options
         end
       end
 
@@ -245,66 +245,17 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
         factory_class.new(feature_name) { |f| f.target_feature feature_class }
       end
 
-      context '入力値が配列で与えられた場合' do
-        specify '先頭要素を入力値、残りをオプションとして扱う' do
-          value = :foo
-          options = [:bar, [:baz, 1], :qux]
+      specify '入力値にオプションをとることができる' do
+        value = :foo
+        options = [:bar, [:baz, 1], :qux]
 
-          feature = factory.create(component, create_input_value([value, *options]))
-          expect(feature.value).to eq value
-          expect(feature.options[0]).to eq options[0]
-          expect(feature.options[1]).to match(options[1])
-          expect(feature.options[2]).to eq options[2]
-        end
-      end
+        feature = factory.create(component, create_input_value([value, *options]))
+        expect(feature.value).to eq value
+        expect(feature.options).to match(options)
 
-      context '入力値が文字列で与えられた場合' do
-        specify '入力値とオプションは:で区切られる' do
-          value = 'foo'
-          option = 'bar'
-
-          feature = factory.create(component, create_input_value("#{value}:#{option}"))
-          expect(feature.value).to eq value
-          expect(feature.options[0]).to eq option
-        end
-
-        specify 'オプション間はコンマまたは改行で区切られる' do
-          value = 'foo'
-          options = ['bar', 'baz', 'qux']
-
-          option_string = options.inject { |s, o| s + [',', "\n"].sample + o }
-          feature = factory.create(component, create_input_value("#{value}:#{option_string}"))
-          expect(feature.value).to eq value
-          expect(feature.options).to match(options)
-        end
-
-        specify 'オプション名と値はコロンで区切られる' do
-          value = 'foo'
-          options = ['bar', ['baz', '1'], 'qux']
-
-          option_string = options.map { |o| Array(o).join(':') }.join([',', "\n"].sample)
-          feature = factory.create(component, create_input_value("#{value}:#{option_string}"))
-          expect(feature.value).to eq value
-          expect(feature.options[0]).to eq options[0]
-          expect(feature.options[1]).to match(options[1])
-          expect(feature.options[2]).to eq options[2]
-        end
-      end
-
-      context 'オプションが未指定の場合' do
-        specify 'オプションに空の配列が渡される' do
-          feature = factory.create(component, create_input_value(:foo))
-          expect(feature.options).to eq []
-
-          feature = factory.create(component, create_input_value([:foo]))
-          expect(feature.options).to eq []
-
-          feature = factory.create(component, create_input_value('foo'))
-          expect(feature.options).to eq []
-
-          feature = factory.create(component, create_input_value('foo:'))
-          expect(feature.options).to eq []
-        end
+        feature = factory.create(component, create_input_value(value))
+        expect(feature.value).to eq value
+        expect(feature.options).to be_empty
       end
 
       specify '位置情報は維持される' do
@@ -325,10 +276,6 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
           options = ['bar', 'baz']
 
           feature = factory.create(component, create_input_value([value, *options]))
-          expect(feature.value).to eq value.upcase
-          expect(feature.options).to match(options)
-
-          feature = factory.create(component, create_input_value("#{value}:#{options.join(',')}"))
           expect(feature.value).to eq value.upcase
           expect(feature.options).to match(options)
         end

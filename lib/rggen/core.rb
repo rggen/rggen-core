@@ -52,6 +52,8 @@ require_relative 'core/input_base/input_matcher'
 require_relative 'core/input_base/verifier'
 require_relative 'core/input_base/property'
 require_relative 'core/input_base/feature'
+require_relative 'core/input_base/input_vaue_parser'
+require_relative 'core/input_base/value_with_options_parser'
 require_relative 'core/input_base/feature_factory'
 
 require_relative 'core/configuration/input_data'
