@@ -18,12 +18,9 @@ module RgGen
             @default_value
           end
 
-          def allow_options
-            @allow_options = true
-          end
-
-          def allow_options?
-            @allow_options || false
+          def value_format(format = nil)
+            @value_format = format if format
+            @value_format
           end
         end
 
@@ -48,50 +45,39 @@ module RgGen
         def process_input_value(input_value)
           if passive_feature_factory?
             input_value
-          elsif self.class.allow_options?
-            process_input_value_with_options(input_value)
           else
-            process_input_value_without_options(input_value)
+            process_active_input_value(input_value)
           end
         end
 
-        def process_input_value_with_options(input_value)
-          value, options =
-            if string?(input_value)
-              parse_string_value(input_value)
-            else
-              Array(input_value).then { |values| [values.first, values[1..]] }
+        def process_active_input_value(input_value)
+          parseed_value, options =
+            if self.class.value_format
+              parse_input_value(input_value, self.class.value_format)
             end
-          value = convert_value(value, input_value.position) || value
-          InputValue.new(value, options || [], input_value.position)
+          override_input_value(input_value, parseed_value, options) || input_value
         end
 
-        def parse_string_value(input_value)
-          value, options = split_string(input_value, ':', 2)
-          [value, parse_option_string(options)]
+        VALUE_PARSERS = {
+          value_with_options: ValueWithOptionsParser,
+          hash_list: HashListParser
+        }.freeze
+
+        def parse_input_value(input_value, value_format)
+          VALUE_PARSERS[value_format].new(error_exception).parse(input_value)
         end
 
-        def parse_option_string(option_string)
-          split_string(option_string, /[,\n]/, 0)&.map do |option|
-            name, value = split_string(option, ':', 2)
-            value && [name, value] || name
-          end
+        def override_input_value(input_value, parseed_value, options)
+          (convert_value(input_value, parseed_value) || parseed_value)
+            &.then { |v| InputValue.new(v, options, input_value.position) }
         end
 
-        def split_string(string, separator, limit)
-          string&.split(separator, limit)&.map(&:strip)
-        end
-
-        def process_input_value_without_options(input_value)
-          value = convert_value(input_value.value, input_value.position)
-          value && InputValue.new(value, input_value.position) || input_value
-        end
-
-        def convert_value(value, position)
+        def convert_value(input_value, parseed_value)
+          value = parseed_value || input_value.value
           if empty_value?(value)
-            evaluate_defalt_value(position)
+            evaluate_defalt_value(input_value.position)
           else
-            convert(value, position)
+            convert(value, input_value.position)
           end
         end
 

@@ -1,29 +1,35 @@
 # frozen_string_literal: true
 
 RSpec.describe RgGen::Core::Configuration::RaiseError do
-  describe '#error' do
-    let(:message) { 'configuration error !' }
+  let(:message) { 'configuration error !' }
 
-    let(:positions) { [Struct.new(:x, :y).new(0, 1), Struct.new(:x, :y).new(2, 3)]}
+  let(:positions) { [Struct.new(:x, :y).new(0, 1), Struct.new(:x, :y).new(2, 3)]}
 
-    let(:configuration_error) do
-      RgGen::Core::Configuration::ConfigurationError
-    end
+  let(:configuration_error) do
+    RgGen::Core::Configuration::ConfigurationError
+  end
 
-    let(:object) do
-      Class.new do
-        include RgGen::Core::Configuration::RaiseError
-        attr_writer :position
-        def error_test(message, input_value = nil)
-          if input_value
-            error message, input_value
-          else
-            error message
-          end
+  let(:object) do
+    Class.new do
+      include RgGen::Core::Configuration::RaiseError
+      attr_writer :position
+      def error_test(message, input_value = nil)
+        if input_value
+          error message, input_value
+        else
+          error message
         end
-      end.new
-    end
+      end
+    end.new
+  end
 
+  describe '#error_exception' do
+    it 'ConfigurationErrorを返す' do
+      expect(object.send(:error_exception)).to equal configuration_error
+    end
+  end
+
+  describe '#error' do
     context '位置情報がない場合' do
       it '与えられたメッセージでConfigurationErrorを発生させる' do
         expect {
