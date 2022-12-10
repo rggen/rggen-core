@@ -3,9 +3,7 @@
 module RgGen
   module Core
     module InputBase
-      class ValueWithOptionsParser
-        include InputValueParser
-
+      class ValueWithOptionsParser < InputValueParser
         def parse(input_value)
           value, options =
             if string?(input_value)

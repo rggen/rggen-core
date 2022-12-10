@@ -51,42 +51,33 @@ module RgGen
         end
 
         def process_active_input_value(input_value)
-          value, options =
+          parseed_value, options =
             if self.class.value_format
               parse_input_value(input_value, self.class.value_format)
-            else
-              [input_value]
             end
-          override_input_value(value, options, input_value.position) || input_value
+          override_input_value(input_value, parseed_value, options) || input_value
         end
 
         VALUE_PARSERS = {
-          value_with_options: ValueWithOptionsParser
+          value_with_options: ValueWithOptionsParser,
+          hash_list: HashListParser
         }.freeze
 
         def parse_input_value(input_value, value_format)
-          VALUE_PARSERS[value_format].new.parse(input_value)
+          VALUE_PARSERS[value_format].new(error_exception).parse(input_value)
         end
 
-        def override_input_value(value, options, position)
-          converted_value = convert_value(value, position)
-          (converted_value || options) &&
-            InputValue.new(converted_value || value, options, position)
+        def override_input_value(input_value, parseed_value, options)
+          (convert_value(input_value, parseed_value) || parseed_value)
+            &.then { |v| InputValue.new(v, options, input_value.position) }
         end
 
-        def convert_value(value, position)
-          value = strip_value(value)
+        def convert_value(input_value, parseed_value)
+          value = parseed_value || input_value.value
           if empty_value?(value)
-            evaluate_defalt_value(position)
+            evaluate_defalt_value(input_value.position)
           else
-            convert(value, position)
-          end
-        end
-
-        def strip_value(value)
-          case value
-          when InputValue then value.value
-          else value
+            convert(value, input_value.position)
           end
         end
 

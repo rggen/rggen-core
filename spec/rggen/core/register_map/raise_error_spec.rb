@@ -1,29 +1,35 @@
 # frozen_string_literal: true
 
 RSpec.describe RgGen::Core::RegisterMap::RaiseError do
-  describe '#error' do
-    let(:message) { 'register map error !' }
+  let(:message) { 'register map error !' }
 
-    let(:positions) { [Struct.new(:x, :y).new(0, 1), Struct.new(:x, :y).new(2, 3)]}
+  let(:positions) { [Struct.new(:x, :y).new(0, 1), Struct.new(:x, :y).new(2, 3)]}
 
-    let(:register_map_error) do
-      RgGen::Core::RegisterMap::RegisterMapError
-    end
+  let(:register_map_error) do
+    RgGen::Core::RegisterMap::RegisterMapError
+  end
 
-    let(:object) do
-      Class.new do
-        include RgGen::Core::RegisterMap::RaiseError
-        attr_writer :position
-        def error_test(message, input_value = nil)
-          if input_value
-            error message, input_value
-          else
-            error message
-          end
+  let(:object) do
+    Class.new do
+      include RgGen::Core::RegisterMap::RaiseError
+      attr_writer :position
+      def error_test(message, input_value = nil)
+        if input_value
+          error message, input_value
+        else
+          error message
         end
-      end.new
-    end
+      end
+    end.new
+  end
 
+  describe '#error_exception' do
+    it 'RegisterMapErrorを返す' do
+      expect(object.send(:error_exception)).to equal register_map_error
+    end
+  end
+
+  describe '#error' do
     context '位置情報がない場合' do
       it '与えられたメッセージでRegisterMapErrorを発生させる' do
         expect {

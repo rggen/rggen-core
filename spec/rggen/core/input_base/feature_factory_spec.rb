@@ -7,15 +7,21 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
 
   let(:passive_feature) { Class.new(RgGen::Core::InputBase::Feature) }
 
+  let(:feature_factory) do
+    Class.new(described_class) do
+      def error_exception; nil end
+    end
+  end
+
   describe '#create' do
     let(:component) { RgGen::Core::Base::Component.new(nil, 'component', nil) }
 
     let(:active_factory) do
-      described_class.new(feature_name) { |f| f.target_feature active_feature }
+      feature_factory.new(feature_name) { |f| f.target_feature active_feature }
     end
 
     let(:passive_factory) do
-      described_class.new(feature_name) { |f| f.target_feature passive_feature }
+      feature_factory.new(feature_name) { |f| f.target_feature passive_feature }
     end
 
     let(:input_value) { RgGen::Core::InputBase::InputValue.new(:foo, position) }
@@ -102,7 +108,7 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
 
       let(:feature_factories) do
         features.map do |feature|
-          described_class.new(feature_name) { |f| f.target_feature feature }
+          feature_factory.new(feature_name) { |f| f.target_feature feature }
         end
       end
 
@@ -127,7 +133,7 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
       end
 
       let(:factory_class) do
-        Class.new(described_class) do
+        Class.new(feature_factory) do
           default_value { default_value }
           def default_value; :foo; end
         end
@@ -185,7 +191,7 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
       end
 
       let(:factory_class) do
-        Class.new(described_class) do
+        Class.new(feature_factory) do
           convert_value { |value| upcase(value) }
           def upcase(value); value.upcase end
         end
@@ -236,7 +242,7 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
       end
 
       let(:factory_class) do
-        Class.new(described_class) do
+        Class.new(feature_factory) do
           value_format :value_with_options
         end
       end
@@ -281,19 +287,90 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
         end
       end
     end
+
+    context 'value_formatにhash_listが指定された場合' do
+      let(:feature_class) do
+        Class.new(RgGen::Core::InputBase::Feature) do
+          property :hash_list
+          build { |hash_list| @hash_list = hash_list }
+        end
+      end
+
+      let(:factory_class) do
+        Class.new(feature_factory) do
+          value_format :hash_list
+        end
+      end
+
+      let(:factory) do
+        factory_class.new(feature_name) { |f| f.target_feature feature_class }
+      end
+
+      specify 'ハッシュのリストとして入力を受け付ける' do
+        input_value = create_input_value([
+          { foo: 0, bar: 1 },
+          { foo: 2, bar: 3 }
+        ])
+        feature = factory.create(component, input_value)
+        expect(feature.hash_list[0]).to match(foo: 0, bar: 1)
+        expect(feature.hash_list[1]).to match(foo: 2, bar: 3)
+
+        input_value = create_input_value(<<~'HASH_LIST')
+          foo: 0, bar: 1
+
+          foo: 2
+          bar: 3
+        HASH_LIST
+        feature = factory.create(component, input_value)
+        expect(feature.hash_list[0]).to match('foo' => '0', 'bar' => '1')
+        expect(feature.hash_list[1]).to match('foo' => '2', 'bar' => '3')
+      end
+
+      specify '位置情報は維持される' do
+        input_value = create_input_value([{ foo: 0 }])
+        feature = factory.create(component, input_value)
+        expect(feature.send(:position)).to eq position
+
+        input_value = create_input_value('foo: 0')
+        feature = factory.create(component, input_value)
+        expect(feature.send(:position)).to eq position
+      end
+
+      context '入力値の変換が与えられた場合' do
+        specify '全体に対して適用される' do
+          factory_class.class_eval do
+            convert_value do |hash_list|
+              hash_list.each do |element|
+                element.transform_values!(&:upcase)
+              end
+            end
+          end
+
+          input_value = create_input_value([
+            { foo: 'foo_0', bar: 'bar_0' },
+            { foo: 'foo_1', bar: 'bar_1' }
+          ])
+          feature = factory.create(component, input_value)
+          expect(feature.hash_list).to match([
+            { foo: 'FOO_0', bar: 'BAR_0' },
+            { foo: 'FOO_1', bar: 'BAR_1' }
+          ])
+        end
+      end
+    end
   end
 
   describe '#active_feature_factory?/#passive_feature_factory?' do
     let(:simple_active_feature_factory) do
-      described_class.new(feature_name) { |f| f.target_feature active_feature }
+      feature_factory.new(feature_name) { |f| f.target_feature active_feature }
     end
 
     let(:simple_passive_feature_factory) do
-      described_class.new(feature_name) { |f| f.target_feature passive_feature }
+      feature_factory.new(feature_name) { |f| f.target_feature passive_feature }
     end
 
     let(:multiple_features_factory) do
-      described_class.new(feature_name) do |f|
+      feature_factory.new(feature_name) do |f|
         f.target_feature passive_feature
         f.target_features foo: active_feature, bar: passive_feature
       end
