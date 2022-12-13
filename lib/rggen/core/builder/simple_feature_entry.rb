@@ -3,35 +3,27 @@
 module RgGen
   module Core
     module Builder
-      class SimpleFeatureEntry
-        def initialize(registry, name)
-          @registry = registry
-          @name = name
-        end
-
-        attr_reader :registry
-        attr_reader :name
-
+      class SimpleFeatureEntry < FeatureEntryBase
         def setup(base_feature, factory, context, &body)
           @feature = define_feature(base_feature, context, &body)
           @factory = factory
         end
 
-        def match_entry_type?(entry_type)
-          entry_type == :simple
-        end
-
-        def build_factory(_enabled_features)
-          @factory.new(@name) { |f| f.target_feature(@feature) }
-        end
-
         private
+
+        def entry_type_name
+          :simple
+        end
 
         def define_feature(base, context, &body)
           feature = Class.new(base)
-          context && feature.attach_context(context)
+          attach_shared_context(context, feature)
           block_given? && feature.class_exec(@name, &body)
           feature
+        end
+
+        def target_feature
+          @feature
         end
       end
     end
