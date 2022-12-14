@@ -53,6 +53,16 @@ module RgGen
           current_shared_context(false)
         end
 
+        def define_feature(feature_names, &body)
+          Array(feature_names).each do |feature_name|
+            do_proxy_call do |proxy|
+              proxy.body(body)
+              proxy.method_name(__method__)
+              proxy.feature_name(feature_name)
+            end
+          end
+        end
+
         def define_simple_feature(feature_names, &body)
           Array(feature_names).each do |feature_name|
             do_proxy_call do |proxy|

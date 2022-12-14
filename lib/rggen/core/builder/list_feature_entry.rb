@@ -3,27 +3,19 @@
 module RgGen
   module Core
     module Builder
-      class ListFeatureEntry
+      class ListFeatureEntry < FeatureEntryBase
         include Base::SharedContext
 
         def initialize(registry, name)
-          @registry = registry
-          @name = name
+          super(registry, name)
           @features = {}
         end
-
-        attr_reader :registry
-        attr_reader :name
 
         def setup(base_feature, base_factory, context, &body)
           @base_feature = Class.new(base_feature)
           @factory = Class.new(base_factory)
-          context && attach_shared_context(context)
+          attach_shared_context(context, @base_feature, @factory, self)
           block_given? && Docile.dsl_eval(self, @name, &body)
-        end
-
-        def match_entry_type?(entry_type)
-          entry_type == :list
         end
 
         def define_factory(&body)
@@ -31,13 +23,6 @@ module RgGen
         end
 
         alias_method :factory, :define_factory
-
-        def build_factory(targets)
-          @factory.new(@name) do |f|
-            f.target_features(target_features(targets))
-            f.target_feature(@default_feature)
-          end
-        end
 
         def define_base_feature(&body)
           body && @base_feature.class_exec(&body)
@@ -51,7 +36,7 @@ module RgGen
           if context
             feature.method_defined?(:shared_context) &&
               (raise BuilderError.new('shared context has already been set'))
-            feature.attach_context(context)
+            attach_shared_context(context, feature)
           end
           body && feature.class_exec(feature_name, &body)
         end
@@ -83,14 +68,16 @@ module RgGen
 
         private
 
-        def attach_shared_context(context)
-          [@factory, @base_feature, self].each do |target|
-            target.attach_context(context)
-          end
+        def entry_type_name
+          :list
         end
 
         def target_features(targets)
           targets && @features.slice(*targets) || @features
+        end
+
+        def target_feature
+          @default_feature
         end
       end
     end
