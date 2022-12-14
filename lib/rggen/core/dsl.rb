@@ -14,6 +14,7 @@ module RgGen
         :setup_loader,
         :load_plugin,
         :define_loader,
+        :define_feature,
         :define_simple_feature,
         :define_list_feature,
         :define_list_item_feature,

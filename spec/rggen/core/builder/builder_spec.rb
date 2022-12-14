@@ -473,6 +473,8 @@ RSpec.describe RgGen::Core::Builder::Builder do
     end
 
     it '指定した階層の#define_simple_feature/#define_list_featureを呼び出して、フィーチャーの定義を行う' do
+      expect(layer).to receive(:define_feature).with(:foo).and_call_original
+      expect(layer).to receive(:define_feature).with(:bar).and_call_original
       expect(layer).to receive(:define_simple_feature).with(:foo).and_call_original
       expect(layer).to receive(:define_simple_feature).with(:bar).and_call_original
       expect(layer).to receive(:define_list_feature).with(:baz).and_call_original
@@ -480,6 +482,8 @@ RSpec.describe RgGen::Core::Builder::Builder do
       expect(layer).to receive(:define_list_feature).with(:qux).and_call_original
       expect(layer).to receive(:define_list_item_feature).with(:qux, :qux_0).and_call_original
 
+      builder.define_feature(target_layer, :foo) {}
+      builder.define_feature(target_layer, :bar) {}
       builder.define_simple_feature(target_layer, :foo) {}
       builder.define_simple_feature(target_layer, :bar) {}
       builder.define_list_feature(target_layer, :baz) {}
@@ -788,7 +792,7 @@ RSpec.describe RgGen::Core::Builder::Builder do
       }[register_map_file_format]
     end
 
-    it 'Configuration／RegisterMapコンポーネントが登録される' do
+    it 'Configuration/RegisterMapコンポーネントが登録される' do
       builder.register_input_components
 
       builder.define_simple_feature(:global, :prefix) do

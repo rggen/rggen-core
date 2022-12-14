@@ -47,6 +47,7 @@ module RgGen
         end
 
         [
+          :define_feature,
           :define_simple_feature,
           :define_list_feature,
           :define_list_item_feature

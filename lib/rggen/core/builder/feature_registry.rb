@@ -11,6 +11,10 @@ module RgGen
           @enabled_features = {}
         end
 
+        def define_feature(name, context = nil, &body)
+          create_new_entry(:general, name, context, &body)
+        end
+
         def define_simple_feature(name, context = nil, &body)
           create_new_entry(:simple, name, context, &body)
         end
@@ -51,21 +55,11 @@ module RgGen
           end
         end
 
-        def simple_feature?(feature_name)
-          @feature_entries[feature_name]&.match_entry_type?(:simple) || false
-        end
-
-        def list_feature?(list_name, feature_name = nil)
-          return false unless @feature_entries[list_name]&.match_entry_type?(:list)
-          return true unless feature_name
-          @feature_entries[list_name].feature?(feature_name)
-        end
-
         def feature?(feature_or_list_name, feature_name = nil)
           if feature_name
             list_feature?(feature_or_list_name, feature_name)
           else
-            simple_feature?(feature_or_list_name) || list_feature?(feature_or_list_name)
+            @feature_entries.key?(feature_or_list_name)
           end
         end
 
@@ -89,7 +83,9 @@ module RgGen
         private
 
         FEATURE_ENTRIES = {
-          simple: SimpleFeatureEntry, list: ListFeatureEntry
+          general: GeneralFeatureEntry,
+          simple: SimpleFeatureEntry,
+          list: ListFeatureEntry
         }.freeze
 
         def create_new_entry(type, name, context, &body)
@@ -105,7 +101,7 @@ module RgGen
         end
 
         def enabled_list?(list_name)
-          return false unless list_feature?(list_name)
+          return false unless @feature_entries[list_name]&.match_entry_type?(:list)
           return true if @enabled_features.empty?
           return true if @enabled_features.key?(list_name)
           false
@@ -113,6 +109,11 @@ module RgGen
 
         def build_factory(entry)
           entry.build_factory(@enabled_features[entry.name])
+        end
+
+        def list_feature?(list_name, feature_name)
+          @feature_entries[list_name]&.match_entry_type?(:list) &&
+            @feature_entries[list_name].feature?(feature_name) || false
         end
       end
     end
