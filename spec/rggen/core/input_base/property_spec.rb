@@ -53,8 +53,8 @@ RSpec.describe RgGen::Core::InputBase::Property do
       end
 
       specify '定義されたプロパティは引数、ブロックを取れる' do
-        define_property(feature, :foo) { |v, &b| v + b.call }
-        expect(feature.foo(2) { 3 }).to eq 5
+        define_property(feature, :foo) { |v, vv:, &b| v + vv + b.call }
+        expect(feature.foo(2, vv: 3) { 4 }).to eq 9
       end
     end
 
@@ -75,8 +75,8 @@ RSpec.describe RgGen::Core::InputBase::Property do
       end
 
       specify '定義されたプロパティは引数、ブロックを取れる' do
-        define_property(feature, :foo, body: ->(v, &b) { v + b.call })
-        expect(feature.foo(2) { 3 }).to eq 5
+        define_property(feature, :foo, body: ->(v, vv:, &b) { v + vv + b.call })
+        expect(feature.foo(2, vv: 3) { 4 }).to eq 9
       end
     end
 
@@ -175,7 +175,7 @@ RSpec.describe RgGen::Core::InputBase::Property do
         create_feature do
           class << self
             def foo; 2; end
-            def bar(v, &b); v + b.call; end
+            def bar(v, vv:, &b); v + vv + b.call; end
           end
 
           def initialize; @foo = 1; end
@@ -190,7 +190,7 @@ RSpec.describe RgGen::Core::InputBase::Property do
 
         specify '定義されるプロパティは引数とブロックを取ることができる' do
           define_property(feature, :bar, forward_to_helper: true)
-          expect(feature.bar(2) { 3 }).to eq 5
+          expect(feature.bar(2, vv: 3) { 4 }).to eq 9
         end
       end
 
@@ -207,7 +207,7 @@ RSpec.describe RgGen::Core::InputBase::Property do
       let(:feature) do
         create_feature do
           def foo; 1; end
-          def bar(v, &b); v + b.call; end
+          def bar(v, vv:, &b); v + vv + b.call; end
         end
       end
 
@@ -219,7 +219,7 @@ RSpec.describe RgGen::Core::InputBase::Property do
 
       specify '定義されるプロパティは引数とブロックを取ることができる' do
         define_property(feature, :barbar, forward_to: :bar)
-        expect(feature.barbar(2) { 3 }).to eq 5
+        expect(feature.barbar(2, vv: 3) { 4 }).to eq 9
       end
     end
 
