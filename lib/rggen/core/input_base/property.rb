@@ -23,16 +23,16 @@ module RgGen
 
         def define(feature)
           feature.class_exec(self) do |property|
-            define_method(property.name) do |*args, &block|
-              property.evaluate(self, args, &block)
+            define_method(property.name) do |*args, **keywords, &block|
+              property.evaluate(self, *args, **keywords, &block)
             end
           end
         end
 
-        def evaluate(feature, args, &block)
+        def evaluate(feature, *args, **keywords, &block)
           feature.verify(@options[:verify]) if @options.key?(:verify)
           if proxy_property?
-            proxy_property(feature, args, &block)
+            proxy_property(feature, *args, **keywords, &block)
           else
             default_property(feature)
           end
@@ -55,7 +55,7 @@ module RgGen
           ].any?
         end
 
-        def proxy_property(feature, args, &block)
+        def proxy_property(feature, *args, **keywords, &block)
           receiver, method =
             if @costom_property
               [@costom_property.bind(feature), :call]
@@ -64,7 +64,15 @@ module RgGen
             else
               [feature, @options[:forward_to]]
             end
-          receiver.__send__(method, *args, &block)
+          call_proxy_method(receiver, method, *args, **keywords, &block)
+        end
+
+        def call_proxy_method(receiver, method, *args, **keywords, &block)
+          if RUBY_VERSION < '2.7.0' && keywords.empty?
+            receiver.__send__(method, *args, &block)
+          else
+            receiver.__send__(method, *args, **keywords, &block)
+          end
         end
 
         def default_property(feature)

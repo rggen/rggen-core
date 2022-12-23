@@ -9,7 +9,9 @@ RSpec.describe RgGen::Core::InputBase::Component do
         Class.new(RgGen::Core::InputBase::Feature) { property :foo, default: :foo; property :bar, default: :bar; }
           .new(:feature_0, nil, component),
         Class.new(RgGen::Core::InputBase::Feature) { property :baz, default: :baz }
-          .new(:feature_1, nil, component)
+          .new(:feature_1, nil, component),
+        Class.new(RgGen::Core::InputBase::Feature) { property :qux, body: ->(v, vv:, &b) { v + vv + b.call } }
+          .new(:feature_2, nil, component)
       ]
     end
 
@@ -21,10 +23,12 @@ RSpec.describe RgGen::Core::InputBase::Component do
       expect(features[0]).to receive(:foo).and_call_original
       expect(features[0]).to receive(:bar).and_call_original
       expect(features[1]).to receive(:baz).and_call_original
+      expect(features[2]).to receive(:qux).and_call_original
 
       expect(component.foo).to eq :foo
       expect(component.bar).to eq :bar
       expect(component.baz).to eq :baz
+      expect(component.qux(1, vv: 2) { 3 } ).to eq 6
     end
   end
 
