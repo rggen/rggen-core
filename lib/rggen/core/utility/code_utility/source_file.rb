@@ -4,7 +4,7 @@ module RgGen
   module Core
     module Utility
       module CodeUtility
-        MacroDefiniion = Struct.new(:name, :value)
+        MacroDefinition = Struct.new(:name, :value)
 
         class SourceFile
           include CodeUtility

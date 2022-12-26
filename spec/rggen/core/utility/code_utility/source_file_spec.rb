@@ -74,10 +74,10 @@ module RgGen::Core::Utility::CodeUtility
     describe '#macro_definition/#macro_definitions' do
       let(:macro_definitions) do
         [
-          RgGen::Core::Utility::CodeUtility::MacroDefiniion.new('FOO', nil),
-          RgGen::Core::Utility::CodeUtility::MacroDefiniion.new('BAR', "32'hdead_beaf"),
-          RgGen::Core::Utility::CodeUtility::MacroDefiniion.new('BAZ', nil),
-          RgGen::Core::Utility::CodeUtility::MacroDefiniion.new('QUX', "32'hcafe_0123")
+          RgGen::Core::Utility::CodeUtility::MacroDefinition.new('FOO', nil),
+          RgGen::Core::Utility::CodeUtility::MacroDefinition.new('BAR', "32'hdead_beaf"),
+          RgGen::Core::Utility::CodeUtility::MacroDefinition.new('BAZ', nil),
+          RgGen::Core::Utility::CodeUtility::MacroDefinition.new('QUX', "32'hcafe_0123")
         ]
       end
 
