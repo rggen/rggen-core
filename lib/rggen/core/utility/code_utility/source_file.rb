@@ -4,6 +4,8 @@ module RgGen
   module Core
     module Utility
       module CodeUtility
+        MacroDefiniion = Struct.new(:name, :value)
+
         class SourceFile
           include CodeUtility
 
@@ -43,6 +45,15 @@ module RgGen
             include_files([file])
           end
 
+          def macro_definitions(macros)
+            @macro_definitions ||= []
+            @macro_definitions.concat(Array(macros))
+          end
+
+          def macro_definition(macro)
+            macro_definitions([macro])
+          end
+
           def body(&block)
             @bodies ||= []
             @bodies << block
@@ -65,6 +76,7 @@ module RgGen
               @file_header,
               include_guard_header,
               include_file_block,
+              macro_definition_block,
               *Array(@bodies),
               include_guard_footer
             ].compact
@@ -91,6 +103,19 @@ module RgGen
               keyword = self.class.include_keyword
               @include_files
                 .flat_map { |file| [keyword, space, string(file), nl] }
+            end
+          end
+
+          def macro_definition_block
+            @macro_definitions && lambda do
+              keyword = self.class.define_keyword
+              @macro_definitions.flat_map do |macro|
+                if macro.value.nil?
+                  [keyword, space, macro.name, nl]
+                else
+                  [keyword, space, macro.name, space, macro.value, nl]
+                end
+              end
             end
           end
 

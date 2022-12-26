@@ -71,6 +71,32 @@ module RgGen::Core::Utility::CodeUtility
       end
     end
 
+    describe '#macro_definition/#macro_definitions' do
+      let(:macro_definitions) do
+        [
+          RgGen::Core::Utility::CodeUtility::MacroDefiniion.new('FOO', nil),
+          RgGen::Core::Utility::CodeUtility::MacroDefiniion.new('BAR', "32'hdead_beaf"),
+          RgGen::Core::Utility::CodeUtility::MacroDefiniion.new('BAZ', nil),
+          RgGen::Core::Utility::CodeUtility::MacroDefiniion.new('QUX', "32'hcafe_0123")
+        ]
+      end
+
+      it '指定したマクロ定義をコードに挿入する' do
+        expect(
+          source_file do |f|
+            f.macro_definition macro_definitions[0]
+            f.macro_definitions macro_definitions[1..2]
+            f.macro_definition macro_definitions[3]
+          end
+        ).to match_string <<~'CODE'
+          `define FOO
+          `define BAR 32'hdead_beaf
+          `define BAZ
+          `define QUX 32'hcafe_0123
+        CODE
+      end
+    end
+
     describe '#body' do
       let(:identifiers) do
         [:foo, :bar, :baz]
