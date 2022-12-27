@@ -74,7 +74,7 @@ module RgGen
             if targets.empty?
               @component_registries[type]
             else
-              @component_registries[type].slice(*targets)
+              collect_component_factories(type, targets)
             end
           registries.each_value.map(&:build_factory)
         end
@@ -127,6 +127,14 @@ module RgGen
           registries.key?(name) ||
             (registries[name] = COMPONENT_REGISTRIES[type].new(name, self))
           body && Docile.dsl_eval(registries[name], &body) || registries[name]
+        end
+
+        def collect_component_factories(type, targets)
+          unknown_components = targets - @component_registries[type].keys
+          unknown_components.empty? ||
+            (raise BuilderError.new("unknown component: #{unknown_components.first}"))
+
+          @component_registries[type].slice(*targets)
         end
       end
     end

@@ -628,7 +628,17 @@ RSpec.describe RgGen::Core::Builder::Builder do
           end
         end
 
-        builder.build_factories(:output, [*targets, :qux, :fizz])
+        builder.build_factories(:output, targets)
+      end
+    end
+
+    context '未定義のコンポーネントが指定された場合' do
+      it 'BuilderErrorを起こす' do
+        targets = [:foo, :bar, :baz, :qux].shuffle
+
+        expect {
+          builder.build_factories(:output, targets)
+        }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown component: qux'
       end
     end
   end
