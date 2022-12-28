@@ -77,11 +77,7 @@ module RgGen
           (@proxy_receivers ||= {})[method_name.to_sym] = receiver
           define_singleton_method(method_name) do |*args, **keywords, &block|
             name = __method__
-            if RUBY_VERSION < '2.7.0' && keywords.empty?
-              @proxy_receivers[name].__send__(name, *args, &block)
-            else
-              @proxy_receivers[name].__send__(name, *args, **keywords, &block)
-            end
+            @proxy_receivers[name].__send__(name, *args, **keywords, &block)
           end
         end
       end

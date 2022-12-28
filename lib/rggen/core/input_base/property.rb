@@ -64,15 +64,7 @@ module RgGen
             else
               [feature, @options[:forward_to]]
             end
-          call_proxy_method(receiver, method, *args, **keywords, &block)
-        end
-
-        def call_proxy_method(receiver, method, *args, **keywords, &block)
-          if RUBY_VERSION < '2.7.0' && keywords.empty?
-            receiver.__send__(method, *args, &block)
-          else
-            receiver.__send__(method, *args, **keywords, &block)
-          end
+          receiver.__send__(method, *args, **keywords, &block)
         end
 
         def default_property(feature)
