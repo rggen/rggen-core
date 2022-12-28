@@ -8,7 +8,7 @@ class Object
         .then { |v| to.instance_variable_set(variable, v) }
   end
 
-  def singleton_exec(*args, &block)
-    singleton_class.class_exec(*args, &block)
+  def singleton_exec(...)
+    singleton_class.class_exec(...)
   end
 end

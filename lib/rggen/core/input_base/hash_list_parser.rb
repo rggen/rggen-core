@@ -30,8 +30,7 @@ module RgGen
 
         def parse_string_hash(item)
           split_string(item, /[,\n]/, 0)
-            .map { |element| split_string(element, ':', 2) }
-            .to_h
+            .to_h { |element| split_string(element, ':', 2) }
         end
       end
     end
