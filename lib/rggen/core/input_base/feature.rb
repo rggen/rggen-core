@@ -29,15 +29,13 @@ module RgGen
           end
 
           def build(&block)
-            @builders ||= []
-            @builders << block
+            (@builders ||= []) << block
           end
 
           attr_reader :builders
 
           def post_build(&block)
-            @post_builders ||= []
-            @post_builders << block
+            (@post_builders ||= []) << block
           end
 
           attr_reader :post_builders
@@ -64,8 +62,7 @@ module RgGen
           attr_reader :verifiers
 
           def printable(name, &body)
-            @printables ||= {}
-            @printables[name] = body
+            (@printables ||= {})[name] = body
           end
 
           attr_reader :printables
@@ -119,9 +116,20 @@ module RgGen
         end
 
         def inspect
-          printable_values =
-            printables&.map { |name, value| "#{name}: #{value.inspect}" }
+          printable_values = printables&.map { |name, value| "#{name}: #{value.inspect}" }
           (printable_values && "#{super}[#{printable_values.join(', ')}]") || super
+        end
+
+        attr_reader :position
+
+        def error_position
+          if position
+            position
+          else
+            approximate_position =
+              component.features.map(&:position).find(&:itself)
+            Error::ApproximatelyErrorPosition.create(approximate_position)
+          end
         end
 
         private
@@ -137,16 +145,12 @@ module RgGen
           self.class.builders.each { |builder| instance_exec(*args, &builder) }
         end
 
-        attr_reader :position
-
         def match_automatically?
-          matcher = self.class.input_matcher
-          matcher&.match_automatically?
+          self.class.input_matcher&.match_automatically?
         end
 
         def match_pattern(rhs)
-          matcher = self.class.input_matcher
-          @match_data, @match_index = matcher&.match(rhs)
+          @match_data, @match_index = self.class.input_matcher&.match(rhs)
         end
 
         attr_reader :match_data
@@ -161,8 +165,7 @@ module RgGen
         end
 
         def do_verify(scope)
-          self.class.verifiers&.[](scope)
-            &.each { |verifier| verifier.verify(self) }
+          self.class.verifiers&.[](scope)&.each { |verifier| verifier.verify(self) }
           (@verified ||= {})[scope] = true
         end
 
