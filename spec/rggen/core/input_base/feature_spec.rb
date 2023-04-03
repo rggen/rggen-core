@@ -540,6 +540,63 @@ RSpec.describe RgGen::Core::InputBase::Feature do
     end
   end
 
+  describe '#error_position' do
+    let(:foo_position) do
+      Struct.new(:x, :y).new(0, 1)
+    end
+
+    let(:bar_position) do
+      Struct.new(:x, :y).new(1, 2)
+    end
+
+    let(:input_values) do
+      [
+        create_input_value(Object.new, foo_position),
+        create_input_value(Object.new, bar_position)
+      ]
+    end
+
+    let(:component) do
+      RgGen::Core::Base::Component.new(nil, "component", nil)
+    end
+
+    let(:features) do
+      foo_feature = define_feature { build { |arg| @foo = arg } }.new(:foo, nil, component)
+      component.add_feature(foo_feature)
+
+      bar_feature = define_feature { build { |arg| @bar = arg } }.new(:bar, nil, component)
+      component.add_feature(bar_feature)
+
+      baz_feature = define_feature { build { |arg| @baz = arg } }.new(:baz, nil, component)
+      component.add_feature(baz_feature)
+
+      [foo_feature, bar_feature, baz_feature]
+    end
+
+    context '#positionを持つ場合' do
+      it '正確なエラー位置として#positionを返す' do
+        features[0].build(input_values[0])
+        features[1].build(input_values[1])
+
+        expect(features[0].error_position).to equal(foo_position)
+        expect(features[1].error_position).to equal(bar_position)
+      end
+    end
+
+    context '#positionを持たない場合' do
+      it 'おおよそのエラー位置として、最初に明示されたfeatureの#positionを返す' do
+        features[1].build(input_values[1])
+
+        expect(features[0].error_position)
+          .to be_instance_of(RgGen::Core::InputBase::Error::ApproximatelyErrorPosition)
+          .and have_attributes(position: equal(bar_position))
+        expect(features[2].error_position)
+          .to be_instance_of(RgGen::Core::InputBase::Error::ApproximatelyErrorPosition)
+          .and have_attributes(position: equal(bar_position))
+      end
+    end
+  end
+
   describe '#inspect' do
     context '表示可能オブジェクトを含む場合' do
       let(:feature) do

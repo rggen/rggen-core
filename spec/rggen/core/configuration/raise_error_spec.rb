@@ -38,7 +38,22 @@ RSpec.describe RgGen::Core::Configuration::RaiseError do
       end
     end
 
-    context 'エラーの発生元が位置情報を持つ場合' do
+    context 'エラー発生位置の位置情報を持つ場合' do
+      it '位置情報と与えられたメッセージでRegisterMapErrorを発生させる' do
+        allow(object).to receive(:error_position).and_return(positions[0])
+        expect {
+          object.error_test(message)
+        }.to raise_rggen_error configuration_error, message, positions[0]
+
+        position = RgGen::Core::InputBase::Error::ApproximatelyErrorPosition.new(positions[1])
+        allow(object).to receive(:error_position).and_return(position)
+        expect {
+          object.error_test(message)
+        }.to raise_rggen_error configuration_error, message, position
+      end
+    end
+
+    context '入力値の位置情報を持つ場合' do
       it '位置情報と与えられたメッセージでConfigurationErrorを発生させる' do
         object.position = positions[0]
         expect {
