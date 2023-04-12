@@ -59,7 +59,7 @@ module RgGen
         end
 
         VALUE_PARSERS = {
-          value_with_options: ValueWithOptionsParser,
+          option_array: OptionArrayParser,
           hash_list: HashListParser
         }.freeze
 

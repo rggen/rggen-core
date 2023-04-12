@@ -232,7 +232,7 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
       end
     end
 
-    context 'value_formatにvalue_with_optionsが指定されている場合' do
+    context 'value_formatにoption_arrayが指定されている場合' do
       let(:feature_class) do
         Class.new(RgGen::Core::InputBase::Feature) do
           property :value
@@ -243,7 +243,7 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
 
       let(:factory_class) do
         Class.new(feature_factory) do
-          value_format :value_with_options
+          value_format :option_array
         end
       end
 

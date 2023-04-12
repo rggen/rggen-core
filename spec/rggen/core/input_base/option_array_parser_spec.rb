@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe RgGen::Core::InputBase::ValueWithOptionsParser do
+RSpec.describe RgGen::Core::InputBase::OptionArrayParser do
   let(:parser) do
     described_class.new(RgGen::Core::RuntimeError)
   end
@@ -47,17 +47,17 @@ RSpec.describe RgGen::Core::InputBase::ValueWithOptionsParser do
     context '入力が文字列で与えられた場合' do
       specify '入力値とオプションは:で区切られる' do
         value = 'foo'
-        option = 'bar'
-        input_value = create_input_value("#{value}:#{option}")
+        options = 'bar'
+        input_value = create_input_value("#{value}:#{options}")
 
-        expect(parser.parse(input_value)).to match_result(value, [option])
+        expect(parser.parse(input_value)).to match_result(value, [options])
       end
 
       specify 'オプション間はコンマまたは改行で区切られる' do
         value = 'foo'
         options = ['bar', 'baz', 'qux']
-        option_string = options.inject { |s, o| s + [',', "\n"].sample + o }
-        input_value = create_input_value("#{value}:#{option_string}")
+        options_string = options.inject { |s, o| s + [',', "\n"].sample + o }
+        input_value = create_input_value("#{value}:#{options_string}")
 
         expect(parser.parse(input_value)).to match_result(value, options)
       end
