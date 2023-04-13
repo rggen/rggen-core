@@ -18,8 +18,8 @@ module RgGen
             @default_value
           end
 
-          def value_format(format = nil)
-            @value_format = format if format
+          def value_format(format = nil, **options)
+            @value_format = [format, options] if format
             @value_format
           end
         end
@@ -51,29 +51,31 @@ module RgGen
         end
 
         def process_active_input_value(input_value)
-          parseed_value, options =
+          parsed_value, options =
             if self.class.value_format
               parse_input_value(input_value, self.class.value_format)
             end
-          override_input_value(input_value, parseed_value, options) || input_value
+          override_input_value(input_value, parsed_value, options) || input_value
         end
 
         VALUE_PARSERS = {
-          value_with_options: ValueWithOptionsParser,
+          option_array: OptionArrayParser,
+          option_hash: OptionHashParser,
           hash_list: HashListParser
         }.freeze
 
         def parse_input_value(input_value, value_format)
-          VALUE_PARSERS[value_format].new(error_exception).parse(input_value)
+          format, options = value_format
+          VALUE_PARSERS[format].new(error_exception, **options).parse(input_value)
         end
 
-        def override_input_value(input_value, parseed_value, options)
-          (convert_value(input_value, parseed_value) || parseed_value)
+        def override_input_value(input_value, parsed_value, options)
+          (convert_value(input_value, parsed_value) || parsed_value)
             &.then { |v| InputValue.new(v, options, input_value.position) }
         end
 
-        def convert_value(input_value, parseed_value)
-          value = parseed_value || input_value.value
+        def convert_value(input_value, parsed_value)
+          value = parsed_value || input_value.value
           if empty_value?(value)
             evaluate_defalt_value(input_value.position)
           else

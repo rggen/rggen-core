@@ -6,7 +6,7 @@ module RgGen
       class InputValueParser
         include Utility::TypeChecker
 
-        def initialize(exception)
+        def initialize(exception, **_option)
           @exception = exception
         end
 
@@ -16,8 +16,13 @@ module RgGen
           string&.split(separator, limit)&.map(&:strip)
         end
 
-        def error(message, input_value = nil)
-          position = input_value.position if input_value.respond_to?(:position)
+        def error(message, position_or_input_value = nil)
+          position =
+            if position_or_input_value.respond_to?(:position)
+              position_or_input_value.position
+            else
+              position_or_input_value
+            end
           raise @exception.new(message, position)
         end
       end

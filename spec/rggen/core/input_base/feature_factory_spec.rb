@@ -232,7 +232,7 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
       end
     end
 
-    context 'value_formatにvalue_with_optionsが指定されている場合' do
+    context 'value_formatにoption_arrayが指定されている場合' do
       let(:feature_class) do
         Class.new(RgGen::Core::InputBase::Feature) do
           property :value
@@ -243,7 +243,7 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
 
       let(:factory_class) do
         Class.new(feature_factory) do
-          value_format :value_with_options
+          value_format :option_array
         end
       end
 
@@ -266,10 +266,10 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
 
       specify '位置情報は維持される' do
         feature = factory.create(component, create_input_value(:foo))
-        expect(feature.send(:position)). to eq position
+        expect(feature.send(:position)).to eq position
 
         feature = factory.create(component, create_input_value('foo'))
-        expect(feature.send(:position)). to eq position
+        expect(feature.send(:position)).to eq position
       end
 
       context '入力値の変換が与えられている場合' do
@@ -284,6 +284,85 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
           feature = factory.create(component, create_input_value([value, *options]))
           expect(feature.value).to eq value.upcase
           expect(feature.options).to match(options)
+        end
+      end
+    end
+
+    context 'value_formatにoption_hashが指定された場合' do
+      let(:feature_class) do
+        Class.new(RgGen::Core::InputBase::Feature) do
+          property :v
+          property :o
+          build { |v, o| @v = v; @o = o }
+        end
+      end
+
+      def factory(multiple_values = false)
+        klass =
+          if multiple_values
+            Class.new(feature_factory) do
+              value_format :option_hash,
+                           allowd_options: [:foo, :bar],
+                           multiple_values: true
+            end
+          else
+            Class.new(feature_factory) do
+              value_format :option_hash,
+                           allowd_options: [:foo, :bar]
+            end
+          end
+        klass.new(feature_name) { |f| f.target_feature feature_class }
+      end
+
+      specify '入力値にハッシュ形式のオプションを取ることができる' do
+        value = 0
+        options = { foo: 1, bar: 2 }
+
+        feature = factory.create(component, create_input_value([value, options]))
+        expect(feature.v).to eq(value)
+        expect(feature.o).to match(options)
+
+        feature = factory.create(component, create_input_value(value))
+        expect(feature.v).to eq(value)
+        expect(feature.o).to be_empty
+
+        feature = factory.create(component, create_input_value([value]))
+        expect(feature.v).to eq(value)
+        expect(feature.o).to be_empty
+      end
+
+      context 'multiple_valuesが指定された場合' do
+        specify '複数の入力値を持つことができる' do
+          values = [0, 1]
+          options = { foo: 2, bar: 3 }
+
+          feature = factory(true).create(component, create_input_value([*values, options]))
+          expect(feature.v).to match(values)
+          expect(feature.o).to match(options)
+        end
+      end
+
+      specify '位置情報は保持される' do
+        feature = factory.create(component, create_input_value(0))
+        expect(feature.send(:position)).to eq position
+
+        feature = factory(true).create(component, create_input_value([0, 1]))
+        expect(feature.send(:position)).to eq position
+      end
+
+      context '入力値の変換が与えられている場合' do
+        specify 'オプションには適用されない' do
+          f = factory
+          f.class.class_eval do
+            convert_value { |v| v - 1 }
+          end
+
+          value = 0
+          options = { foo: 1, bar: 2 }
+
+          feature = f.create(component, create_input_value([value, options]))
+          expect(feature.v).to eq(value - 1)
+          expect(feature.o).to match(options)
         end
       end
     end
