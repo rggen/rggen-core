@@ -55,6 +55,7 @@ require_relative 'core/input_base/property'
 require_relative 'core/input_base/feature'
 require_relative 'core/input_base/input_vaue_parser'
 require_relative 'core/input_base/option_array_parser'
+require_relative 'core/input_base/option_hash_parser'
 require_relative 'core/input_base/hash_list_parser'
 require_relative 'core/input_base/feature_factory'
 
