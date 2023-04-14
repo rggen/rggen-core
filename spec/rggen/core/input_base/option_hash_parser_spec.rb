@@ -30,7 +30,15 @@ RSpec.describe RgGen::Core::InputBase::OptionHashParser do
 
   describe '#parse' do
     context 'オプションが未指定の場合' do
-      it '入力値とからのハッシュを返す' do
+      it '入力値と空のハッシュを返す' do
+        input_value = create_input_value(nil)
+        expect(parser.parse(input_value)).to match_result(nil, {})
+        expect(parser(multiple_values: true).parse(input_value)).to match_result([nil], {})
+
+        input_value = create_input_value([])
+        expect(parser.parse(input_value)).to match_result(nil, {})
+        expect(parser(multiple_values: true).parse(input_value)).to match_result([], {})
+
         input_value = create_input_value(0)
         expect(parser.parse(input_value)).to match_result(0, {})
         expect(parser(multiple_values: true).parse(input_value)).to match_result([0], {})
@@ -38,6 +46,10 @@ RSpec.describe RgGen::Core::InputBase::OptionHashParser do
         input_value = create_input_value([0])
         expect(parser.parse(input_value)).to match_result(0, {})
         expect(parser(multiple_values: true).parse(input_value)).to match_result([0], {})
+
+        input_value = create_input_value('')
+        expect(parser.parse(input_value)).to match_result(nil, {})
+        expect(parser(multiple_values: true).parse(input_value)).to match_result([], {})
 
         input_value = create_input_value('0')
         expect(parser.parse(input_value)).to match_result('0', {})
@@ -141,7 +153,7 @@ RSpec.describe RgGen::Core::InputBase::OptionHashParser do
     end
   end
 
-  context 'オプションのみ与えらえれた場合' do
+  context 'オプションのみが与えらえれた場合' do
     it 'パーサー生成時に指定したクラスで例外を上げる' do
       options = { foo: 0, bar: 1 }
       input_value = create_input_value(options)
