@@ -23,10 +23,8 @@ module RgGen
             if string?(input_value)
               parse_string_value(input_value)
             elsif array?(input_value)
-              split_input_value(input_value)
-            elsif hash?(input_value)
-              nil
-            else
+              parse_array_value(input_value)
+            elsif !hash?(input_value)
               [[input_value]]
             end
           [values, symbolize_keys(options)]
@@ -40,20 +38,43 @@ module RgGen
         end
 
         def parse_option_string(option_string, position)
-          split_string(option_string, /[,\n]/, 0)
-            &.to_h { |option| split_string(option, ':', 2) }
-        rescue ArgumentError, TypeError
-          error "cannot convert #{option_string.inspect} into hash", position
+          do_hash_conversion(option_string, position) do
+            split_string(option_string, /[,\n]/, 0)
+              &.to_h { |option| split_string(option, ':', 2) }
+          end
+        end
+
+        def parse_array_value(input_value)
+          values, options = split_input_value(input_value)
+          [values, parse_option_array(options, input_value.position)]
         end
 
         def split_input_value(input_value)
-          input_value.each_with_object([[], {}]) do |value, (values, options)|
-            if hash?(value)
-              options.update(value)
+          input_value.each_with_object([[], []]) do |item, (values, options)|
+            if value_item?(item, values)
+              values << item
             else
-              values << value
+              options << item
             end
           end
+        end
+
+        def value_item?(item, values)
+          !hash?(item) && (@multiple_values || values.empty?)
+        end
+
+        def parse_option_array(options, position)
+          do_hash_conversion(options, position) do
+            options.each_with_object({}) do |option, option_hash|
+              option_hash.update(option)
+            end
+          end
+        end
+
+        def do_hash_conversion(orinal_value, position)
+          yield
+        rescue ArgumentError, TypeError
+          error "invalid options are given: #{orinal_value.inspect}", position
         end
 
         def symbolize_keys(options)
