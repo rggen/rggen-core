@@ -62,31 +62,6 @@ RSpec.describe RgGen::Core::InputBase::OptionHashParser do
       end
     end
 
-    context '複数個の入力値が指定され' do
-      context 'multipe_valuesの指定がある場合' do
-        specify '複数の入力値を取ることができる' do
-          input_value = create_input_value([0, 1])
-          expect(parser(multiple_values: true).parse(input_value)).to match_result([0, 1], {})
-
-          input_value = create_input_value([0, 1, foo: 2, bar: 3])
-          expect(parser(multiple_values: true).parse(input_value)).to match_result([0, 1], { foo: 2, bar: 3 })
-
-          input_value = create_input_value([0, { foo: 1 }, 2, { bar: 3 }])
-          expect(parser(multiple_values: true).parse(input_value)).to match_result([0, 2], { foo: 1, bar: 3 })
-        end
-      end
-
-      context 'multiple_valuesの指定がない場合' do
-        it 'パーサー生成時に指定したクラスで例外を上げる' do
-          values = [0, 1]
-          input_value = create_input_value(values)
-          expect {
-            parser.parse(input_value)
-          }.to raise_error exception, "multiple input values are given: #{values} -- #{position}"
-        end
-      end
-    end
-
     context '入力値が文字列で与えられた場合' do
       specify '入力値とオプションは:で区切られる' do
         input_value = create_input_value('0: foo: 1')
@@ -111,13 +86,58 @@ RSpec.describe RgGen::Core::InputBase::OptionHashParser do
     end
   end
 
-  context '入力文字列がハッシュに変換できない場合' do
+  context '複数個の入力値が指定され' do
+    context 'multipe_valuesの指定がある場合' do
+      specify '複数の入力値を取ることができる' do
+        input_value = create_input_value([0, 1])
+        expect(parser(multiple_values: true).parse(input_value)).to match_result([0, 1], {})
+
+        input_value = create_input_value([0, 1, foo: 2, bar: 3])
+        expect(parser(multiple_values: true).parse(input_value)).to match_result([0, 1], { foo: 2, bar: 3 })
+
+        input_value = create_input_value([0, { foo: 1 }, 2, { bar: 3 }])
+        expect(parser(multiple_values: true).parse(input_value)).to match_result([0, 2], { foo: 1, bar: 3 })
+
+        input_value = create_input_value('0, 1')
+        expect(parser(multiple_values: true).parse(input_value)).to match_result(['0', '1'], {})
+
+        input_value = create_input_value('0, 1: foo: 2, bar: 3')
+        expect(parser(multiple_values: true).parse(input_value)).to match_result(['0', '1'], { foo: '2', bar: '3' })
+      end
+    end
+
+    context 'multiple_valuesの指定がない場合' do
+      it 'パーサー生成時に指定したクラスで例外を上げる' do
+        values = ['0', '1']
+
+        input_value = create_input_value(values.join(','))
+        expect {
+          parser.parse(input_value)
+        }.to raise_error exception, "multiple input values are given: #{values} -- #{position}"
+
+        input_value = create_input_value("#{values.join(',')}: foo: 2, bar: 3")
+        expect {
+          parser.parse(input_value)
+        }.to raise_error exception, "multiple input values are given: #{values} -- #{position}"
+      end
+    end
+  end
+
+  context '入力オプションがHashに変換できない場合' do
     it 'パーサー生成時に指定したクラスで例外を上げる' do
+      [nil, true, false, 0, 'foo', :foo, [], [:foo]].each do |value|
+        options = [value, bar: 1]
+        input_value = create_input_value([0, *options])
+        expect {
+          parser.parse(input_value)
+        }.to raise_error exception, "invalid options are given: #{options.inspect} -- #{position}"
+      end
+
       options = 'foo: 1, bar'
       input_value = create_input_value("0: #{options}")
       expect {
         parser.parse(input_value)
-      }.to raise_error exception, "cannot convert #{options.inspect} into hash -- #{position}"
+      }.to raise_error exception, "invalid options are given: #{options.inspect} -- #{position}"
     end
   end
 
