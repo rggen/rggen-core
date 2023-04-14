@@ -24,10 +24,12 @@ module RgGen
               parse_string_value(input_value)
             elsif array?(input_value)
               parse_array_value(input_value)
-            elsif !hash?(input_value)
-              [[input_value]]
+            elsif hash?(input_value)
+              [nil, input_value]
+            else
+              [[input_value.value]]
             end
-          [values, symbolize_keys(options)]
+          [values || [], symbolize_keys(options) || {}]
         end
 
         def parse_string_value(input_value)
@@ -82,15 +84,15 @@ module RgGen
         end
 
         def check_result(values, options, input_value)
-          no_values?(values) &&
+          no_values?(values, options) &&
             (error "no input values are given: #{input_value.inspect}", input_value)
           illegal_value_size?(values) &&
             (error "multiple input values are given: #{values}", input_value)
           check_option(options, input_value.position)
         end
 
-        def no_values?(values)
-          values.nil? || values.empty?
+        def no_values?(values, options)
+          values.empty? && !options.empty?
         end
 
         def illegal_value_size?(values)
@@ -107,7 +109,7 @@ module RgGen
         end
 
         def pack_result(values, options)
-          [@multiple_values && values || values.first, options || {}]
+          [@multiple_values && values || values.first, options]
         end
       end
     end
