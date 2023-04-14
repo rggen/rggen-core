@@ -1,15 +1,26 @@
 # frozen_string_literal: true
 
 RSpec.describe RgGen::Core::InputBase::FeatureFactory do
-  let(:feature_name) { :feature_name }
+  let(:feature_name) do
+    :feature_name
+  end
 
-  let(:active_feature) { Class.new(RgGen::Core::InputBase::Feature) { build {} } }
+  let(:active_feature) do
+    Class.new(RgGen::Core::InputBase::Feature) { build {} }
+  end
 
-  let(:passive_feature) { Class.new(RgGen::Core::InputBase::Feature) }
+  let(:passive_feature) do
+    Class.new(RgGen::Core::InputBase::Feature)
+  end
+
+  let(:exception) do
+    Class.new(RgGen::Core::RgGenError)
+  end
 
   let(:feature_factory) do
+    e = exception
     Class.new(described_class) do
-      def error_exception; nil end
+      define_method(:error_exception) { e }
     end
   end
 
@@ -297,19 +308,10 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
         end
       end
 
-      def factory(multiple_values = false)
+      def factory(**options)
         klass =
-          if multiple_values
-            Class.new(feature_factory) do
-              value_format :option_hash,
-                           allowd_options: [:foo, :bar],
-                           multiple_values: true
-            end
-          else
-            Class.new(feature_factory) do
-              value_format :option_hash,
-                           allowd_options: [:foo, :bar]
-            end
+          Class.new(feature_factory) do
+            value_format :option_hash, **options
           end
         klass.new(feature_name) { |f| f.target_feature feature_class }
       end
@@ -336,9 +338,23 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
           values = [0, 1]
           options = { foo: 2, bar: 3 }
 
-          feature = factory(true).create(component, create_input_value([*values, options]))
+          feature = factory(multiple_values: true).create(component, create_input_value([*values, options]))
           expect(feature.v).to match(values)
           expect(feature.o).to match(options)
+        end
+      end
+
+      context 'allowed_optionsが指定された場合' do
+        specify '受け入れ可能なオプションが指定される' do
+          allowed_options = [:foo, :bar]
+
+          expect {
+            factory(allowed_options: allowed_options).create(component, create_input_value([0, foo: 1, bar: 2]))
+          }.to_not raise_error
+
+          expect {
+            factory(allowed_options: allowed_options).create(component, create_input_value([0, baz: 1, qux: 2]))
+          }.to raise_error exception
         end
       end
 
@@ -346,7 +362,7 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
         feature = factory.create(component, create_input_value(0))
         expect(feature.send(:position)).to eq position
 
-        feature = factory(true).create(component, create_input_value([0, 1]))
+        feature = factory(multiple_values: true).create(component, create_input_value([0, 1]))
         expect(feature.send(:position)).to eq position
       end
 
