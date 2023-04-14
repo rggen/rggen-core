@@ -5,17 +5,13 @@ RSpec.describe RgGen::Core::InputBase::OptionHashParser do
     RgGen::Core::RuntimeError
   end
 
-  let(:allowd_options) do
-    [:foo, :bar, :baz]
-  end
-
   let(:position) do
     Struct.new(:x, :y).new(1, 2)
   end
 
-  def parser(multiple_values: false)
+  def parser(allowed_options: [:foo, :bar, :baz], multiple_values: false)
     described_class
-      .new(exception, allowd_options: allowd_options, multiple_values: multiple_values)
+      .new(exception, allowed_options: allowed_options, multiple_values: multiple_values)
   end
 
   def create_input_value(value)
@@ -153,6 +149,17 @@ RSpec.describe RgGen::Core::InputBase::OptionHashParser do
       expect {
         parser.parse(input_value)
       }.to raise_error exception, "unknown options are given: #{[:fizz, :buzz]} -- #{position}"
+    end
+  end
+
+  context '受け入れ可能オプションの指定がない場合' do
+    it '任意のオプションを受け付けられる' do
+      value = 0
+      options = { foo: 1, fizz: 2, bar: 3, buzz: 4 }
+      input_value = create_input_value([value, options])
+
+      expect(parser(allowed_options: nil).parse(input_value)).to match_result(value, options)
+      expect(parser(allowed_options: []).parse(input_value)).to match_result(value, options)
     end
   end
 end

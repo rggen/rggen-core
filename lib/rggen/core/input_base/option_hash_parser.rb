@@ -4,10 +4,10 @@ module RgGen
   module Core
     module InputBase
       class OptionHashParser < InputValueParser
-        def initialize(exception, **option)
+        def initialize(exception, allowed_options: nil, multiple_values: false)
           super
-          @allowd_options = option.fetch(:allowd_options, [])
-          @multiple_values = option.fetch(:multiple_values, false)
+          @allowed_options = allowed_options
+          @multiple_values = multiple_values
         end
 
         def parse(input_value)
@@ -77,9 +77,10 @@ module RgGen
         end
 
         def check_option(options, position)
+          return if @allowed_options.nil? || @allowed_options.empty?
           return if options.nil? || options.empty?
 
-          unknown_options = options.keys - @allowd_options
+          unknown_options = options.keys - @allowed_options
           unknown_options.empty? ||
             (error "unknown options are given: #{unknown_options}", position)
         end
