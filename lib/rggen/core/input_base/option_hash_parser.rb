@@ -26,7 +26,7 @@ module RgGen
               parse_array_value(input_value)
             elsif hash?(input_value)
               [nil, input_value]
-            else
+            elsif !input_value.empty_value?
               [[input_value.value]]
             end
           [values || [], symbolize_keys(options) || {}]
@@ -40,23 +40,18 @@ module RgGen
         end
 
         def parse_option_string(option_string, position)
-          do_hash_conversion(option_string, position) do
-            split_string(option_string, /[,\n]/, 0)
-              &.to_h { |option| split_string(option, ':', 2) }
-          end
+          split_string(option_string, /[,\n]/, 0)
+            &.to_h { |option| split_string(option, ':', 2) }
+        rescue ArgumentError, TypeError
+          error "invalid options are given: #{option_string.inspect}", position
         end
 
         def parse_array_value(input_value)
-          values, options = split_input_value(input_value)
-          [values, parse_option_array(options, input_value.position)]
-        end
-
-        def split_input_value(input_value)
-          input_value.each_with_object([[], []]) do |item, (values, options)|
+          input_value.each_with_object([[], {}]) do |item, (values, options)|
             if value_item?(item, values)
               values << item
             else
-              options << item
+              update_option_hash(options, item, input_value.position)
             end
           end
         end
@@ -65,18 +60,10 @@ module RgGen
           !hash?(item) && (@multiple_values || values.empty?)
         end
 
-        def parse_option_array(options, position)
-          do_hash_conversion(options, position) do
-            options.each_with_object({}) do |option, option_hash|
-              option_hash.update(option)
-            end
-          end
-        end
-
-        def do_hash_conversion(orinal_value, position)
-          yield
+        def update_option_hash(option_hash, item, position)
+          option_hash.update(item)
         rescue ArgumentError, TypeError
-          error "invalid options are given: #{orinal_value.inspect}", position
+          error "invalid option is given: #{item.inspect}", position
         end
 
         def symbolize_keys(options)
