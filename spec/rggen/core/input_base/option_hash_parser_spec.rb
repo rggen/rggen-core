@@ -33,7 +33,7 @@ RSpec.describe RgGen::Core::InputBase::OptionHashParser do
       it '入力値と空のハッシュを返す' do
         input_value = create_input_value(nil)
         expect(parser.parse(input_value)).to match_result(nil, {})
-        expect(parser(multiple_values: true).parse(input_value)).to match_result([nil], {})
+        expect(parser(multiple_values: true).parse(input_value)).to match_result([], {})
 
         input_value = create_input_value([])
         expect(parser.parse(input_value)).to match_result(nil, {})
@@ -138,11 +138,10 @@ RSpec.describe RgGen::Core::InputBase::OptionHashParser do
   context '入力オプションがHashに変換できない場合' do
     it 'パーサー生成時に指定したクラスで例外を上げる' do
       [nil, true, false, 0, 'foo', :foo, [], [:foo]].each do |value|
-        options = [value, bar: 1]
-        input_value = create_input_value([0, *options])
+        input_value = create_input_value([0, { foo: 1 }, value, { bar: 2 }])
         expect {
           parser.parse(input_value)
-        }.to raise_error exception, "invalid options are given: #{options.inspect} -- #{position}"
+        }.to raise_error exception, "invalid option is given: #{value.inspect} -- #{position}"
       end
 
       options = 'foo: 1, bar'
