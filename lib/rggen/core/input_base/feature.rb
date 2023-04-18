@@ -6,6 +6,7 @@ module RgGen
       class Feature < Base::Feature
         include Utility::RegexpPatterns
         include Utility::TypeChecker
+        include ConversionUtility
 
         class << self
           def property(name, **options, &body)
