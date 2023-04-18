@@ -16,16 +16,20 @@ module RgGen
           end
         end
 
-        def error(message, input_value = nil)
+        def error(message, input_value_or_position = nil)
           position =
-            if input_value.respond_to?(:position) && input_value.position
-              input_value.position
+            if with_position?(input_value_or_position)
+              input_value_or_position.position
             elsif respond_to?(:error_position)
               error_position
             else
-              @position
+              @position || input_value_or_position
             end
           raise error_exception.new(message, position)
+        end
+
+        def with_position?(input_value)
+          input_value.respond_to?(:position) && input_value.position
         end
       end
     end
