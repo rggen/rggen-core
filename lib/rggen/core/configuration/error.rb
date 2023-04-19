@@ -7,7 +7,7 @@ module RgGen
       end
 
       module RaiseError
-        include InputBase::Error
+        include InputBase::RaiseError
 
         private
 

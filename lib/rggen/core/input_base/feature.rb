@@ -129,7 +129,7 @@ module RgGen
           else
             approximate_position =
               component.features.map(&:position).find(&:itself)
-            Error::ApproximatelyErrorPosition.create(approximate_position)
+            ApproximatelyErrorPosition.create(approximate_position)
           end
         end
 

@@ -3,33 +3,37 @@
 module RgGen
   module Core
     module InputBase
-      module Error
+      ApproximatelyErrorPosition = Struct.new(:position) do
+        def self.create(position)
+          position && new(position)
+        end
+
+        def to_s
+          "#{position} (approximately)"
+        end
+      end
+
+      module RaiseError
         private
 
-        ApproximatelyErrorPosition = Struct.new(:position) do
-          def self.create(position)
-            position && new(position)
-          end
-
-          def to_s
-            "#{position} (approximately)"
-          end
+        def error(message, position = nil)
+          pos = extract_error_position(position)
+          raise error_exception.new(message, pos)
         end
 
-        def error(message, input_value_or_position = nil)
-          position =
-            if with_position?(input_value_or_position)
-              input_value_or_position.position
-            elsif respond_to?(:error_position)
+        def extract_error_position(position)
+          pos =
+            if position.respond_to?(:position)
+              position.position
+            else
+              position
+            end
+          pos ||
+            if respond_to?(:error_position)
               error_position
             else
-              @position || input_value_or_position
+              @position
             end
-          raise error_exception.new(message, position)
-        end
-
-        def with_position?(input_value)
-          input_value.respond_to?(:position) && input_value.position
         end
       end
     end
