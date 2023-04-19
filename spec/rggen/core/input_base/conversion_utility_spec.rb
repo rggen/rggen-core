@@ -11,7 +11,7 @@ RSpec.describe RgGen::Core::InputBase::ConversionUtility do
 
   let(:object) do
     klass = Class.new do
-      include RgGen::Core::InputBase::Error
+      include RgGen::Core::InputBase::RaiseError
       include RgGen::Core::InputBase::ConversionUtility
 
       def initialize(error_exception)

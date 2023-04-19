@@ -588,11 +588,11 @@ RSpec.describe RgGen::Core::InputBase::Feature do
         features[1].build(input_values[1])
 
         expect(features[0].error_position)
-          .to be_instance_of(RgGen::Core::InputBase::Error::ApproximatelyErrorPosition)
-          .and have_attributes(position: equal(bar_position))
+          .to be_instance_of(RgGen::Core::InputBase::ApproximatelyErrorPosition)
+          .and match_string("#{bar_position} (approximately)")
         expect(features[2].error_position)
-          .to be_instance_of(RgGen::Core::InputBase::Error::ApproximatelyErrorPosition)
-          .and have_attributes(position: equal(bar_position))
+          .to be_instance_of(RgGen::Core::InputBase::ApproximatelyErrorPosition)
+          .and match_string("#{bar_position} (approximately)")
       end
     end
   end
