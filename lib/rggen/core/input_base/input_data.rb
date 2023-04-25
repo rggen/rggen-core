@@ -21,8 +21,8 @@ module RgGen
             assign_value(symbolized_name, value, position)
         end
 
-        def []=(value_name, position_or_value, value = nil)
-          value(value_name, value || position_or_value, position_or_value)
+        def []=(value_name, position = nil, value)
+          value(value_name, value, position)
         end
 
         def [](value_name)

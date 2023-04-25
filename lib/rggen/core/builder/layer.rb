@@ -94,9 +94,9 @@ module RgGen
           end
         end
 
-        def enable(feature_or_list_names, feature_names = nil)
+        def enable(...)
           @feature_registries.each_value do |registry|
-            registry.enable(feature_or_list_names, feature_names)
+            registry.enable(...)
           end
         end
 
@@ -104,10 +104,14 @@ module RgGen
           @feature_registries.each_value(&:enable_all)
         end
 
-        def delete(feature_or_list_names = nil, feature_names = nil)
+        def delete(...)
           @feature_registries.each_value do |registry|
-            registry.delete(*[feature_or_list_names, feature_names].compact)
+            registry.delete(...)
           end
+        end
+
+        def delete_all
+          @feature_registries.each_value(&:delete_all)
         end
 
         private

@@ -30,12 +30,11 @@ module RgGen
           entry.define_feature(feature_name, context, &body)
         end
 
-        def enable(feature_or_list_names, feature_names = nil)
-          if feature_names
-            list_name = feature_or_list_names
+        def enable(list_name = nil, feature_names)
+          if list_name
             (@enabled_features[list_name] ||= []).merge!(Array(feature_names))
           else
-            Array(feature_or_list_names).each do |name|
+            Array(feature_names).each do |name|
               @enabled_features.key?(name) || (@enabled_features[name] = nil)
             end
           end
@@ -45,21 +44,23 @@ module RgGen
           @enabled_features.clear
         end
 
-        def delete(feature_or_list_names = nil, feature_names = nil)
-          if feature_names
-            @feature_entries[feature_or_list_names]&.delete(feature_names)
-          elsif feature_or_list_names
-            Array(feature_or_list_names).each(&@feature_entries.method(:delete))
+        def delete(list_name = nil, feature_names)
+          if list_name
+            @feature_entries[list_name]&.delete(feature_names)
           else
-            @feature_entries.clear
+            Array(feature_names).each(&@feature_entries.method(:delete))
           end
         end
 
-        def feature?(feature_or_list_name, feature_name = nil)
-          if feature_name
-            list_feature?(feature_or_list_name, feature_name)
+        def delete_all
+          @feature_entries.clear
+        end
+
+        def feature?(list_name = nil, feature_name)
+          if list_name
+            list_feature?(list_name, feature_name)
           else
-            @feature_entries.key?(feature_or_list_name)
+            @feature_entries.key?(feature_name)
           end
         end
 
