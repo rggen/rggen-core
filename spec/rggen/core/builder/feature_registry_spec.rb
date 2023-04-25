@@ -324,13 +324,6 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
       end
     end
 
-    context '無引数で呼び出した場合' do
-      it '定義したフィーチャーを全て削除する' do
-        registry.delete
-        expect(registry.build_factories).to be_empty
-      end
-    end
-
     context 'フィーチャー名が与えられた場合' do
       it '指定されたフィーチャーを削除する' do
         registry.delete(:foo_0)
@@ -352,6 +345,41 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
           expect(feature.m).to eq(feature_name == :baz_1_3 ? :baz_1_3 : :baz_1)
         end
       end
+    end
+  end
+
+  describe '#delete_all' do
+    before do
+      [:foo_0, :foo_1].each do |feature|
+        registry.define_feature(feature) do
+          feature { define_method(:m) { feature } }
+        end
+      end
+      [:bar_0, :bar_1].each do |feature|
+        registry.define_simple_feature(feature) do
+          define_method(:m) { feature }
+        end
+      end
+      [:baz_0, :baz_1].each do |feature|
+        registry.define_list_feature(feature) do
+          define_default_feature { define_method(:m) { feature } }
+        end
+      end
+      [:baz_0_0, :baz_0_1, :baz_0_2, :baz_0_3].each do |feature|
+        registry.define_list_item_feature(:baz_0, feature) do
+          define_method(:m) { feature }
+        end
+      end
+      [:baz_1_0, :baz_1_1, :baz_1_2, :baz_1_3].each do |feature|
+        registry.define_list_item_feature(:baz_1, feature) do
+          define_method(:m) { feature }
+        end
+      end
+    end
+
+    it '定義したフィーチャーを全て削除する' do
+      registry.delete_all
+      expect(registry.build_factories).to be_empty
     end
   end
 

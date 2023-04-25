@@ -23,9 +23,9 @@ module RgGen
           block_given? && yield(@loader_registries[loader_type])
         end
 
-        def define_value_extractor(loader_type, layers_or_value, value = nil, &body)
+        def define_value_extractor(loader_type, layers = nil, value, &body)
           @loader_registries[loader_type]
-            .define_value_extractor(layers_or_value, value, &body)
+            .define_value_extractor(layers, value, &body)
         end
 
         def build_factory

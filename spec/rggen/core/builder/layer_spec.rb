@@ -187,16 +187,16 @@ RSpec.describe RgGen::Core::Builder::Layer do
     end
 
     specify '#enableで指定したフィーチャーを有効にする' do
-      expect(fizz_feature_registry).to receive(:enable).with(:foo_0, nil).and_call_original
-      expect(buzz_feature_registry).to receive(:enable).with(:foo_0, nil).and_call_original
+      expect(fizz_feature_registry).to receive(:enable).with(:foo_0).and_call_original
+      expect(buzz_feature_registry).to receive(:enable).with(:foo_0).and_call_original
       layer.enable(:foo_0)
 
-      expect(fizz_feature_registry).to receive(:enable).with(:bar_0, nil).and_call_original
-      expect(buzz_feature_registry).to receive(:enable).with(:bar_0, nil).and_call_original
+      expect(fizz_feature_registry).to receive(:enable).with(:bar_0).and_call_original
+      expect(buzz_feature_registry).to receive(:enable).with(:bar_0).and_call_original
       layer.enable(:bar_0)
 
-      expect(fizz_feature_registry).to receive(:enable).with([:foo_2, :bar_1, :baz_0], nil).and_call_original
-      expect(buzz_feature_registry).to receive(:enable).with([:foo_2, :bar_1, :baz_0], nil).and_call_original
+      expect(fizz_feature_registry).to receive(:enable).with([:foo_2, :bar_1, :baz_0]).and_call_original
+      expect(buzz_feature_registry).to receive(:enable).with([:foo_2, :bar_1, :baz_0]).and_call_original
       layer.enable([:foo_2, :bar_1, :baz_0])
 
       expect(fizz_feature_registry).to receive(:enable).with(:baz_0, :baz_0_0).and_call_original
@@ -231,11 +231,11 @@ RSpec.describe RgGen::Core::Builder::Layer do
       end
     end
 
-    context '#deleteを無引数で呼び出した場合' do
+    context '#delete_allを呼び出した場合' do
       it '定義済みフィーチャーを全て削除する' do
-        expect(fizz_feature_registry).to receive(:delete).with(no_args)
-        expect(buzz_feature_registry).to receive(:delete).with(no_args)
-        layer.delete
+        expect(fizz_feature_registry).to receive(:delete_all)
+        expect(buzz_feature_registry).to receive(:delete_all)
+        layer.delete_all
       end
     end
 

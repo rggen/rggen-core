@@ -18,18 +18,15 @@ module RgGen
           @loaders.concat(Array(loaders))
         end
 
-        def define_value_extractor(layers_or_value, value = nil, &body)
-          value, layers = [value, layers_or_value].compact
+        def define_value_extractor(layers = nil, value, &body)
           @extractors << create_extractor(layers, value, &body)
         end
 
-        def ignore_value(layers_or_value, value = nil)
-          value, layers = [value, layers_or_value].compact
+        def ignore_value(layers = nil, value)
           ignore_values(layers, [value])
         end
 
-        def ignore_values(layers_or_values, values = nil)
-          values, layers = [values, layers_or_values].compact
+        def ignore_values(layers = nil, values)
           [layers].flatten.each do |layer|
             (@ignore_values[layer] ||= []).concat(Array(values))
           end

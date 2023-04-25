@@ -6,14 +6,10 @@ module RgGen
       class InputValue < ::SimpleDelegator
         NoValue = Object.new
 
-        def initialize(value, options_or_position, position = NoValue)
+        def initialize(value, options = NoValue, position)
           super((value.is_a?(String) && value.strip) || value)
-          @options, @position =
-            if position.equal?(NoValue)
-              [NoValue, options_or_position]
-            else
-              [options_or_position, position]
-            end
+          @options = options
+          @position = position
         end
 
         alias_method :value, :__getobj__
