@@ -38,9 +38,18 @@ module RgGen
           bit_field: BitField
         }.freeze
 
-        def initialize(layer, valid_value_list)
+        def initialize(layer, valid_value_list, configuration)
           extend(LAYER_EXTENSIONS[layer])
-          super
+          @configuration = configuration
+          super(layer, valid_value_list)
+        end
+
+        attr_reader :configuration
+
+        private
+
+        def create_child_data(layer, &block)
+          super(layer, @configuration, &block)
         end
       end
     end

@@ -121,7 +121,10 @@ RSpec.describe RgGen::Core::RegisterMap::ComponentFactory do
         f.component_factories component_factories
         f.feature_factories {}
         f.root_factory
-        f.loaders [RgGen::Core::RegisterMap::JSONLoader.new([], {})]
+        f.loaders [
+          RgGen::Core::RegisterMap::JSONLoader.new([], {}),
+          RgGen::Core::RegisterMap::RubyLoader.new([], {})
+        ]
       end
   end
 
@@ -309,7 +312,7 @@ RSpec.describe RgGen::Core::RegisterMap::ComponentFactory do
       end
     end
 
-    describe '#子コンポーネントの有無の確認' do
+    describe '子コンポーネントの有無の確認' do
       context '子コンポーネントの指定がない場合' do
         it 'RegisterMapErrorを起こす' do
           setup_read_data({})
@@ -410,6 +413,44 @@ RSpec.describe RgGen::Core::RegisterMap::ComponentFactory do
           }.not_to raise_error
         end
       end
+    end
+
+    specify 'InputData内でconfigurationオブジェクトを参照できる' do
+      allow(configuration).to receive(:foo_0).and_return(0)
+      allow(configuration).to receive(:foo_1).and_return(1)
+      allow(configuration).to receive(:foo_2).and_return(2)
+      allow(configuration).to receive(:foo_3).and_return(3)
+
+      file = 'foo.rb'
+      allow(File).to receive(:readable?).with(file).and_return(true)
+      allow(File).to receive(:binread).with(file).and_return(<<~'RUBY')
+        register_block do
+          foo configuration.foo_0
+          register_file do
+            foo configuration.foo_1
+            register do
+              foo configuration.foo_2
+              bit_field do
+                foo configuration.foo_3
+              end
+            end
+          end
+        end
+      RUBY
+
+      root = root_component_factory.create(configuration, [file])
+
+      register_block = root.register_blocks[0]
+      expect(register_block).to have_property(:foo, 0)
+
+      register_file = register_block.register_files[0]
+      expect(register_file).to have_property(:foo, 1)
+
+      register = register_file.registers[0]
+      expect(register).to have_property(:foo, 2)
+
+      bit_field = register.bit_fields[0]
+      expect(bit_field).to have_property(:foo, 3)
     end
   end
 end

@@ -29,7 +29,9 @@ RSpec.describe RgGen::Core::RegisterMap::RubyLoader do
       }
     end
 
-    let(:input_data) { RgGen::Core::RegisterMap::InputData.new(:root, valid_value_lists) }
+    let(:input_data) do
+      RgGen::Core::RegisterMap::InputData.new(:root, valid_value_lists, nil)
+    end
 
     let(:file_content) do
       <<~'RUBY'

@@ -24,14 +24,15 @@ module RgGen
 
         def preprocess(args)
           if root_factory?
-            [*args[0..-2], load_files(args.last)]
+            [*args[0..-2], load_files(args)]
           else
             args
           end
         end
 
-        def load_files(files)
-          create_input_data do |input_data|
+        def load_files(args)
+          files = args.last
+          create_input_data(*args[0..-2]) do |input_data|
             files.each { |file| load_file(file, input_data) }
           end
         end
@@ -50,7 +51,7 @@ module RgGen
             .transform_values(&->(f) { f.valid_value_list })
         end
 
-        def create_input_data(&block)
+        def create_input_data(*_args, &block)
         end
 
         def create_features(component, *sources)

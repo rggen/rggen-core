@@ -21,7 +21,7 @@ RSpec.describe RgGen::Core::RegisterMap::HashLoader do
   end
 
   let(:input_data) do
-    RgGen::Core::RegisterMap::InputData.new(:root, valid_value_lists)
+    RgGen::Core::RegisterMap::InputData.new(:root, valid_value_lists, nil)
   end
 
   let(:file) { 'foo.txt' }

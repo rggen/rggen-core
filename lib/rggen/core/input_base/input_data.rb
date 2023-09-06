@@ -4,7 +4,7 @@ module RgGen
   module Core
     module InputBase
       class InputData
-        def initialize(layer, valid_value_lists)
+        def initialize(layer, valid_value_lists, *_args)
           @layer = layer
           @valid_value_lists = valid_value_lists
           @values = Hash.new(NAValue)
@@ -87,8 +87,8 @@ module RgGen
           caller_location.path.include?('docile')
         end
 
-        def create_child_data(layer, &block)
-          child_data_class.new(layer, @valid_value_lists, &block)
+        def create_child_data(layer, *args, &block)
+          child_data_class.new(layer, @valid_value_lists, *args, &block)
         end
 
         def child_data_class

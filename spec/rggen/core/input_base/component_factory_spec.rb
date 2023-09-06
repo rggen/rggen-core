@@ -5,7 +5,7 @@ RSpec.describe RgGen::Core::InputBase::ComponentFactory do
 
   let(:factory_class) do
     Class.new(described_class) do
-      def create_input_data(&block)
+      def create_input_data(*_args, &block)
         RgGen::Core::InputBase::InputData.new(:foo, valid_value_lists, &block)
       end
 
