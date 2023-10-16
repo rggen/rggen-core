@@ -173,6 +173,10 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
       'rggen/setup'
     end
 
+    let(:default_plugins_version) do
+      "~> #{RgGen::Core::MAJOR}.#{RgGen::Core::MINOR}.0"
+    end
+
     before do
       allow(Gem).to receive(:find_files).with(default_plugins).and_return([default_plugins])
     end
@@ -190,6 +194,7 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
 
     it '既定プラグインと引数で指定されたプラグインを読み込む' do
       expect(plugin_manager).to receive(:load_plugin).with(default_plugins).and_call_original
+      expect(plugin_manager).to receive(:gem).with('rggen', default_plugins_version)
       expect(plugin_manager).to receive(:require).with(default_plugins)
 
       expect(plugin_manager).to receive(:load_plugin).with('rggen-foo').and_call_original
