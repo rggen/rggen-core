@@ -88,7 +88,12 @@ module RgGen
         end
 
         def read_setup_file(setup_path, setup_path_or_name, root_dir)
-          root_dir && $LOAD_PATH.unshift(root_dir)
+          if setup_path == DEFAULT_PLUGSINS
+            gem 'rggen', DEFAULT_PLUGSINS_VERSION
+          elsif root_dir
+            $LOAD_PATH.unshift(root_dir)
+          end
+
           require setup_path
         rescue ::LoadError
           message =
@@ -109,6 +114,7 @@ module RgGen
         end
 
         DEFAULT_PLUGSINS = 'rggen/setup'
+        DEFAULT_PLUGSINS_VERSION = "~> #{MAJOR}.#{MINOR}.0"
 
         def default_plugins(no_default_plugins)
           load_default_plugins?(no_default_plugins) && DEFAULT_PLUGSINS || nil
