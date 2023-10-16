@@ -4,6 +4,7 @@ module RgGen
   module Core
     module Builder
       DEFAULT_PLUGSINS = 'rggen/default'
+      DEFAULT_PLUGSINS_VERSION = "~> #{MAJOR}.#{MINOR}.0"
 
       class PluginInfo
         attr_reader :path
@@ -18,7 +19,9 @@ module RgGen
 
         def parse(path_or_name, version)
           @name, @path, @gemname, @version =
-            if plugin_path?(path_or_name)
+            if path_or_name == DEFAULT_PLUGSINS
+              [nil, path_or_name, 'rggen', DEFAULT_PLUGSINS_VERSION]
+            elsif plugin_path?(path_or_name)
               [nil, path_or_name, *find_gemspec_by_path(path_or_name)]
             else
               [
@@ -41,13 +44,13 @@ module RgGen
         private
 
         def plugin_path?(path_or_name)
-          path_or_name == DEFAULT_PLUGSINS || File.ext(path_or_name) == 'rb'
+          File.ext(path_or_name) == 'rb'
         end
 
         def find_gemspec_by_path(path)
           Gem::Specification
             .each.find { |spec| match_gemspec_path?(spec, path) }
-            .then { |spec| spec && [spec.name, spec.version] }
+            &.then { |spec| [spec.name, spec.version] }
         end
 
         def match_gemspec_path?(gemspec, path)
