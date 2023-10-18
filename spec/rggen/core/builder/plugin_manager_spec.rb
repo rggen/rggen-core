@@ -72,10 +72,10 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
 
     context 'プラグイン名が指定された場合' do
       it '指定されたプラグイン名からファイル名を推定し、読み込む' do
-        setup_plugin_expectation(plugin: 'rggen-foo', path: 'rggen/foo')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo')
         plugin_manager.load_plugin('rggen-foo')
 
-        setup_plugin_expectation(plugin: 'rggen-foo', path: 'rggen/foo')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo')
         plugin_manager.load_plugin(:'rggen-foo')
 
         setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo')
@@ -88,16 +88,16 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
 
     context 'プラグイン名と下位ディレクトリが指定された場合' do
       it '指定されたプラグイン名と下位ディレクトリからファイル名を推定し、読み込む' do
-        setup_plugin_expectation(plugin: 'rggen-foo', path: 'rggen/foo/bar')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo/bar')
         plugin_manager.load_plugin('rggen-foo/bar')
 
-        setup_plugin_expectation(plugin: 'rggen-foo-bar', path: 'rggen/foo_bar/baz')
+        setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar/baz')
         plugin_manager.load_plugin('rggen-foo-bar/baz')
 
-        setup_plugin_expectation(plugin: 'rggen-foo', path: 'rggen/foo/bar/baz')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo/bar/baz')
         plugin_manager.load_plugin('rggen-foo/bar/baz')
 
-        setup_plugin_expectation(plugin: 'rggen-foo', path: 'rggen/foo/bar_baz')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo/bar_baz')
         plugin_manager.load_plugin('rggen-foo/bar_baz')
 
         setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo/bar')
@@ -141,14 +141,6 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
       'rggen/default'
     end
 
-    let(:default_plugins_version) do
-      "~> #{RgGen::Core::MAJOR}.#{RgGen::Core::MINOR}.0"
-    end
-
-    before do
-      allow(Gem).to receive(:find_files).with(default_plugins).and_return([default_plugins])
-    end
-
     before do
       allow(ENV).to receive(:key?).with('RGGEN_NO_DEFAULT_PLUGINS').and_return(false)
       allow(ENV).to receive(:[]).and_call_original
@@ -166,8 +158,8 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     end
 
     it '既定プラグインと引数で指定されたプラグインを読み込む' do
-      setup_plugin_expectation(plugin: 'rggen', path: default_plugins, version: default_plugins_version)
-      setup_plugin_expectation(plugin: 'rggen-foo', path: 'rggen/foo')
+      setup_plugin_expectation(plugin: 'rggen', path: default_plugins, version: RgGen::Core::VERSION)
+      setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo')
       setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar/baz')
       plugin_manager.load_plugins(['rggen-foo', ['rggen-foo-bar/baz', '0.2.0']], false)
     end
@@ -182,10 +174,11 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     context 'rggen/defaultが読み込めない場合' do
       it '既定プラグインは読み込まない' do
         expect(plugin_manager).to_not receive(:load_plugin).with(default_plugins)
-        setup_plugin_expectation(plugin: 'rggen-foo', path: 'rggen/foo')
+        setup_plugin_expectation(plugin: 'rggen-foo', path: 'rggen/foo', version: '0.1.0')
         setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar/baz')
 
-        allow(Gem).to receive(:find_files).with(default_plugins).and_return([])
+        allow(Gem::Specification).to receive(:find_all_by_name).and_call_original
+        allow(Gem::Specification).to receive(:find_all_by_name).with('rggen', anything).and_return([])
         plugin_manager.load_plugins(['rggen-foo', ['rggen-foo-bar/baz', '0.2.0']], false)
       end
     end
@@ -193,7 +186,7 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     context '環境変数RGGEN_NO_DEFAULT_PLUGINSが設定されている場合' do
       it '既定プラグインは読み込まない' do
         expect(plugin_manager).to_not receive(:load_plugin).with(default_plugins)
-        setup_plugin_expectation(plugin: 'rggen-foo', path: 'rggen/foo')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo')
         setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar/baz')
 
         allow(ENV).to receive(:key?).with('RGGEN_NO_DEFAULT_PLUGINS').and_return(true)
@@ -204,7 +197,7 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     context '引数no_default_pluginにtrueが指定された場合' do
       it '既定プラグインは読み込まない' do
         expect(plugin_manager).to_not receive(:load_plugin).with(default_plugins)
-        setup_plugin_expectation(plugin: 'rggen-foo', path: 'rggen/foo')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo')
         setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar/baz')
 
         plugin_manager.load_plugins(['rggen-foo', ['rggen-foo-bar/baz', '0.2.0']], true)
@@ -220,7 +213,7 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
 
         setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo/bar')
         setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: plugins[1])
-        setup_plugin_expectation(plugin: 'rggen-foo', path: 'rggen/foo')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo')
         setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar/baz')
 
         allow(ENV).to receive(:[]).with('RGGEN_PLUGINS').and_return(plugins.join(':'))
