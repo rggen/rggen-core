@@ -4,7 +4,6 @@ module RgGen
   module Core
     module Builder
       DEFAULT_PLUGSINS = 'rggen/default'
-      DEFAULT_PLUGSINS_VERSION = "~> #{MAJOR}.#{MINOR}.0"
 
       class PluginInfo
         attr_reader :path
@@ -19,10 +18,8 @@ module RgGen
 
         def parse(path_or_name, version)
           @name, @path, @gemname, @version =
-            if path_or_name == DEFAULT_PLUGSINS
-              [nil, path_or_name, 'rggen', DEFAULT_PLUGSINS_VERSION]
-            elsif plugin_path?(path_or_name)
-              [nil, path_or_name, *find_gemspec_by_path(path_or_name)]
+            if path_or_name == DEFAULT_PLUGSINS || plugin_path?(path_or_name)
+              [nil, path_or_name]
             else
               [
                 path_or_name, get_plugin_path(path_or_name),
@@ -45,16 +42,6 @@ module RgGen
 
         def plugin_path?(path_or_name)
           File.ext(path_or_name) == 'rb'
-        end
-
-        def find_gemspec_by_path(path)
-          Gem::Specification
-            .each.find { |spec| match_gemspec_path?(spec, path) }
-            &.then { |spec| [spec.name, spec.version] }
-        end
-
-        def match_gemspec_path?(gemspec, path)
-          gemspec.full_require_paths.any?(&path.method(:start_with?))
         end
 
         def get_plugin_path(name)
@@ -96,9 +83,11 @@ module RgGen
         end
 
         def activate_plugin_by_name(plugin_name)
-          target_plugin = @plugins.find { |plugin| plugin.name == plugin_name }
-          target_plugin&.activate(@builder)
-          target_plugin&.activate_additionally(@builder)
+          @plugins.find { |plugin| plugin.name == plugin_name }
+            &.then do |plugin|
+              plugin.activate(@builder)
+              plugin.activate_additionally(@builder)
+            end
         end
 
         def version_info
@@ -108,10 +97,44 @@ module RgGen
         private
 
         def read_plugin_file(info)
-          info.gemname && gem(info.gemname, info.version)
+          activate_plugin_gem(info)
           require info.path
         rescue ::LoadError
           raise Core::PluginError.new("cannot load such plugin: #{info}")
+        end
+
+        def activate_plugin_gem(info)
+          if (gemspec = find_gemspec(info))
+            gem gemspec.name, gemspec.version
+          elsif info.gemname
+            gem info.gemname, info.version
+          end
+        end
+
+        def find_gemspec(info)
+          if info.path == DEFAULT_PLUGSINS
+            find_default_plugins_gemspec
+          elsif info.gemname
+            find_gemspec_by_name(info.gemname, info.version)
+          else
+            find_gemspec_by_path(info.path)
+          end
+        end
+
+        def find_default_plugins_gemspec
+          find_gemspec_by_name('rggen', "~> #{MAJOR}.#{MINOR}.0")
+        end
+
+        def find_gemspec_by_name(name, version)
+          Gem::Specification
+            .find_all_by_name(name, version)
+            .find { |s| !s.has_conflicts? }
+        end
+
+        def find_gemspec_by_path(path)
+          Gem::Specification
+            .each
+            .find { |spec| spec.full_require_paths.any?(&path.method(:start_with?)) }
         end
 
         def merge_plugins(plugins, no_default_plugins)
@@ -129,8 +152,7 @@ module RgGen
         def load_default_plugins?(no_default_plugins)
           return false if no_default_plugins
           return false if ENV.key?('RGGEN_NO_DEFAULT_PLUGINS')
-          return false if Gem.find_files(DEFAULT_PLUGSINS).empty?
-          true
+          !find_default_plugins_gemspec.nil?
         end
 
         def plugins_from_env

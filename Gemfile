@@ -14,7 +14,7 @@ group :rggen do
 end
 
 group :test do
-  ['rggen-foo', 'rggen-foo-bar']
+  ['rggen', 'rggen-foo', 'rggen-foo-bar']
     .map { |plugin| [plugin, File.join(__dir__, 'spec', 'dummy_plugins', plugin)] }
     .each { |(plugin, path)| gem plugin, path: path }
 end
