@@ -39,10 +39,11 @@ module RgGen
         end
 
         def build_factories
-          factories =
-            @entries
-              .map(&:build_factory)
-              .to_h { |f| [f.layer, f] }
+          factories = @entries.to_h do |entry|
+            entry
+              .build_factory
+              .then { |f| [f.layer, f] }
+          end
           factories.each_value { |f| f.component_factories factories }
           factories.values
         end
