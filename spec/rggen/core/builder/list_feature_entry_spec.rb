@@ -51,19 +51,55 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
     specify '生成したファクトリで、#define_feature/#featureで定義したフィーチャーを生成できる' do
       entry = create_entry do
         define_factory(&default_factory_body)
-        define_feature(:foo) { def fizz; 'foo fizz!'; end }
-        feature(:foo) { def buzz; 'foo buzz!'; end }
-        define_feature(:bar) { def fizz; 'bar fizz!'; end }
-        feature(:bar) { def buzz; 'bar buzz!'; end }
-        define_feature(:baz) { def fizz; 'baz fizz!'; end }
-        feature(:baz) { def buzz; 'baz buzz!'; end }
+        define_feature(:foo) { def m; 'foo!'; end }
+        feature(:bar) { def m; 'bar!'; end }
+      end
+      factory = entry.build_factory(nil)
+
+      feature = factory.create(component, :foo)
+      expect(feature.m).to eq 'foo!'
+
+      feature = factory.create(component, :bar)
+      expect(feature.m).to eq 'bar!'
+    end
+
+    describe '#modify_feature' do
+      specify '#modify_featureで既存のフィーチャーを変更できる' do
+        entry = create_entry do
+          define_factory(&default_factory_body)
+          define_feature(:foo) { def m; 'foo!'; end }
+          modify_feature(:foo) { def m; 'foo!!'; end }
+        end
+        factory = entry.build_factory(nil)
+
+        feature = factory.create(component, :foo)
+        expect(feature.m).to eq 'foo!!'
       end
 
-      factory = entry.build_factory(nil)
-      [:foo, :bar, :baz].each do |key|
-        feature = factory.create(component, key)
-        expect(feature.fizz).to eq "#{key} fizz!"
-        expect(feature.buzz).to eq "#{key} buzz!"
+      context '指定したフィーチャーが定義されていない場合' do
+        it 'BuilderErrorを起こす' do
+          expect {
+            create_entry do
+              define_feature(:foo)
+              modify_feature(:bar)
+            end
+          }.to raise_error RgGen::Core::BuilderError, 'unknown feature: bar'
+        end
+      end
+    end
+
+    context '同名のフィーチャーが複数回定義された場合' do
+      specify '最後に定義されたフィーチャーが生成される' do
+        entry = create_entry do
+          define_factory(&default_factory_body)
+          define_feature(:foo) { def fizz; 'fizz'; end }
+          define_feature(:foo) { def buzz; 'buzz'; end }
+        end
+        factory = entry.build_factory(nil)
+
+        feature = factory.create(component, :foo)
+        expect(feature.buzz).to eq 'buzz'
+        expect { feature.fizz }.to raise_error NoMethodError
       end
     end
 
@@ -257,12 +293,6 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
         shared_context = Object.new
 
         entry = create_entry(shared_context)
-        expect {
-          entry.define_feature(:foo, shared_context)
-        }.to raise_rggen_error RgGen::Core::BuilderError, 'shared context has already been set'
-
-        entry = create_entry
-        entry.define_feature(:foo, shared_context)
         expect {
           entry.define_feature(:foo, shared_context)
         }.to raise_rggen_error RgGen::Core::BuilderError, 'shared context has already been set'

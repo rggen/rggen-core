@@ -128,6 +128,124 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
     end
   end
 
+  describe '#modify_*_feature' do
+    specify '定義済みフィーチャーを変更する' do
+      registry.define_feature(:foo) do
+        feature { def fizz; 'foo fizz'; end }
+      end
+      registry.modify_feature(:foo) do
+        feature { def buzz; 'foo buzz'; end }
+      end
+
+      registry.define_simple_feature(:bar) do
+        def fizz; 'bar fizz'; end
+      end
+      registry.modify_simple_feature(:bar) do
+        def buzz; 'bar buzz'; end
+      end
+
+      registry.define_list_feature(:baz) do
+        default_feature do
+          def fizz; 'baz fizz'; end
+        end
+      end
+      registry.modify_list_feature(:baz) do
+        default_feature do
+          def buzz; 'baz buzz'; end
+        end
+      end
+
+      registry.define_list_item_feature(:baz, :baz_0) do
+        def fizz; 'baz_0 fizz'; end
+      end
+      registry.modify_list_item_feature(:baz, :baz_0) do
+        def buzz; 'baz_0 buzz'; end
+      end
+
+      factories = registry.build_factories
+
+      feature = factories[:foo].create(component)
+      expect(feature.fizz).to eq 'foo fizz'
+      expect(feature.buzz).to eq 'foo buzz'
+
+      feature = factories[:bar].create(component)
+      expect(feature.fizz).to eq 'bar fizz'
+      expect(feature.buzz).to eq 'bar buzz'
+
+      feature = factories[:baz].create(component, :baz_0)
+      expect(feature.fizz).to eq 'baz_0 fizz'
+      expect(feature.buzz).to eq 'baz_0 buzz'
+
+      feature = factories[:baz].create(component, :baz_1)
+      expect(feature.fizz).to eq 'baz fizz'
+      expect(feature.buzz).to eq 'baz buzz'
+    end
+
+    context '未定義のフィーチャーを指定した場合' do
+      it 'BuilderErrorを起こす' do
+        expect {
+          registry.define_feature(:foo)
+          registry.modify_feature(:bar)
+        }.to raise_error RgGen::Core::BuilderError, 'unknown feature: bar'
+
+        expect {
+          registry.define_simple_feature(:foo)
+          registry.modify_feature(:foo)
+        }.to raise_error RgGen::Core::BuilderError, 'unknown feature: foo'
+
+        expect {
+          registry.define_list_feature(:foo)
+          registry.modify_feature(:foo)
+        }.to raise_error RgGen::Core::BuilderError, 'unknown feature: foo'
+
+        expect {
+          registry.define_simple_feature(:foo)
+          registry.modify_simple_feature(:bar)
+        }.to raise_error RgGen::Core::BuilderError, 'unknown feature: bar'
+
+        expect {
+          registry.define_feature(:foo)
+          registry.modify_simple_feature(:foo)
+        }.to raise_error RgGen::Core::BuilderError, 'unknown feature: foo'
+
+        expect {
+          registry.define_list_feature(:foo)
+          registry.modify_simple_feature(:foo)
+        }.to raise_error RgGen::Core::BuilderError, 'unknown feature: foo'
+
+        expect {
+          registry.define_list_feature(:foo)
+          registry.modify_list_feature(:bar)
+        }.to raise_error RgGen::Core::BuilderError, 'unknown feature: bar'
+
+        expect {
+          registry.define_feature(:foo)
+          registry.modify_list_feature(:foo)
+        }.to raise_error RgGen::Core::BuilderError, 'unknown feature: foo'
+
+        expect {
+          registry.define_simple_feature(:foo)
+          registry.modify_list_feature(:foo)
+        }.to raise_error RgGen::Core::BuilderError, 'unknown feature: foo'
+
+        expect {
+          registry.define_list_feature(:foo)
+          registry.modify_list_item_feature(:bar, :bar_0)
+        }.to raise_error RgGen::Core::BuilderError, 'unknown feature: bar'
+
+        expect {
+          registry.define_feature(:foo)
+          registry.modify_list_item_feature(:foo, :foo_0)
+        }.to raise_error RgGen::Core::BuilderError, 'unknown feature: foo'
+
+        expect {
+          registry.define_simple_feature(:foo)
+          registry.modify_list_item_feature(:foo, :foo_0)
+        }.to raise_error RgGen::Core::BuilderError, 'unknown feature: foo'
+      end
+    end
+  end
+
   context '同名のフィーチャーが複数回定義された場合' do
     before do
       registry.define_feature(:foo_0) do
@@ -283,15 +401,15 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
     specify 'BuilderErrorが発生する' do
       expect {
         registry.define_list_item_feature(:foo, :foo_0)
-      }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown list feature: foo'
+      }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown feature: foo'
 
       expect {
         registry.define_list_item_feature(:bar, :bar_0)
-      }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown list feature: bar'
+      }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown feature: bar'
 
       expect {
         registry.define_list_item_feature(:baz, :baz_0)
-      }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown list feature: baz'
+      }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown feature: baz'
     end
   end
 

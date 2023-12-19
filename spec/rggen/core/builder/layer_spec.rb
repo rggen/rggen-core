@@ -170,6 +170,58 @@ RSpec.describe RgGen::Core::Builder::Layer do
     end
   end
 
+  describe 'フィーチャーの変更' do
+    specify '#add_feature_registry呼び出し時に指定した登録名でフィーチャーを変更できる' do
+      layer.define_feature(:foo_0) { fizz {}; buzz {} }
+      expect(fizz_feature_registry).to receive(:modify_feature).with(:foo_0).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_feature).with(:foo_0).and_call_original
+      layer.modify_feature(:foo_0) { fizz {}; buzz {} }
+
+      layer.define_feature([:foo_1, :foo_2]) { fizz {}; buzz {} }
+      expect(fizz_feature_registry).to receive(:modify_feature).with(:foo_1).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_feature).with(:foo_1).and_call_original
+      expect(fizz_feature_registry).to receive(:modify_feature).with(:foo_2).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_feature).with(:foo_2).and_call_original
+      layer.modify_feature([:foo_1, :foo_2]) { fizz {}; buzz {} }
+
+      layer.define_simple_feature(:bar_0) { fizz {}; buzz {} }
+      expect(fizz_feature_registry).to receive(:modify_simple_feature).with(:bar_0).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_simple_feature).with(:bar_0).and_call_original
+      layer.modify_simple_feature(:bar_0) { fizz {}; buzz {} }
+
+      layer.define_simple_feature([:bar_1, :bar_2]) { fizz {}; buzz {} }
+      expect(fizz_feature_registry).to receive(:modify_simple_feature).with(:bar_1).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_simple_feature).with(:bar_1).and_call_original
+      expect(fizz_feature_registry).to receive(:modify_simple_feature).with(:bar_2).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_simple_feature).with(:bar_2).and_call_original
+      layer.modify_simple_feature([:bar_1, :bar_2]) { fizz {}; buzz {} }
+
+      layer.define_list_feature(:baz_0) { fizz {}; buzz {} }
+      expect(fizz_feature_registry).to receive(:modify_list_feature).with(:baz_0).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_list_feature).with(:baz_0).and_call_original
+      layer.modify_list_feature(:baz_0) { fizz {}; buzz {} }
+
+      layer.define_list_feature([:baz_1, :baz_2]) { fizz {}; buzz {} }
+      expect(fizz_feature_registry).to receive(:modify_list_feature).with(:baz_1).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_list_feature).with(:baz_1).and_call_original
+      expect(fizz_feature_registry).to receive(:modify_list_feature).with(:baz_2).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_list_feature).with(:baz_2).and_call_original
+      layer.modify_list_feature([:baz_1, :baz_2]) { fizz {}; buzz {} }
+
+      layer.define_list_item_feature(:baz_0, :baz_0_0) { fizz {}; buzz {} }
+      expect(fizz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_0).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_0).and_call_original
+      layer.modify_list_item_feature(:baz_0, :baz_0_0) { fizz {}; buzz {} }
+
+      layer.define_list_item_feature(:baz_0, [:baz_0_1, :baz_0_2]) { fizz {}; buzz {} }
+      expect(fizz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_1).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_1).and_call_original
+      expect(fizz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_2).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_2).and_call_original
+      layer.modify_list_item_feature(:baz_0, [:baz_0_1, :baz_0_2]) { fizz {}; buzz {} }
+    end
+  end
+
   describe 'フィーチャーの有効化' do
     before do
       layer.define_feature([:foo_0, :foo_1, :foo_2]) do

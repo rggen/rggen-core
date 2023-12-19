@@ -50,7 +50,11 @@ module RgGen
           :define_feature,
           :define_simple_feature,
           :define_list_feature,
-          :define_list_item_feature
+          :define_list_item_feature,
+          :modify_feature,
+          :modify_simple_feature,
+          :modify_list_feature,
+          :modify_list_item_feature
         ].each do |method_name|
           define_method(method_name) do |layer, *args, &body|
             @layers[layer].__send__(__method__, *args, &body)
