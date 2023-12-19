@@ -12,6 +12,10 @@ module RgGen
         attr_reader :registry
         attr_reader :name
 
+        def modify(&body)
+          eval_body(&body)
+        end
+
         def match_entry_type?(entry_type)
           entry_type == entry_type_name
         end
@@ -29,6 +33,10 @@ module RgGen
           (context && targets)&.each do |target|
             target.attach_context(context)
           end
+        end
+
+        def eval_body(&body)
+          block_given? && Docile.dsl_eval(self, @name, &body)
         end
 
         def target_features(_tergets)

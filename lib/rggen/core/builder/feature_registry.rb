@@ -24,10 +24,23 @@ module RgGen
         end
 
         def define_list_item_feature(list_name, feature_name, context = nil, &body)
-          entry = @feature_entries[list_name]
-          entry&.match_entry_type?(:list) ||
-            (raise BuilderError.new("unknown list feature: #{list_name}"))
-          entry.define_feature(feature_name, context, &body)
+          list_item_entry(list_name).define_feature(feature_name, context, &body)
+        end
+
+        def modify_feature(name, &body)
+          modify_entry(:general, name, &body)
+        end
+
+        def modify_simple_feature(name, &body)
+          modify_entry(:simple, name, &body)
+        end
+
+        def modify_list_feature(list_name, &body)
+          modify_entry(:list, list_name, &body)
+        end
+
+        def modify_list_item_feature(list_name, feature_name, &body)
+          list_item_entry(list_name).modify_feature(feature_name, &body)
         end
 
         def enable(list_name = nil, feature_names)
@@ -93,6 +106,20 @@ module RgGen
           entry = FEATURE_ENTRIES[type].new(self, name)
           entry.setup(@base_feature, @factory, context, &body)
           @feature_entries[name] = entry
+        end
+
+        def modify_entry(type, name, &body)
+          entry = @feature_entries[name]
+          entry&.match_entry_type?(type) ||
+            (raise BuilderError.new("unknown feature: #{name}"))
+          entry.modify(&body)
+        end
+
+        def list_item_entry(list_name)
+          entry = @feature_entries[list_name]
+          entry&.match_entry_type?(:list) ||
+            (raise BuilderError.new("unknown feature: #{list_name}"))
+          entry
         end
 
         def enabled_list_features(list_name)

@@ -5,30 +5,27 @@ module RgGen
     module Builder
       class Layer
         class Proxy
-          def initialize
-            block_given? && yield(self)
+          def initialize(list_name, feature_name)
+            @list_name = list_name
+            @feature_name = feature_name
           end
 
-          attr_setter :body
-          attr_setter :method_name
-          attr_setter :list_name
-          attr_setter :feature_name
+          attr_reader :list_name
+          attr_reader :feature_name
 
           def register_execution(registry, &body)
             @executions ||= []
             @executions << { registry: registry, body: body }
           end
 
-          def execute(layer)
+          def execute(layer, method_name, &body)
             Docile.dsl_eval(layer, &body)
-            @executions&.each { |execution| call_execution(layer, execution) }
-          end
+            return unless @executions
 
-          private
-
-          def call_execution(layer, execution)
             args = [list_name, feature_name, layer.shared_context].compact
-            execution[:registry].__send__(method_name, *args, &execution[:body])
+            @executions.each do |execution|
+              execution[:registry].__send__(method_name, *args, &execution[:body])
+            end
           end
         end
 
@@ -55,42 +52,49 @@ module RgGen
 
         def define_feature(feature_names, &body)
           Array(feature_names).each do |feature_name|
-            do_proxy_call do |proxy|
-              proxy.body(body)
-              proxy.method_name(__method__)
-              proxy.feature_name(feature_name)
-            end
+            do_proxy_call(__method__, nil, feature_name, &body)
+          end
+        end
+
+        def modify_feature(feature_names, &body)
+          Array(feature_names).each do |feature_name|
+            do_proxy_call(__method__, nil, feature_name, &body)
           end
         end
 
         def define_simple_feature(feature_names, &body)
           Array(feature_names).each do |feature_name|
-            do_proxy_call do |proxy|
-              proxy.body(body)
-              proxy.method_name(__method__)
-              proxy.feature_name(feature_name)
-            end
+            do_proxy_call(__method__, nil, feature_name, &body)
+          end
+        end
+
+        def modify_simple_feature(feature_names, &body)
+          Array(feature_names).each do |feature_name|
+            do_proxy_call(__method__, nil, feature_name, &body)
           end
         end
 
         def define_list_feature(list_names, &body)
           Array(list_names).each do |list_name|
-            do_proxy_call do |proxy|
-              proxy.body(body)
-              proxy.method_name(__method__)
-              proxy.list_name(list_name)
-            end
+            do_proxy_call(__method__, list_name, nil, &body)
+          end
+        end
+
+        def modify_list_feature(list_names, &body)
+          Array(list_names).each do |list_name|
+            do_proxy_call(__method__, list_name, nil, &body)
           end
         end
 
         def define_list_item_feature(list_name, feature_names, &body)
           Array(feature_names).each do |feature_name|
-            do_proxy_call do |proxy|
-              proxy.body(body)
-              proxy.method_name(__method__)
-              proxy.list_name(list_name)
-              proxy.feature_name(feature_name)
-            end
+            do_proxy_call(__method__, list_name, feature_name, &body)
+          end
+        end
+
+        def modify_list_item_feature(list_name, feature_names, &body)
+          Array(feature_names).each do |feature_name|
+            do_proxy_call(__method__, list_name, feature_name, &body)
           end
         end
 
@@ -122,9 +126,9 @@ module RgGen
           end
         end
 
-        def do_proxy_call(&block)
-          @proxy = Proxy.new(&block)
-          @proxy.execute(self)
+        def do_proxy_call(method_name, list_name, feature_name, &body)
+          @proxy = Proxy.new(list_name, feature_name)
+          @proxy.execute(self, method_name, &body)
           remove_instance_variable(:@proxy)
         end
 

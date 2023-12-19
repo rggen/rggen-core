@@ -10,7 +10,7 @@ module RgGen
           @feature = Class.new(base_feature)
           @factory = Class.new(base_factory)
           attach_shared_context(context, @feature, @factory, self)
-          block_given? && Docile.dsl_eval(self, @name, &body)
+          eval_body(&body)
         end
 
         def define_factory(&body)

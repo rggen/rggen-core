@@ -15,7 +15,7 @@ module RgGen
           @base_feature = Class.new(base_feature)
           @factory = Class.new(base_factory)
           attach_shared_context(context, @base_feature, @factory, self)
-          block_given? && Docile.dsl_eval(self, @name, &body)
+          eval_body(&body)
         end
 
         def define_factory(&body)
@@ -31,8 +31,7 @@ module RgGen
         alias_method :base_feature, :define_base_feature
 
         def define_feature(feature_name, context = nil, &body)
-          @features[feature_name] ||= Class.new(@base_feature)
-          feature = @features[feature_name]
+          feature = @features[feature_name] = Class.new(@base_feature)
           if context
             feature.method_defined?(:shared_context) &&
               (raise BuilderError.new('shared context has already been set'))
@@ -42,6 +41,12 @@ module RgGen
         end
 
         alias_method :feature, :define_feature
+
+        def modify_feature(feature_name, &body)
+          @features.key?(feature_name) ||
+            (raise BuilderError.new("unknown feature: #{feature_name}"))
+          body && @features[feature_name].class_exec(feature_name, &body)
+        end
 
         def define_default_feature(&body)
           @default_feature ||= Class.new(@base_feature)

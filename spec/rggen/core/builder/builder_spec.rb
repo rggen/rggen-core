@@ -461,7 +461,7 @@ RSpec.describe RgGen::Core::Builder::Builder do
     end
   end
 
-  describe '#define_simple_feature/#define_list_feature' do
+  describe '#define_*_feature/#modify_*_feature' do
     let(:target_layer) do
       [:global, :register_block, :register, :bit_field].sample
     end
@@ -472,7 +472,7 @@ RSpec.describe RgGen::Core::Builder::Builder do
       default_component_registration
     end
 
-    it '指定した階層の#define_simple_feature/#define_list_featureを呼び出して、フィーチャーの定義を行う' do
+    it '指定した階層の#define_*_feature/#modify_*_featureを呼び出して、フィーチャーの定義や変更を行う' do
       expect(layer).to receive(:define_feature).with(:foo).and_call_original
       expect(layer).to receive(:define_feature).with(:bar).and_call_original
       expect(layer).to receive(:define_simple_feature).with(:foo).and_call_original
@@ -490,21 +490,59 @@ RSpec.describe RgGen::Core::Builder::Builder do
       builder.define_list_item_feature(target_layer, :baz, :bar_0) {}
       builder.define_list_feature(target_layer, :qux) {}
       builder.define_list_item_feature(target_layer, :qux, :qux_0) {}
+
+      expect(layer).to receive(:modify_feature).with(:foo).and_call_original
+      expect(layer).to receive(:modify_feature).with(:bar).and_call_original
+      expect(layer).to receive(:modify_simple_feature).with(:foo).and_call_original
+      expect(layer).to receive(:modify_simple_feature).with(:bar).and_call_original
+      expect(layer).to receive(:modify_list_feature).with(:baz).and_call_original
+      expect(layer).to receive(:modify_list_item_feature).with(:baz, :bar_0).and_call_original
+      expect(layer).to receive(:modify_list_feature).with(:qux).and_call_original
+      expect(layer).to receive(:modify_list_item_feature).with(:qux, :qux_0).and_call_original
+
+      builder.modify_feature(target_layer, :foo) {}
+      builder.modify_feature(target_layer, :bar) {}
+      builder.modify_simple_feature(target_layer, :foo) {}
+      builder.modify_simple_feature(target_layer, :bar) {}
+      builder.modify_list_feature(target_layer, :baz) {}
+      builder.modify_list_item_feature(target_layer, :baz, :bar_0) {}
+      builder.modify_list_feature(target_layer, :qux) {}
+      builder.modify_list_item_feature(target_layer, :qux, :qux_0) {}
     end
 
     context '未定義の階層が指定された場合' do
       it 'BuilderErrorを起こす' do
         expect {
-          builder.define_simple_feature(:foo, :bar) {}
+          builder.define_feature(:foo, :bar) {}
         }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown layer: foo'
 
         expect {
-          builder.define_list_feature(:bar, :baz) {}
+          builder.define_simple_feature(:bar, :baz) {}
         }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown layer: bar'
 
         expect {
-          builder.define_list_feature(:baz, :qux, :qux_0) {}
+          builder.define_list_feature(:baz, :qux) {}
         }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown layer: baz'
+
+        expect {
+          builder.define_list_feature(:qux, :quu, :quu_0) {}
+        }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown layer: qux'
+
+        expect {
+          builder.modify_feature(:foo, :bar) {}
+        }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown layer: foo'
+
+        expect {
+          builder.modify_simple_feature(:bar, :baz) {}
+        }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown layer: bar'
+
+        expect {
+          builder.modify_list_feature(:baz, :qux) {}
+        }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown layer: baz'
+
+        expect {
+          builder.modify_list_feature(:qux, :quu, :quu_0) {}
+        }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown layer: qux'
       end
     end
   end
