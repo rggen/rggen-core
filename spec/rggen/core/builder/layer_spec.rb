@@ -22,6 +22,16 @@ RSpec.describe RgGen::Core::Builder::Layer do
     layer.add_feature_registry(:buzz, buzz_feature_registry)
   end
 
+  describe '#component_defined?' do
+    it '指定したコンポーネントが定義済みかどうかを返す' do
+      expect(layer.component_defined?(:fizz)).to eq true
+      expect(layer.component_defined?(:buzz)).to eq true
+      expect(layer.component_defined?(:foo)).to eq false
+      expect(layer.component_defined?(:bar)).to eq false
+
+    end
+  end
+
   describe 'フィーチャーの定義' do
     specify '#add_feature_registry呼び出し時に指定した登録名でフィーチャーを定義できる' do
       expect(fizz_feature_registry).to receive(:define_feature).with(:foo_0).and_call_original

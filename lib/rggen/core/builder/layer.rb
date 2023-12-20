@@ -50,6 +50,10 @@ module RgGen
           current_shared_context(false)
         end
 
+        def component_defined?(component_name)
+          @feature_registries.key?(component_name)
+        end
+
         def define_feature(feature_names, &body)
           Array(feature_names).each do |feature_name|
             do_proxy_call(__method__, nil, feature_name, &body)
