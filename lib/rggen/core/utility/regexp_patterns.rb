@@ -12,17 +12,17 @@ module RgGen
 
         private
 
-        VARIABLE_NAME_PATTERN = /[a-z_]\w*/i.freeze
+        VARIABLE_NAME_PATTERN = /[a-z_]\w*/i
 
         def variable_name
           VARIABLE_NAME_PATTERN
         end
 
-        BINARY_PATTERN = /[+-]?0b[01](?:_?[01])*/i.freeze
+        BINARY_PATTERN = /[+-]?0b[01](?:_?[01])*/i
 
-        DECIMAL_PATTERN = /[+-]?(?:[1-9]_?(?:\d_?)*)?\d/.freeze
+        DECIMAL_PATTERN = /[+-]?(?:[1-9]_?(?:\d_?)*)?\d/
 
-        HEXADECIMAL_PATTERN = /[+-]?0x\h(?:_?\h)*/i.freeze
+        HEXADECIMAL_PATTERN = /[+-]?0x\h(?:_?\h)*/i
 
         INTEGER_PATTERN =
           Regexp.union(
@@ -33,13 +33,13 @@ module RgGen
           INTEGER_PATTERN
         end
 
-        TRUTHY_PATTERN = /true|on|yes/i.freeze
+        TRUTHY_PATTERN = /true|on|yes/i
 
         def truthy_pattern
           TRUTHY_PATTERN
         end
 
-        FALSEY_PATTERN = /false|off|no/i.freeze
+        FALSEY_PATTERN = /false|off|no/i
 
         def falsey_pattern
           FALSEY_PATTERN

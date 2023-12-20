@@ -9,8 +9,8 @@ module RgGen
         include ConversionUtility
 
         class << self
-          def property(name, **options, &body)
-            Property.define(self, name, **options, &body)
+          def property(name, ...)
+            Property.define(self, name, ...)
             properties.include?(name) || properties << name
           end
 
@@ -49,8 +49,8 @@ module RgGen
             builders.nil?
           end
 
-          def input_pattern(pattern_or_patterns, **options, &converter)
-            @input_matcher = InputMatcher.new(pattern_or_patterns, **options, &converter)
+          def input_pattern(pattern_or_patterns, ...)
+            @input_matcher = InputMatcher.new(pattern_or_patterns, ...)
           end
 
           attr_reader :input_matcher
