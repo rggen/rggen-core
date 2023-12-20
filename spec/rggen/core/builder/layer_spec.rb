@@ -28,7 +28,6 @@ RSpec.describe RgGen::Core::Builder::Layer do
       expect(layer.component_defined?(:buzz)).to eq true
       expect(layer.component_defined?(:foo)).to eq false
       expect(layer.component_defined?(:bar)).to eq false
-
     end
   end
 
