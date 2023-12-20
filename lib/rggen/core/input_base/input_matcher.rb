@@ -52,7 +52,7 @@ module RgGen
             /(?<=[[:punct:]&&[^_]])[[:blank:]]+(?=\w)/
           ).freeze
 
-        COMPRESS_BLANK_PATTERN = /[[:blank:]]+/.freeze
+        COMPRESS_BLANK_PATTERN = /[[:blank:]]+/
 
         def delete_blanks(rhs)
           rhs

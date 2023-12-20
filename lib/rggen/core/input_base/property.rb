@@ -23,16 +23,16 @@ module RgGen
 
         def define(feature)
           feature.class_exec(self) do |property|
-            define_method(property.name) do |*args, **keywords, &block|
-              property.evaluate(self, *args, **keywords, &block)
+            define_method(property.name) do |*args, **kwargs, &block|
+              property.evaluate(self, *args, **kwargs, &block)
             end
           end
         end
 
-        def evaluate(feature, *args, **keywords, &block)
+        def evaluate(feature, ...)
           feature.verify(@options[:verify]) if @options.key?(:verify)
           if proxy_property?
-            proxy_property(feature, *args, **keywords, &block)
+            proxy_property(feature, ...)
           else
             default_property(feature)
           end
@@ -55,7 +55,7 @@ module RgGen
           ].any?
         end
 
-        def proxy_property(feature, *args, **keywords, &block)
+        def proxy_property(feature, ...)
           receiver, method =
             if @costom_property
               [@costom_property.bind(feature), :call]
@@ -64,7 +64,7 @@ module RgGen
             else
               [feature, @options[:forward_to]]
             end
-          receiver.__send__(method, *args, **keywords, &block)
+          receiver.__send__(method, ...)
         end
 
         def default_property(feature)

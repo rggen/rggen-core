@@ -87,8 +87,8 @@ module RgGen
           caller_location.path.include?('docile')
         end
 
-        def create_child_data(layer, *args, &block)
-          child_data_class.new(layer, @valid_value_lists, *args, &block)
+        def create_child_data(layer, ...)
+          child_data_class.new(layer, @valid_value_lists, ...)
         end
 
         def child_data_class
