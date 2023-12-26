@@ -49,10 +49,8 @@ module RgGen
         end
 
         class Visitor < ::Psych::Visitors::ToRuby
-          if ::Psych::VERSION >= '3.2.0'
-            def initialize(scalar_scanner, class_loader)
-              super(scalar_scanner, class_loader, symbolize_names: true)
-            end
+          def initialize(scalar_scanner, class_loader)
+            super(scalar_scanner, class_loader, symbolize_names: true)
           end
 
           def accept(node)
@@ -79,7 +77,6 @@ module RgGen
         def load_yaml(file)
           parse_yaml(File.binread(file), file)
             .then { |result| to_ruby(result) }
-            .then { |result| symbolize_names(result) }
         end
 
         def parse_yaml(yaml, file)
@@ -92,20 +89,6 @@ module RgGen
           cl = ::Psych::ClassLoader::Restricted.new(['Symbol'], [])
           ss = ::Psych::ScalarScanner.new(cl)
           Visitor.new(ss, cl).accept(result)
-        end
-
-        def symbolize_names(result)
-          return result if ::Psych::VERSION >= '3.2.0'
-
-          if result.match_class?(Hash)
-            result
-              .transform_keys!(&:to_sym)
-              .transform_values!(&method(:symbolize_names))
-          elsif result.match_class?(Array)
-            result.map! { |value| symbolize_names(value) }
-          end
-
-          result
         end
       end
     end
