@@ -112,8 +112,7 @@ module RgGen
       option.long_option '--plugin PLUGIN[:VERSION]'
       option.default { [] }
       option.action { |value, options| options[:plugins] << value.split(':', 2) }
-      option.description 'Load a RgGen plugin ' \
-                         "(name of plugin/path to 'setup.rb' file)"
+      option.description 'Load a RgGen plugin (specify plugin name or path)'
     end
 
     Options.add_option(:configuration) do |option|
@@ -134,7 +133,7 @@ module RgGen
     Options.add_option(:load_only) do |option|
       option.long_option '--load-only'
       option.default false
-      option.description 'Load setup, configuration and register map ' \
+      option.description 'Load plugins, configuration file and register map ' \
                          'files only; write no files'
     end
 
