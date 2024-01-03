@@ -161,7 +161,7 @@ RSpec.describe RgGen::Core::CLI do
     let(:help_message) do
       <<~'HELP'
         Usage: rggen [options] register_map_files
-                --no-default-plugins         Do not load default plugins
+                --no-default-plugins         Not load default plugins
                 --plugin PLUGIN[:VERSION]    Load a RgGen plugin (specify plugin name or path)
             -c, --configuration FILE         Specify a configuration file
             -o, --output DIRECTORY           Specify the directory where generated file(s) will be written
@@ -171,7 +171,7 @@ RSpec.describe RgGen::Core::CLI do
                 --print-verbose-info         Print verbose information when an error occurs
                 --print-backtrace            Print backtrace when an error occurs
             -v, --version                    Display version
-                --verbose-version            Load a setup Ruby file and display verbose version
+                --verbose-version            Display verbose version
             -h, --help                       Display this message
       HELP
     end

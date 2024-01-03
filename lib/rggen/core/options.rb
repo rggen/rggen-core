@@ -105,7 +105,7 @@ module RgGen
       option.long_option '--no-default-plugins'
       option.default false
       option.action { |_, options| options[:no_default_plugins] = true }
-      option.description 'Do not load default plugins'
+      option.description 'Not load default plugins'
     end
 
     Options.add_option(:plugins) do |option|
@@ -175,7 +175,7 @@ module RgGen
       option.action do |_value, options|
         options[:runner] = VersionPrinter.new(true)
       end
-      option.description 'Load a setup Ruby file and display verbose version'
+      option.description 'Display verbose version'
     end
 
     Options.add_option(:help) do |option|
