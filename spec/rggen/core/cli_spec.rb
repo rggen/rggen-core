@@ -162,10 +162,10 @@ RSpec.describe RgGen::Core::CLI do
       <<~'HELP'
         Usage: rggen [options] register_map_files
                 --no-default-plugins         Do not load default plugins
-                --plugin PLUGIN[:VERSION]    Load a RgGen plugin (name of plugin/path to 'setup.rb' file)
+                --plugin PLUGIN[:VERSION]    Load a RgGen plugin (specify plugin name or path)
             -c, --configuration FILE         Specify a configuration file
             -o, --output DIRECTORY           Specify the directory where generated file(s) will be written
-                --load-only                  Load setup, configuration and register map files only; write no files
+                --load-only                  Load plugins, configuration file and register map files only; write no files
                 --enable WRITER1[,WRITER2,...]
                                              Enable only the given writer(s) to write files
                 --print-verbose-info         Print verbose information when an error occurs
