@@ -132,14 +132,14 @@ RSpec.describe RgGen::Core::InputBase::ComponentFactory do
     end
 
     describe '入力データの生成と入力ファイルの読み出し' do
-      let(:rb_loader) do
+      let(:rb_loaders) do
         loader_class = Class.new(RgGen::Core::InputBase::Loader) do
           support_types [:rb]
           def read_file(file)
             input_data.load_file(file)
           end
         end
-        loader_class.new([], {})
+        [loader_class.new([], {}), loader_class.new([], {})]
       end
 
       let(:foo_load_data) do
@@ -158,7 +158,7 @@ RSpec.describe RgGen::Core::InputBase::ComponentFactory do
 
       before do
         foo_factory.root_factory
-        foo_factory.loaders [rb_loader]
+        foo_factory.loaders rb_loaders
       end
 
       before do
@@ -185,10 +185,12 @@ RSpec.describe RgGen::Core::InputBase::ComponentFactory do
         end
 
         it '対応するローダを使って、ファイルを読み出す' do
-          allow(rb_loader).to receive(:load_file).and_call_original
+          expect(rb_loaders[0]).not_to receive(:load_file)
+          allow(rb_loaders[1]).to receive(:load_file).and_call_original
+
           foo_factory.create(other_input_data, input_files)
-          expect(rb_loader).to have_received(:load_file).with(input_files[0], equal(input_datas[1]), valid_value_lists)
-          expect(rb_loader).to have_received(:load_file).with(input_files[1], equal(input_datas[1]), valid_value_lists)
+          expect(rb_loaders[1]).to have_received(:load_file).with(input_files[0], equal(input_datas[1]), valid_value_lists)
+          expect(rb_loaders[1]).to have_received(:load_file).with(input_files[1], equal(input_datas[1]), valid_value_lists)
         end
 
         specify '読み出したデータは、自身、及び、配下のコンポーネントの組み立てに使われる' do

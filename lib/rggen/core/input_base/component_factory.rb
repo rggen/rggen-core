@@ -42,7 +42,7 @@ module RgGen
         end
 
         def find_loader(file)
-          loaders.find { |l| l.support?(file) } ||
+          loaders.reverse_each.find { |l| l.support?(file) } ||
             (raise Core::LoadError.new('unsupported file type', file))
         end
 
