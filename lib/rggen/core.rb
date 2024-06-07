@@ -5,12 +5,13 @@ require 'docile'
 require 'erubi'
 require 'fileutils'
 require 'forwardable'
-require 'json'
 require 'optparse'
 require 'pathname'
 require 'singleton'
-require 'tomlrb'
-require 'yaml'
+
+autoload :JSON, 'json'
+autoload :Psych, 'yaml'
+autoload :Tomlrb, 'tomlrb'
 
 require_relative 'core/version'
 
