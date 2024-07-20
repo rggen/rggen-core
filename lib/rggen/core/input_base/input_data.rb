@@ -17,8 +17,9 @@ module RgGen
 
         def value(value_name, value, position = nil)
           symbolized_name = value_name.to_sym
-          valid_value?(symbolized_name) &&
-            assign_value(symbolized_name, value, position)
+          valid_value?(symbolized_name) ||
+            raise_unknown_field_error(symbolized_name, position)
+          assign_value(symbolized_name, value, position)
         end
 
         def []=(value_name, position = nil, value)

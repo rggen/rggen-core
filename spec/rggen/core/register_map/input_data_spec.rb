@@ -10,8 +10,82 @@ RSpec.describe RgGen::Core::RegisterMap::InputData do
     }
   end
 
+  let(:position) do
+    Struct.new(:x, :y).new(0, 1)
+  end
+
   def create_input_data(layer, configuration = nil)
     described_class.new(layer, valid_value_lists, configuration)
+  end
+
+  def input_value(value)
+    RgGen::Core::InputBase::InputValue.new(value, position)
+  end
+
+  def raise_register_map_error(message)
+    raise_error RgGen::Core::RegisterMap::RegisterMapError, message
+  end
+
+  describe '#value/#[]=' do
+    context '入力値名が入力値リスト上にない場合' do
+      it 'RegisterMapErrorを起こす' do
+        input_data = create_input_data(:register_block)
+        expect { input_data.value(:bar, input_value(0)) }
+          .to raise_register_map_error 'unknown register map field is given: bar'
+        expect { input_data.value('bar', input_value(0)) }
+          .to raise_register_map_error 'unknown register map field is given: bar'
+        expect { input_data[:bar] = input_value(0) }
+          .to raise_register_map_error 'unknown register map field is given: bar'
+        expect { input_data['bar'] = input_value(0) }
+          .to raise_register_map_error 'unknown register map field is given: bar'
+        expect { input_data.value(:foo, input_value(0)) }
+          .not_to raise_error
+        expect { input_data[:foo] = input_value(0) }
+          .not_to raise_error
+
+        input_data = create_input_data(:register_file)
+        expect { input_data.value(:foo, input_value(0)) }
+          .to raise_register_map_error 'unknown register map field is given: foo'
+        expect { input_data.value('foo', input_value(0)) }
+          .to raise_register_map_error 'unknown register map field is given: foo'
+        expect { input_data[:foo] = input_value(0) }
+          .to raise_register_map_error 'unknown register map field is given: foo'
+        expect { input_data['foo'] = input_value(0) }
+          .to raise_register_map_error 'unknown register map field is given: foo'
+        expect { input_data.value(:bar, input_value(0)) }
+          .not_to raise_error
+        expect { input_data[:bar] = input_value(0) }
+          .not_to raise_error
+
+        input_data = create_input_data(:register)
+        expect { input_data.value(:qux, input_value(0)) }
+          .to raise_register_map_error 'unknown register map field is given: qux'
+        expect { input_data.value('qux', input_value(0)) }
+          .to raise_register_map_error 'unknown register map field is given: qux'
+        expect { input_data[:qux] = input_value(0) }
+          .to raise_register_map_error 'unknown register map field is given: qux'
+        expect { input_data['qux'] = input_value(0) }
+          .to raise_register_map_error 'unknown register map field is given: qux'
+        expect { input_data.value(:baz, input_value(0)) }
+          .not_to raise_error
+        expect { input_data[:baz] = input_value(0) }
+          .not_to raise_error
+
+        input_data = create_input_data(:bit_field)
+        expect { input_data.value(:baz, input_value(0)) }
+          .to raise_register_map_error 'unknown register map field is given: baz'
+        expect { input_data.value('baz', input_value(0)) }
+          .to raise_register_map_error 'unknown register map field is given: baz'
+        expect { input_data[:baz] = input_value(0) }
+          .to raise_register_map_error 'unknown register map field is given: baz'
+        expect { input_data['baz'] = input_value(0) }
+          .to raise_register_map_error 'unknown register map field is given: baz'
+        expect { input_data.value(:qux, input_value(0)) }
+          .not_to raise_error
+        expect { input_data[:qux] = input_value(0) }
+          .not_to raise_error
+      end
+    end
   end
 
   context '階層がrootの場合' do
