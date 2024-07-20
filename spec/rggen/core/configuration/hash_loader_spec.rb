@@ -25,7 +25,7 @@ RSpec.describe RgGen::Core::Configuration::HashLoader do
   end
 
   context '#read_dataがHashを返す場合' do
-    let(:load_data) { { foo: 0, bar: 1, qux: 2} }
+    let(:load_data) { { foo: 0, bar: 1 } }
 
     before do
       loader.load_data = load_data

@@ -68,7 +68,11 @@ module RgGen
         end
 
         def filter_layer_data(layer_data, layer)
-          layer_data.slice(*valid_values(layer))
+          if @ignore_values.key?(layer)
+            layer_data.except(*@ignore_values[layer])
+          else
+            layer_data
+          end
         end
 
         def format_sub_layer_data(_read_data, _layer, _file)

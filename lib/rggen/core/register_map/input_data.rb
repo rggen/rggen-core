@@ -4,6 +4,8 @@ module RgGen
   module Core
     module RegisterMap
       class InputData < InputBase::InputData
+        include RaiseError
+
         module Root
           def register_block(value_list = nil, &block)
             child(:register_block, value_list, &block)
@@ -50,6 +52,11 @@ module RgGen
 
         def create_child_data(layer, &block)
           super(layer, @configuration, &block)
+        end
+
+        def raise_unknown_field_error(field_name, position)
+          message = "unknown register map field is given: #{field_name}"
+          error(message, position)
         end
       end
     end

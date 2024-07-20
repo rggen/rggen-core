@@ -37,16 +37,6 @@ RSpec.describe RgGen::Core::InputBase::InputData do
       end
     end
 
-    context '入力値名が指定された階層の入力値リスト上にない場合' do
-      it '入力値の設定をしない' do
-        foo_data.value :bar_0, bar_values[:bar_0]
-        foo_data.value :qux_0, 0
-
-        expect(foo_data).not_to have_value :bar_0
-        expect(foo_data).not_to have_value :qux_0
-      end
-    end
-
     specify '#[]=でも同様に設定できる' do
       foo_data[:foo_0] = foo_values[:foo_0]
       foo_data[:foo_1, position] = foo_values[:foo_1]
@@ -188,8 +178,8 @@ RSpec.describe RgGen::Core::InputBase::InputData do
 
     describe '入力値名リスト' do
       before do
-        foo_data.child(:bar, foo_0: foo_values[:foo_0], bar_0: bar_values[:bar_0], baz_0: baz_values[:baz_0])
-        foo_data.children[0].child(:baz, foo_1: foo_values[:foo_1], bar_1: bar_values[:bar_1], baz_1: baz_values[:baz_1])
+        foo_data.child(:bar, bar_0: bar_values[:bar_0])
+        foo_data.children[0].child(:baz, baz_1: baz_values[:baz_1])
       end
 
       let(:bar_data) { foo_data.children[0] }
