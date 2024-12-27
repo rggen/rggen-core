@@ -37,9 +37,9 @@ module RgGen
 
         attr_reader :children
 
-        def child(layer, value_list = nil, &block)
+        def child(layer, value_list = nil, &)
           create_child_data(layer) do |child_data|
-            child_data.build_by_block(&block)
+            child_data.build_by_block(&)
             child_data.values(value_list)
             @children << child_data
           end
@@ -98,8 +98,8 @@ module RgGen
 
         protected
 
-        def build_by_block(&block)
-          block_given? && Docile.dsl_eval(self, &block)
+        def build_by_block(&)
+          block_given? && Docile.dsl_eval(self, &)
         end
       end
     end

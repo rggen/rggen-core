@@ -11,36 +11,36 @@ module RgGen
           @enabled_features = {}
         end
 
-        def define_feature(name, context = nil, &body)
-          create_new_entry(:general, name, context, &body)
+        def define_feature(name, context = nil, &)
+          create_new_entry(:general, name, context, &)
         end
 
-        def define_simple_feature(name, context = nil, &body)
-          create_new_entry(:simple, name, context, &body)
+        def define_simple_feature(name, context = nil, &)
+          create_new_entry(:simple, name, context, &)
         end
 
-        def define_list_feature(list_name, context = nil, &body)
-          create_new_entry(:list, list_name, context, &body)
+        def define_list_feature(list_name, context = nil, &)
+          create_new_entry(:list, list_name, context, &)
         end
 
-        def define_list_item_feature(list_name, feature_name, context = nil, &body)
-          list_item_entry(list_name).define_feature(feature_name, context, &body)
+        def define_list_item_feature(list_name, feature_name, context = nil, &)
+          list_item_entry(list_name).define_feature(feature_name, context, &)
         end
 
-        def modify_feature(name, &body)
-          modify_entry(:general, name, &body)
+        def modify_feature(name, &)
+          modify_entry(:general, name, &)
         end
 
-        def modify_simple_feature(name, &body)
-          modify_entry(:simple, name, &body)
+        def modify_simple_feature(name, &)
+          modify_entry(:simple, name, &)
         end
 
-        def modify_list_feature(list_name, &body)
-          modify_entry(:list, list_name, &body)
+        def modify_list_feature(list_name, &)
+          modify_entry(:list, list_name, &)
         end
 
-        def modify_list_item_feature(list_name, feature_name, &body)
-          list_item_entry(list_name).modify_feature(feature_name, &body)
+        def modify_list_item_feature(list_name, feature_name, &)
+          list_item_entry(list_name).modify_feature(feature_name, &)
         end
 
         def enable(list_name = nil, feature_names)
@@ -102,17 +102,17 @@ module RgGen
           list: ListFeatureEntry
         }.freeze
 
-        def create_new_entry(type, name, context, &body)
+        def create_new_entry(type, name, context, &)
           entry = FEATURE_ENTRIES[type].new(self, name)
-          entry.setup(@base_feature, @factory, context, &body)
+          entry.setup(@base_feature, @factory, context, &)
           @feature_entries[name] = entry
         end
 
-        def modify_entry(type, name, &body)
+        def modify_entry(type, name, &)
           entry = @feature_entries[name]
           entry&.match_entry_type?(type) ||
             (raise BuilderError.new("unknown feature: #{name}"))
-          entry.modify(&body)
+          entry.modify(&)
         end
 
         def list_item_entry(list_name)

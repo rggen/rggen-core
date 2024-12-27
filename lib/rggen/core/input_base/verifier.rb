@@ -4,8 +4,8 @@ module RgGen
   module Core
     module InputBase
       class Verifier
-        def initialize(&block)
-          instance_eval(&block)
+        def initialize(&)
+          instance_eval(&)
         end
 
         def check_error(&block)

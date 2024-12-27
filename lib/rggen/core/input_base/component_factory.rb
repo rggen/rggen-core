@@ -51,7 +51,7 @@ module RgGen
             .transform_values(&->(f) { f.valid_value_list })
         end
 
-        def create_input_data(*_args, &block)
+        def create_input_data(*_args, &)
         end
 
         def create_features(component, *sources)

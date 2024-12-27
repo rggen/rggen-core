@@ -5,7 +5,7 @@ module Kernel
 
   def Integer(arg, base = 0, exception: true)
     arg = arg.__getobj__ if arg.is_a?(::Delegator)
-    __orignal_Integer(arg, base, exception: exception)
+    __orignal_Integer(arg, base, exception:)
   end
 
   module_function :__orignal_Integer

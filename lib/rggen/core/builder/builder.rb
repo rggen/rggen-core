@@ -14,12 +14,12 @@ module RgGen
 
         attr_reader :plugin_manager
 
-        def input_component_registry(name, &body)
-          component_registry(:input, name, &body)
+        def input_component_registry(name, &)
+          component_registry(:input, name, &)
         end
 
-        def output_component_registry(name, &body)
-          component_registry(:output, name, &body)
+        def output_component_registry(name, &)
+          component_registry(:output, name, &)
         end
 
         [

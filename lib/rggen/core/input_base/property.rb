@@ -4,18 +4,18 @@ module RgGen
   module Core
     module InputBase
       class Property
-        def self.define(feature, name, **options, &body)
-          new(name, options, &body).define(feature)
+        def self.define(feature, name, **options, &)
+          new(name, options, &).define(feature)
         end
 
-        def initialize(name, options, &body)
+        def initialize(name, options, &)
           @name = name
           @options = options
           @costom_property =
             if options[:body]
               create_costom_property(&options[:body])
             elsif block_given?
-              create_costom_property(&body)
+              create_costom_property(&)
             end
         end
 

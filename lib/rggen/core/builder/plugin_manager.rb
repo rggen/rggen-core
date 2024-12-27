@@ -73,8 +73,8 @@ module RgGen
           activation && activate_plugins
         end
 
-        def setup_plugin(plugin_name, &block)
-          @plugins << PluginSpec.new(plugin_name, &block)
+        def setup_plugin(plugin_name, &)
+          @plugins << PluginSpec.new(plugin_name, &)
         end
 
         def activate_plugins

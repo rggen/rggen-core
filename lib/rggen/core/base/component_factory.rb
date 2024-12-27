@@ -41,10 +41,10 @@ module RgGen
           @root_factory
         end
 
-        def create_component(parent, sources, &block)
+        def create_component(parent, sources, &)
           actual_sources = Array(select_actual_sources(*sources))
           create_component?(*actual_sources) &&
-            @target_component.new(parent, component_name, layer, *actual_sources, &block)
+            @target_component.new(parent, component_name, layer, *actual_sources, &)
         end
 
         def select_actual_sources(*_sources)

@@ -55,9 +55,9 @@ module RgGen
 
           attr_reader :input_matcher
 
-          def verify(scope, &block)
+          def verify(scope, &)
             @verifiers ||= {}
-            (@verifiers[scope] ||= []) << create_verifier(&block)
+            (@verifiers[scope] ||= []) << create_verifier(&)
           end
 
           attr_reader :verifiers
@@ -81,8 +81,8 @@ module RgGen
 
           private
 
-          def create_verifier(&body)
-            Verifier.new(&body)
+          def create_verifier(&)
+            Verifier.new(&)
           end
 
           def export_verifiers(subclass)
@@ -170,8 +170,8 @@ module RgGen
           (@verified ||= {})[scope] = true
         end
 
-        def printable(name, &body)
-          block_given? ? instance_exec(&body) : __send__(name)
+        def printable(name, &)
+          block_given? ? instance_exec(&) : __send__(name)
         end
       end
     end

@@ -10,14 +10,14 @@ module RgGen
           @entries = []
         end
 
-        def register_component(layers = nil, &block)
+        def register_component(layers = nil, &)
           Array(layers || @builder.register_map_layers).each do |layer|
-            @entries << create_new_entry(layer, &block)
+            @entries << create_new_entry(layer, &)
           end
         end
 
-        def register_global_component(&block)
-          @entries << create_new_entry(nil, &block)
+        def register_global_component(&)
+          @entries << create_new_entry(nil, &)
         end
 
         def build_factory
@@ -26,9 +26,9 @@ module RgGen
 
         private
 
-        def create_new_entry(layer, &block)
+        def create_new_entry(layer, &)
           entry = ComponentEntry.new(@component_name, layer)
-          Docile.dsl_eval(entry, layer, &block)
+          Docile.dsl_eval(entry, layer, &)
           add_feature_registry(layer, entry.feature_registry)
           entry
         end

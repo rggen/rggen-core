@@ -18,8 +18,8 @@ module RgGen
           @loaders.concat(Array(loaders))
         end
 
-        def define_value_extractor(layers = nil, value, &body)
-          @extractors << create_extractor(layers, value, &body)
+        def define_value_extractor(layers = nil, value, &)
+          @extractors << create_extractor(layers, value, &)
         end
 
         def ignore_value(layers = nil, value)
@@ -38,8 +38,8 @@ module RgGen
 
         private
 
-        def create_extractor(layers, value, &body)
-          Class.new(Core::InputBase::InputValueExtractor, &body).new(layers, value)
+        def create_extractor(layers, value, &)
+          Class.new(Core::InputBase::InputValueExtractor, &).new(layers, value)
         end
       end
     end

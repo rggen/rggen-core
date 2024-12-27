@@ -7,24 +7,24 @@ module RgGen
         include RaiseError
 
         module Root
-          def register_block(value_list = nil, &block)
-            child(:register_block, value_list, &block)
+          def register_block(value_list = nil, &)
+            child(:register_block, value_list, &)
           end
         end
 
         module RegisterBlockRegisterFile
-          def register_file(value_list = nil, &block)
-            child(:register_file, value_list, &block)
+          def register_file(value_list = nil, &)
+            child(:register_file, value_list, &)
           end
 
-          def register(value_list = nil, &block)
-            child(:register, value_list, &block)
+          def register(value_list = nil, &)
+            child(:register, value_list, &)
           end
         end
 
         module Register
-          def bit_field(value_list = nil, &block)
-            child(:bit_field, value_list, &block)
+          def bit_field(value_list = nil, &)
+            child(:bit_field, value_list, &)
           end
         end
 
@@ -50,8 +50,8 @@ module RgGen
 
         private
 
-        def create_child_data(layer, &block)
-          super(layer, @configuration, &block)
+        def create_child_data(layer, &)
+          super(layer, @configuration, &)
         end
 
         def raise_unknown_field_error(field_name, position)
