@@ -6,8 +6,8 @@ module RgGen
       class ComponentFactory < InputBase::ComponentFactory
         private
 
-        def create_input_data(*_args, &block)
-          InputData.new(valid_value_lists, &block)
+        def create_input_data(*_args, &)
+          InputData.new(valid_value_lists, &)
         end
       end
     end

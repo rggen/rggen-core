@@ -67,8 +67,8 @@ module RgGen
         @options ||= {}
       end
 
-      def self.add_option(option_name, &body)
-        options[option_name] = Option.new(option_name, &body)
+      def self.add_option(option_name, &)
+        options[option_name] = Option.new(option_name, &)
       end
 
       def initialize

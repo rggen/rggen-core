@@ -36,12 +36,12 @@ module RgGen
 
           private
 
-          def define_helpers(&body)
-            singleton_class.class_exec(&body)
+          def define_helpers(&)
+            singleton_class.class_exec(&)
           end
 
-          def available?(&body)
-            define_method(:available?, &body)
+          def available?(&)
+            define_method(:available?, &)
           end
         end
 

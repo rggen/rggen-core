@@ -12,8 +12,8 @@ module RgGen
         attr_reader :registry
         attr_reader :name
 
-        def modify(&body)
-          eval_body(&body)
+        def modify(&)
+          eval_body(&)
         end
 
         def match_entry_type?(entry_type)
@@ -35,8 +35,8 @@ module RgGen
           end
         end
 
-        def eval_body(&body)
-          block_given? && Docile.dsl_eval(self, @name, &body)
+        def eval_body(&)
+          block_given? && Docile.dsl_eval(self, @name, &)
         end
 
         def target_features(_tergets)

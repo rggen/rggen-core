@@ -15,11 +15,11 @@ module RgGen
 
           def register_execution(registry, &body)
             @executions ||= []
-            @executions << { registry: registry, body: body }
+            @executions << { registry:, body: }
           end
 
-          def execute(layer, method_name, &body)
-            Docile.dsl_eval(layer, &body)
+          def execute(layer, method_name, &)
+            Docile.dsl_eval(layer, &)
             return unless @executions
 
             args = [list_name, feature_name, layer.shared_context].compact
@@ -39,12 +39,12 @@ module RgGen
           define_proxy_call(name)
         end
 
-        def shared_context(&body)
+        def shared_context(&)
           return unless @proxy
 
           if block_given?
             context = current_shared_context(true)
-            context.singleton_exec(&body)
+            context.singleton_exec(&)
           end
 
           current_shared_context(false)
@@ -54,51 +54,51 @@ module RgGen
           @feature_registries.key?(component_name)
         end
 
-        def define_feature(feature_names, &body)
+        def define_feature(feature_names, &)
           Array(feature_names).each do |feature_name|
-            do_proxy_call(__method__, nil, feature_name, &body)
+            do_proxy_call(__method__, nil, feature_name, &)
           end
         end
 
-        def modify_feature(feature_names, &body)
+        def modify_feature(feature_names, &)
           Array(feature_names).each do |feature_name|
-            do_proxy_call(__method__, nil, feature_name, &body)
+            do_proxy_call(__method__, nil, feature_name, &)
           end
         end
 
-        def define_simple_feature(feature_names, &body)
+        def define_simple_feature(feature_names, &)
           Array(feature_names).each do |feature_name|
-            do_proxy_call(__method__, nil, feature_name, &body)
+            do_proxy_call(__method__, nil, feature_name, &)
           end
         end
 
-        def modify_simple_feature(feature_names, &body)
+        def modify_simple_feature(feature_names, &)
           Array(feature_names).each do |feature_name|
-            do_proxy_call(__method__, nil, feature_name, &body)
+            do_proxy_call(__method__, nil, feature_name, &)
           end
         end
 
-        def define_list_feature(list_names, &body)
+        def define_list_feature(list_names, &)
           Array(list_names).each do |list_name|
-            do_proxy_call(__method__, list_name, nil, &body)
+            do_proxy_call(__method__, list_name, nil, &)
           end
         end
 
-        def modify_list_feature(list_names, &body)
+        def modify_list_feature(list_names, &)
           Array(list_names).each do |list_name|
-            do_proxy_call(__method__, list_name, nil, &body)
+            do_proxy_call(__method__, list_name, nil, &)
           end
         end
 
-        def define_list_item_feature(list_name, feature_names, &body)
+        def define_list_item_feature(list_name, feature_names, &)
           Array(feature_names).each do |feature_name|
-            do_proxy_call(__method__, list_name, feature_name, &body)
+            do_proxy_call(__method__, list_name, feature_name, &)
           end
         end
 
-        def modify_list_item_feature(list_name, feature_names, &body)
+        def modify_list_item_feature(list_name, feature_names, &)
           Array(feature_names).each do |feature_name|
-            do_proxy_call(__method__, list_name, feature_name, &body)
+            do_proxy_call(__method__, list_name, feature_name, &)
           end
         end
 
@@ -130,9 +130,9 @@ module RgGen
           end
         end
 
-        def do_proxy_call(method_name, list_name, feature_name, &body)
+        def do_proxy_call(method_name, list_name, feature_name, &)
           @proxy = Proxy.new(list_name, feature_name)
-          @proxy.execute(self, method_name, &body)
+          @proxy.execute(self, method_name, &)
           remove_instance_variable(:@proxy)
         end
 

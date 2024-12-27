@@ -6,8 +6,8 @@ module RgGen
       module InternalStruct
         private
 
-        def define_struct(name, members, &body)
-          struct = Struct.new(*members, &body)
+        def define_struct(name, members, &)
+          struct = Struct.new(*members, &)
           define_method(name) { struct }
           private name
         end

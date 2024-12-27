@@ -12,8 +12,8 @@ module RgGen
           configuration
         end
 
-        def create_input_data(configuration, &block)
-          InputData.new(:root, valid_value_lists, configuration, &block)
+        def create_input_data(configuration, &)
+          InputData.new(:root, valid_value_lists, configuration, &)
         end
 
         def find_child_factory(_configuration, register_map)

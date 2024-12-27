@@ -62,8 +62,8 @@ module RgGen
             path.equal?(true) ? nil : path
           end
 
-          def write_file(file_name_pattern, &body)
-            @file_writer = FileWriter.new(file_name_pattern, &body)
+          def write_file(file_name_pattern, &)
+            @file_writer = FileWriter.new(file_name_pattern, &)
           end
 
           def export(*methods)

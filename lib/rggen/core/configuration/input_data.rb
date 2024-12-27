@@ -6,8 +6,8 @@ module RgGen
       class InputData < InputBase::InputData
         include RaiseError
 
-        def initialize(valid_value_lists, &block)
-          super(nil, valid_value_lists, &block)
+        def initialize(valid_value_lists, &)
+          super(nil, valid_value_lists, &)
         end
 
         undef_method :child

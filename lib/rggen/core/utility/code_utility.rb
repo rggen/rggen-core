@@ -42,8 +42,8 @@ module RgGen
           [name, *size&.map { |s| "[#{s}]" }].join
         end
 
-        def code_block(indent = 0, &body)
-          CodeBlock.new(indent, &body)
+        def code_block(indent = 0, &)
+          CodeBlock.new(indent, &)
         end
 
         def indent(code, indent_size)
