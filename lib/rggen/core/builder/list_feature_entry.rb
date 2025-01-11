@@ -7,7 +7,7 @@ module RgGen
         include Base::SharedContext
 
         def initialize(registry, name)
-          super(registry, name)
+          super
           @features = {}
         end
 

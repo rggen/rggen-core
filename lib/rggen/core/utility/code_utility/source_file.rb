@@ -120,7 +120,7 @@ module RgGen
           end
 
           def include_guard_footer
-            @guard_macro && (-> { self.class.endif_keyword })
+            @guard_macro && -> { self.class.endif_keyword }
           end
         end
       end
