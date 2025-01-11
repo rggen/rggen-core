@@ -21,3 +21,7 @@ Naming/AccessorMethodName:
 Naming/MethodName:
   Exclude:
     - lib/rggen/core/core_extensions/kernel.rb
+
+Style/SymbolProc:
+  Exclude:
+    - lib/rggen/core/input_base/component_factory.rb
