@@ -55,9 +55,10 @@ module RgGen
 
           attr_reader :input_matcher
 
-          def verify(scope, &)
-            @verifiers ||= {}
-            (@verifiers[scope] ||= []) << create_verifier(&)
+          def verify(scope, prepend: false, &)
+            @verifiers ||= Hash.new { |h, k| h[k] = [] }
+            @verifiers[scope]
+              .__send__(prepend && :prepend || :push, create_verifier(&))
           end
 
           attr_reader :verifiers
