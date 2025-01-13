@@ -460,6 +460,116 @@ RSpec.describe RgGen::Core::InputBase::Feature do
         create_feature.verify(:all)
       }.not_to raise_error
     end
+
+    context 'prependオプションの指定がない場合' do
+      it '先に登録され多検証ブロックの結果が優先される' do
+        feature = create_feature do
+          verify(:feature) do
+            error_condition { condition_foo_0 }
+            message { message_foo_0 }
+          end
+          verify(:feature) do
+            error_condition { condition_foo_1 }
+            message { message_foo_1 }
+          end
+
+          verify(:component) do
+            error_condition { condition_bar_0 }
+            message { message_bar_0 }
+          end
+          verify(:component) do
+            error_condition { condition_bar_1 }
+            message { message_bar_1 }
+          end
+
+          verify(:all) do
+            error_condition { condition_baz_0 }
+            message { message_baz_0 }
+          end
+          verify(:all) do
+            error_condition { condition_baz_1 }
+            message { message_baz_1 }
+          end
+
+          def error(message)
+            raise message
+          end
+        end
+
+        allow(feature).to receive(:condition_foo_0).and_return(true)
+        allow(feature).to receive(:message_foo_0).and_return('error foo 0')
+        allow(feature).to receive(:condition_foo_1).and_return(true)
+        allow(feature).to receive(:message_foo_1).and_return('error foo 1')
+        expect { feature.verify(:feature) }.to raise_error('error foo 0')
+
+        allow(feature).to receive(:condition_bar_0).and_return(true)
+        allow(feature).to receive(:message_bar_0).and_return('error bar 0')
+        allow(feature).to receive(:condition_bar_1).and_return(true)
+        allow(feature).to receive(:message_bar_1).and_return('error bar 1')
+        expect { feature.verify(:component) }.to raise_error('error bar 0')
+
+        allow(feature).to receive(:condition_baz_0).and_return(true)
+        allow(feature).to receive(:message_baz_0).and_return('error baz 0')
+        allow(feature).to receive(:condition_baz_1).and_return(true)
+        allow(feature).to receive(:message_baz_1).and_return('error baz 1')
+        expect { feature.verify(:all) }.to raise_error('error baz 0')
+      end
+    end
+
+    context 'prependオプションの指定がある場合' do
+      it '後に登録され多検証ブロックの結果が優先される' do
+        feature = create_feature do
+          verify(:feature) do
+            error_condition { condition_foo_0 }
+            message { message_foo_0 }
+          end
+          verify(:feature, prepend: true) do
+            error_condition { condition_foo_1 }
+            message { message_foo_1 }
+          end
+
+          verify(:component) do
+            error_condition { condition_bar_0 }
+            message { message_bar_0 }
+          end
+          verify(:component, prepend: true) do
+            error_condition { condition_bar_1 }
+            message { message_bar_1 }
+          end
+
+          verify(:all) do
+            error_condition { condition_baz_0 }
+            message { message_baz_0 }
+          end
+          verify(:all, prepend: true) do
+            error_condition { condition_baz_1 }
+            message { message_baz_1 }
+          end
+
+          def error(message)
+            raise message
+          end
+        end
+
+        allow(feature).to receive(:condition_foo_0).and_return(true)
+        allow(feature).to receive(:message_foo_0).and_return('error foo 0')
+        allow(feature).to receive(:condition_foo_1).and_return(true)
+        allow(feature).to receive(:message_foo_1).and_return('error foo 1')
+        expect { feature.verify(:feature) }.to raise_error('error foo 1')
+
+        allow(feature).to receive(:condition_bar_0).and_return(true)
+        allow(feature).to receive(:message_bar_0).and_return('error bar 0')
+        allow(feature).to receive(:condition_bar_1).and_return(true)
+        allow(feature).to receive(:message_bar_1).and_return('error bar 1')
+        expect { feature.verify(:component) }.to raise_error('error bar 1')
+
+        allow(feature).to receive(:condition_baz_0).and_return(true)
+        allow(feature).to receive(:message_baz_0).and_return('error baz 0')
+        allow(feature).to receive(:condition_baz_1).and_return(true)
+        allow(feature).to receive(:message_baz_1).and_return('error baz 1')
+        expect { feature.verify(:all) }.to raise_error('error baz 1')
+      end
+    end
   end
 
   describe '#printables' do
