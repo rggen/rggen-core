@@ -15,21 +15,20 @@ module RgGen::Core::Utility
     describe '#variable_name' do
       it '識別子名にマッチするす' do
         [
-          /_/i,
-          /_+/i,
-          /[a-z]/i,
-          /[a-z]+/i,
-          /_\d/i,
-          /_\d+/i,
+          /[a-z]{2,}/i,
           /[a-z]\d/i,
           /[a-z]\d+/i,
-          /[_a-z]\w+/i
+          /[a-z]\w+/i
         ].each do |pattern|
           string = random_string(pattern)
           expect(string).to match(regexp_pattern(:variable_name))
         end
 
         [
+          /_/,
+          /_+/,
+          /_\w+/,
+          /[a-z]/i,
           /\d/i,
           /\d+/i,
           /\d_/i,

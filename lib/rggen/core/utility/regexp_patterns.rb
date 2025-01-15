@@ -12,7 +12,7 @@ module RgGen
 
         private
 
-        VARIABLE_NAME_PATTERN = /[a-z_]\w*/i
+        VARIABLE_NAME_PATTERN = /[a-z]\w+/i
 
         def variable_name
           VARIABLE_NAME_PATTERN
