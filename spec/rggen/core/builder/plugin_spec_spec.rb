@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 
 RSpec.describe RgGen::Core::Builder::PluginSpec do
-  let(:plugin_spec) do
-    described_class.new(plugin_name, plugin_module)
-  end
-
   let(:plugin_name) do
     :foo
   end

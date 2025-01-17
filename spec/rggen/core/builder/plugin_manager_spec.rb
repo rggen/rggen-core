@@ -266,4 +266,22 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
       end
     end
   end
+
+  describe '#update_plugin' do
+    it '指定されたプラグインを更新する' do
+      plugin = nil
+      plugin_manager.setup_plugin(:foo) { plugin = _1 }
+
+      expect { |b| plugin_manager.update_plugin(:foo, &b) }
+        .to yield_with_args(equal(plugin))
+    end
+
+    context '指定されたプラグインが未定義の場合' do
+      it 'PluginErrorを起こす' do
+        plugin_manager.setup_plugin(:foo) {}
+        expect { plugin_manager.update_plugin(:bar) }
+          .to raise_rggen_error RgGen::Core::PluginError, 'unknown plugin: bar'
+      end
+    end
+  end
 end

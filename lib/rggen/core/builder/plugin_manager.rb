@@ -77,13 +77,20 @@ module RgGen
           @plugins << PluginSpec.new(plugin_name, &)
         end
 
+        def update_plugin(plugin_name)
+          plugin =
+            find_plugin(plugin_name) ||
+            (raise PluginError.new("unknown plugin: #{plugin_name}"))
+          block_given? && yield(plugin)
+        end
+
         def activate_plugins
           do_normal_activation
           do_addtional_activation
         end
 
         def activate_plugin_by_name(plugin_name)
-          @plugins.find { |plugin| plugin.name == plugin_name }
+          find_plugin(plugin_name)
             &.then do |plugin|
               plugin.activate(@builder)
               plugin.activate_additionally(@builder)
@@ -101,6 +108,10 @@ module RgGen
           require info.path
         rescue ::LoadError
           raise Core::PluginError.new("cannot load such plugin: #{info}")
+        end
+
+        def find_plugin(plugin_name)
+          @plugins.find { |plugin| plugin.name == plugin_name }
         end
 
         def activate_plugin_gem(info)
