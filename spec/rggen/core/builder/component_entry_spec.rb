@@ -83,12 +83,12 @@ RSpec.describe RgGen::Core::Builder::ComponentEntry do
         e.feature(base_feature, feature_factory)
       end
       entry.feature_registry.tap do |registry|
-        registry.define_simple_feature(:foo) do
-          property(:foo) { @v }
-        end
-        registry.define_simple_feature(:bar) do
-          property(:bar) { @v }
-        end
+        registry.define_simple_feature(:foo, nil, [
+          proc { property(:foo) { @v } }
+        ])
+        registry.define_simple_feature(:bar, nil, [
+          proc { property(:bar) { @v } }
+        ])
       end
 
       factory = entry.build_factory

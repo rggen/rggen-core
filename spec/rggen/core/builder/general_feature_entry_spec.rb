@@ -19,7 +19,8 @@ RSpec.describe RgGen::Core::Builder::GeneralFeatureEntry do
 
   def create_entry(context = nil, &body)
     entry = described_class.new(feature_registry, feature_name)
-    entry.setup(feature_base, factory_base, context, &body)
+    entry.setup(feature_base, factory_base, context)
+    entry.eval_bodies([body])
     entry
   end
 
@@ -33,8 +34,8 @@ RSpec.describe RgGen::Core::Builder::GeneralFeatureEntry do
 
     specify '#define_factory/#factoryでファクトリを定義できる' do
       entry = create_entry do
-        define_factory { def foo; 'foo'; end }
-        factory { def bar; 'bar'; end }
+        define_factory { def foo = 'foo' }
+        factory { def bar = 'bar' }
       end
       factory = entry.build_factory(nil)
 
@@ -53,8 +54,8 @@ RSpec.describe RgGen::Core::Builder::GeneralFeatureEntry do
 
     specify '#define_feature/#featureでフィーチャーを定義できる' do
       entry = create_entry do
-        define_feature { def foo; 'foo'; end }
-        feature { def bar; 'bar'; end }
+        define_feature { def foo = 'foo' }
+        feature { def bar = 'bar' }
       end
       feature = entry.build_factory(nil).create(component, nil)
 

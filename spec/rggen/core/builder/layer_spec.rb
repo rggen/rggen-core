@@ -31,47 +31,113 @@ RSpec.describe RgGen::Core::Builder::Layer do
     end
   end
 
+  def create_proc_monitor(call_count)
+    Object.new.tap do |monitor|
+      def monitor.to_proc
+        m = self
+        proc { m.call }
+      end
+      expect(monitor).to receive(:call).exactly(call_count).times
+    end
+  end
+
   describe 'フィーチャーの定義' do
     specify '#add_feature_registry呼び出し時に指定した登録名でフィーチャーを定義できる' do
-      expect(fizz_feature_registry).to receive(:define_feature).with(:foo_0).and_call_original
-      expect(buzz_feature_registry).to receive(:define_feature).with(:foo_0).and_call_original
-      layer.define_feature(:foo_0) { fizz {}; buzz {}; }
+      fizz_checker = create_proc_monitor(2)
+      buzz_checker = create_proc_monitor(2)
+      expect(fizz_feature_registry).to receive(:define_feature).with(:foo_0, nil, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:define_feature).with(:foo_0, nil, anything).and_call_original
+      layer.define_feature(:foo_0) do
+        fizz(&fizz_checker)
+        buzz(&buzz_checker)
+        component(:fizz, &fizz_checker)
+        component(:buzz, &buzz_checker)
+      end
 
-      expect(fizz_feature_registry).to receive(:define_feature).with(:foo_1).and_call_original
-      expect(buzz_feature_registry).to receive(:define_feature).with(:foo_1).and_call_original
-      expect(fizz_feature_registry).to receive(:define_feature).with(:foo_2).and_call_original
-      expect(buzz_feature_registry).to receive(:define_feature).with(:foo_2).and_call_original
-      layer.define_feature([:foo_1, :foo_2]) { fizz {}; buzz {}; }
+      fizz_checker = create_proc_monitor(4)
+      buzz_checker = create_proc_monitor(4)
+      expect(fizz_feature_registry).to receive(:define_feature).with(:foo_1, nil, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:define_feature).with(:foo_1, nil, anything).and_call_original
+      expect(fizz_feature_registry).to receive(:define_feature).with(:foo_2, nil, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:define_feature).with(:foo_2, nil, anything).and_call_original
+      layer.define_feature([:foo_1, :foo_2]) do
+        fizz(&fizz_checker)
+        buzz(&buzz_checker)
+        component(:fizz, &fizz_checker)
+        component(:buzz, &buzz_checker)
+      end
 
-      expect(fizz_feature_registry).to receive(:define_simple_feature).with(:bar_0).and_call_original
-      expect(buzz_feature_registry).to receive(:define_simple_feature).with(:bar_0).and_call_original
-      layer.define_simple_feature(:bar_0) { fizz {}; buzz {}; }
+      fizz_checker = create_proc_monitor(2)
+      buzz_checker = create_proc_monitor(2)
+      expect(fizz_feature_registry).to receive(:define_simple_feature).with(:bar_0, nil, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:define_simple_feature).with(:bar_0, nil, anything).and_call_original
+      layer.define_simple_feature(:bar_0) do
+        fizz(&fizz_checker)
+        buzz(&buzz_checker)
+        component(:fizz, &fizz_checker)
+        component(:buzz, &buzz_checker)
+      end
 
-      expect(fizz_feature_registry).to receive(:define_simple_feature).with(:bar_1).and_call_original
-      expect(buzz_feature_registry).to receive(:define_simple_feature).with(:bar_1).and_call_original
-      expect(fizz_feature_registry).to receive(:define_simple_feature).with(:bar_2).and_call_original
-      expect(buzz_feature_registry).to receive(:define_simple_feature).with(:bar_2).and_call_original
-      layer.define_simple_feature([:bar_1, :bar_2]) { fizz {}; buzz {}; }
+      fizz_checker = create_proc_monitor(4)
+      buzz_checker = create_proc_monitor(4)
+      expect(fizz_feature_registry).to receive(:define_simple_feature).with(:bar_1, nil, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:define_simple_feature).with(:bar_1, nil, anything).and_call_original
+      expect(fizz_feature_registry).to receive(:define_simple_feature).with(:bar_2, nil, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:define_simple_feature).with(:bar_2, nil, anything).and_call_original
+      layer.define_simple_feature([:bar_1, :bar_2]) do
+        fizz(&fizz_checker)
+        buzz(&buzz_checker)
+        component(:fizz, &fizz_checker)
+        component(:buzz, &buzz_checker)
+      end
 
-      expect(fizz_feature_registry).to receive(:define_list_feature).with(:baz_0).and_call_original
-      expect(buzz_feature_registry).to receive(:define_list_feature).with(:baz_0).and_call_original
-      layer.define_list_feature(:baz_0) { fizz {}; buzz {}; }
+      fizz_checker = create_proc_monitor(2)
+      buzz_checker = create_proc_monitor(2)
+      expect(fizz_feature_registry).to receive(:define_list_feature).with(:baz_0, nil, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:define_list_feature).with(:baz_0, nil, anything).and_call_original
+      layer.define_list_feature(:baz_0) do
+        fizz(&fizz_checker)
+        buzz(&buzz_checker)
+        component(:fizz, &fizz_checker)
+        component(:buzz, &buzz_checker)
+      end
 
-      expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:baz_0, :baz_0_0).and_call_original
-      expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:baz_0, :baz_0_0).and_call_original
-      layer.define_list_item_feature(:baz_0, :baz_0_0) { fizz {}; buzz {}; }
+      fizz_checker = create_proc_monitor(2)
+      buzz_checker = create_proc_monitor(2)
+      expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:baz_0, :baz_0_0, nil, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:baz_0, :baz_0_0, nil, anything).and_call_original
+      layer.define_list_item_feature(:baz_0, :baz_0_0) do
+        fizz(&fizz_checker)
+        buzz(&buzz_checker)
+        component(:fizz, &fizz_checker)
+        component(:buzz, &buzz_checker)
+      end
 
-      expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:baz_0, :baz_0_1).and_call_original
-      expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:baz_0, :baz_0_1).and_call_original
-      expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:baz_0, :baz_0_2).and_call_original
-      expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:baz_0, :baz_0_2).and_call_original
-      layer.define_list_item_feature(:baz_0, [:baz_0_1, :baz_0_2]) { fizz {}; buzz {}; }
+      fizz_checker = create_proc_monitor(4)
+      buzz_checker = create_proc_monitor(4)
+      expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:baz_0, :baz_0_1, nil, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:baz_0, :baz_0_1, nil, anything).and_call_original
+      expect(fizz_feature_registry).to receive(:define_list_item_feature).with(:baz_0, :baz_0_2, nil, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:define_list_item_feature).with(:baz_0, :baz_0_2, nil, anything).and_call_original
+      layer.define_list_item_feature(:baz_0, [:baz_0_1, :baz_0_2]) do
+        fizz(&fizz_checker)
+        buzz(&buzz_checker)
+        component(:fizz, &fizz_checker)
+        component(:buzz, &buzz_checker)
+      end
 
-      expect(fizz_feature_registry).to receive(:define_list_feature).with(:qux_0).and_call_original
-      expect(buzz_feature_registry).to receive(:define_list_feature).with(:qux_0).and_call_original
-      expect(fizz_feature_registry).to receive(:define_list_feature).with(:qux_1).and_call_original
-      expect(buzz_feature_registry).to receive(:define_list_feature).with(:qux_1).and_call_original
-      layer.define_list_feature([:qux_0, :qux_1]) { fizz {}; buzz {}; }
+      fizz_checker = create_proc_monitor(4)
+      buzz_checker = create_proc_monitor(4)
+      expect(fizz_feature_registry).to receive(:define_list_feature).with(:qux_0, nil, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:define_list_feature).with(:qux_0, nil, anything).and_call_original
+      expect(fizz_feature_registry).to receive(:define_list_feature).with(:qux_1, nil, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:define_list_feature).with(:qux_1, nil, anything).and_call_original
+      layer.define_list_feature([:qux_0, :qux_1]) do
+        fizz(&fizz_checker)
+        buzz(&buzz_checker)
+        component(:fizz, &fizz_checker)
+        component(:buzz, &buzz_checker)
+      end
     end
 
     context '共有コンテキストが有効な場合' do
@@ -84,8 +150,8 @@ RSpec.describe RgGen::Core::Builder::Layer do
           fizz {}; buzz {};
           contexts << shared_context {}
         end
-        expect(fizz_feature_registry).to have_received(:define_feature).with(:foo, equal(contexts.last))
-        expect(buzz_feature_registry).to have_received(:define_feature).with(:foo, equal(contexts.last))
+        expect(fizz_feature_registry).to have_received(:define_feature).with(:foo, equal(contexts.last), anything)
+        expect(buzz_feature_registry).to have_received(:define_feature).with(:foo, equal(contexts.last), anything)
 
         allow(fizz_feature_registry).to receive(:define_simple_feature).and_call_original
         allow(buzz_feature_registry).to receive(:define_simple_feature).and_call_original
@@ -93,8 +159,8 @@ RSpec.describe RgGen::Core::Builder::Layer do
           fizz {}; buzz {}
           contexts << shared_context {}
         end
-        expect(fizz_feature_registry).to have_received(:define_simple_feature).with(:bar, equal(contexts.last))
-        expect(buzz_feature_registry).to have_received(:define_simple_feature).with(:bar, equal(contexts.last))
+        expect(fizz_feature_registry).to have_received(:define_simple_feature).with(:bar, equal(contexts.last), anything)
+        expect(buzz_feature_registry).to have_received(:define_simple_feature).with(:bar, equal(contexts.last), anything)
 
         allow(fizz_feature_registry).to receive(:define_list_feature).and_call_original
         allow(buzz_feature_registry).to receive(:define_list_feature).and_call_original
@@ -102,8 +168,8 @@ RSpec.describe RgGen::Core::Builder::Layer do
           fizz {}; buzz {}
           contexts << shared_context {}
         end
-        expect(fizz_feature_registry).to have_received(:define_list_feature).with(:baz, equal(contexts.last))
-        expect(buzz_feature_registry).to have_received(:define_list_feature).with(:baz, equal(contexts.last))
+        expect(fizz_feature_registry).to have_received(:define_list_feature).with(:baz, equal(contexts.last), anything)
+        expect(buzz_feature_registry).to have_received(:define_list_feature).with(:baz, equal(contexts.last), anything)
 
         layer.define_list_feature(:qux) do
           fizz {}; buzz {}
@@ -114,8 +180,8 @@ RSpec.describe RgGen::Core::Builder::Layer do
           fizz {}; buzz {}
           contexts << shared_context {}
         end
-        expect(fizz_feature_registry).to have_received(:define_list_item_feature).with(:qux, :qux_0, equal(contexts.last))
-        expect(buzz_feature_registry).to have_received(:define_list_item_feature).with(:qux, :qux_0, equal(contexts.last))
+        expect(fizz_feature_registry).to have_received(:define_list_item_feature).with(:qux, :qux_0, equal(contexts.last), anything)
+        expect(buzz_feature_registry).to have_received(:define_list_item_feature).with(:qux, :qux_0, equal(contexts.last), anything)
       end
 
       specify '異なるフィーチャー間では、共有コンテキストは独立している' do
@@ -177,57 +243,127 @@ RSpec.describe RgGen::Core::Builder::Layer do
         expect(contexts[6]).to equal contexts[7]
       end
     end
+
+    context '未登録のコンポーネントが指定された場合' do
+      it 'BuilderErrorを起こす' do
+        expect { layer.define_feature(:foo) { component(:foo) } }
+          .to raise_rggen_error RgGen::Core::BuilderError, "unknown component: foo"
+      end
+    end
   end
 
   describe 'フィーチャーの変更' do
     specify '#add_feature_registry呼び出し時に指定した登録名でフィーチャーを変更できる' do
       layer.define_feature(:foo_0) { fizz {}; buzz {} }
-      expect(fizz_feature_registry).to receive(:modify_feature).with(:foo_0).and_call_original
-      expect(buzz_feature_registry).to receive(:modify_feature).with(:foo_0).and_call_original
-      layer.modify_feature(:foo_0) { fizz {}; buzz {} }
+      fizz_checker = create_proc_monitor(2)
+      buzz_checker = create_proc_monitor(2)
+      expect(fizz_feature_registry).to receive(:modify_feature).with(:foo_0, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_feature).with(:foo_0, anything).and_call_original
+      layer.modify_feature(:foo_0) do
+        fizz(&fizz_checker)
+        buzz(&buzz_checker)
+        component(:fizz, &fizz_checker)
+        component(:buzz, &buzz_checker)
+      end
 
       layer.define_feature([:foo_1, :foo_2]) { fizz {}; buzz {} }
-      expect(fizz_feature_registry).to receive(:modify_feature).with(:foo_1).and_call_original
-      expect(buzz_feature_registry).to receive(:modify_feature).with(:foo_1).and_call_original
-      expect(fizz_feature_registry).to receive(:modify_feature).with(:foo_2).and_call_original
-      expect(buzz_feature_registry).to receive(:modify_feature).with(:foo_2).and_call_original
-      layer.modify_feature([:foo_1, :foo_2]) { fizz {}; buzz {} }
+      fizz_checker = create_proc_monitor(4)
+      buzz_checker = create_proc_monitor(4)
+      expect(fizz_feature_registry).to receive(:modify_feature).with(:foo_1, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_feature).with(:foo_1, anything).and_call_original
+      expect(fizz_feature_registry).to receive(:modify_feature).with(:foo_2, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_feature).with(:foo_2, anything).and_call_original
+      layer.modify_feature([:foo_1, :foo_2]) do
+        fizz(&fizz_checker)
+        buzz(&buzz_checker)
+        component(:fizz, &fizz_checker)
+        component(:buzz, &buzz_checker)
+      end
 
       layer.define_simple_feature(:bar_0) { fizz {}; buzz {} }
-      expect(fizz_feature_registry).to receive(:modify_simple_feature).with(:bar_0).and_call_original
-      expect(buzz_feature_registry).to receive(:modify_simple_feature).with(:bar_0).and_call_original
-      layer.modify_simple_feature(:bar_0) { fizz {}; buzz {} }
+      fizz_checker = create_proc_monitor(2)
+      buzz_checker = create_proc_monitor(2)
+      expect(fizz_feature_registry).to receive(:modify_simple_feature).with(:bar_0, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_simple_feature).with(:bar_0, anything).and_call_original
+      layer.modify_simple_feature(:bar_0) do
+        fizz(&fizz_checker)
+        buzz(&buzz_checker)
+        component(:fizz, &fizz_checker)
+        component(:buzz, &buzz_checker)
+      end
 
       layer.define_simple_feature([:bar_1, :bar_2]) { fizz {}; buzz {} }
-      expect(fizz_feature_registry).to receive(:modify_simple_feature).with(:bar_1).and_call_original
-      expect(buzz_feature_registry).to receive(:modify_simple_feature).with(:bar_1).and_call_original
-      expect(fizz_feature_registry).to receive(:modify_simple_feature).with(:bar_2).and_call_original
-      expect(buzz_feature_registry).to receive(:modify_simple_feature).with(:bar_2).and_call_original
-      layer.modify_simple_feature([:bar_1, :bar_2]) { fizz {}; buzz {} }
+      fizz_checker = create_proc_monitor(4)
+      buzz_checker = create_proc_monitor(4)
+      expect(fizz_feature_registry).to receive(:modify_simple_feature).with(:bar_1, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_simple_feature).with(:bar_1, anything).and_call_original
+      expect(fizz_feature_registry).to receive(:modify_simple_feature).with(:bar_2, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_simple_feature).with(:bar_2, anything).and_call_original
+      layer.modify_simple_feature([:bar_1, :bar_2]) do
+        fizz(&fizz_checker)
+        buzz(&buzz_checker)
+        component(:fizz, &fizz_checker)
+        component(:buzz, &buzz_checker)
+      end
 
       layer.define_list_feature(:baz_0) { fizz {}; buzz {} }
-      expect(fizz_feature_registry).to receive(:modify_list_feature).with(:baz_0).and_call_original
-      expect(buzz_feature_registry).to receive(:modify_list_feature).with(:baz_0).and_call_original
-      layer.modify_list_feature(:baz_0) { fizz {}; buzz {} }
+      fizz_checker = create_proc_monitor(2)
+      buzz_checker = create_proc_monitor(2)
+      expect(fizz_feature_registry).to receive(:modify_list_feature).with(:baz_0, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_list_feature).with(:baz_0, anything).and_call_original
+      layer.modify_list_feature(:baz_0) do
+        fizz(&fizz_checker)
+        buzz(&buzz_checker)
+        component(:fizz, &fizz_checker)
+        component(:buzz, &buzz_checker)
+      end
 
       layer.define_list_feature([:baz_1, :baz_2]) { fizz {}; buzz {} }
-      expect(fizz_feature_registry).to receive(:modify_list_feature).with(:baz_1).and_call_original
-      expect(buzz_feature_registry).to receive(:modify_list_feature).with(:baz_1).and_call_original
-      expect(fizz_feature_registry).to receive(:modify_list_feature).with(:baz_2).and_call_original
-      expect(buzz_feature_registry).to receive(:modify_list_feature).with(:baz_2).and_call_original
-      layer.modify_list_feature([:baz_1, :baz_2]) { fizz {}; buzz {} }
+      fizz_checker = create_proc_monitor(4)
+      buzz_checker = create_proc_monitor(4)
+      expect(fizz_feature_registry).to receive(:modify_list_feature).with(:baz_1, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_list_feature).with(:baz_1, anything).and_call_original
+      expect(fizz_feature_registry).to receive(:modify_list_feature).with(:baz_2, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_list_feature).with(:baz_2, anything).and_call_original
+      layer.modify_list_feature([:baz_1, :baz_2]) do
+        fizz(&fizz_checker)
+        buzz(&buzz_checker)
+        component(:fizz, &fizz_checker)
+        component(:buzz, &buzz_checker)
+      end
 
       layer.define_list_item_feature(:baz_0, :baz_0_0) { fizz {}; buzz {} }
-      expect(fizz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_0).and_call_original
-      expect(buzz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_0).and_call_original
-      layer.modify_list_item_feature(:baz_0, :baz_0_0) { fizz {}; buzz {} }
+      fizz_checker = create_proc_monitor(2)
+      buzz_checker = create_proc_monitor(2)
+      expect(fizz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_0, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_0, anything).and_call_original
+      layer.modify_list_item_feature(:baz_0, :baz_0_0) do
+        fizz(&fizz_checker)
+        buzz(&buzz_checker)
+        component(:fizz, &fizz_checker)
+        component(:buzz, &buzz_checker)
+      end
 
       layer.define_list_item_feature(:baz_0, [:baz_0_1, :baz_0_2]) { fizz {}; buzz {} }
-      expect(fizz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_1).and_call_original
-      expect(buzz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_1).and_call_original
-      expect(fizz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_2).and_call_original
-      expect(buzz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_2).and_call_original
-      layer.modify_list_item_feature(:baz_0, [:baz_0_1, :baz_0_2]) { fizz {}; buzz {} }
+      fizz_checker = create_proc_monitor(4)
+      buzz_checker = create_proc_monitor(4)
+      expect(fizz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_1, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_1, anything).and_call_original
+      expect(fizz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_2, anything).and_call_original
+      expect(buzz_feature_registry).to receive(:modify_list_item_feature).with(:baz_0, :baz_0_2, anything).and_call_original
+      layer.modify_list_item_feature(:baz_0, [:baz_0_1, :baz_0_2]) do
+        fizz(&fizz_checker)
+        buzz(&buzz_checker)
+        component(:fizz, &fizz_checker)
+        component(:buzz, &buzz_checker)
+      end
+    end
+
+    context '未登録のコンポーネントが指定された場合' do
+      it 'BuilderErrorを起こす' do
+        expect { layer.modify_feature(:foo) { component(:foo) } }
+          .to raise_rggen_error RgGen::Core::BuilderError, "unknown component: foo"
+      end
     end
   end
 

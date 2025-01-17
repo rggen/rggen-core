@@ -4,8 +4,8 @@ module RgGen
   module Core
     module Builder
       class SimpleFeatureEntry < FeatureEntryBase
-        def setup(base_feature, factory, context, &)
-          define_feature(base_feature, context, &)
+        def setup(base_feature, factory, context)
+          define_feature(base_feature, context)
           @factory = factory
         end
 
@@ -15,10 +15,9 @@ module RgGen
           :simple
         end
 
-        def define_feature(base, context, &)
+        def define_feature(base, context)
           @feature = Class.new(base)
           attach_shared_context(context, @feature)
-          eval_body(&)
         end
 
         def target_feature

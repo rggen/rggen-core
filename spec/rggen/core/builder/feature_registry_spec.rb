@@ -20,30 +20,28 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
     RgGen::Core::InputBase::Component.new(nil, :component, nil)
   end
 
+  def feature_body(method_name, value)
+    proc { define_method(method_name) { value } }
+  end
+
   describe 'build_factories/#enable/#enable_all' do
     before do
       [:foo_0, :foo_1, :foo_2].each do |feature|
-        registry.define_feature(feature) do
-          define_feature do
-            define_method(:m) { feature }
-          end
-        end
+        registry.define_feature(feature, nil, [
+          proc { feature(&feature_body(:m, feature)) }
+        ])
       end
 
       [:bar_0, :bar_1, :bar_2].each do |feature|
-        registry.define_simple_feature(feature) do
-          define_method(:m) { feature }
-        end
+        registry.define_simple_feature(feature, nil, [feature_body(:m, feature)])
       end
       [:baz_0].each do |feature|
-        registry.define_list_feature(feature) do
-          define_default_feature { define_method(:m) { feature } }
-        end
+        registry.define_list_feature(feature, nil, [
+          proc { default_feature(&feature_body(:m, feature)) }
+        ])
       end
       [:baz_0_0, :baz_0_1, :baz_0_2, :baz_0_3].each do |feature|
-        registry.define_list_item_feature(:baz_0, feature) do
-          define_method(:m) { feature }
-        end
+        registry.define_list_item_feature(:baz_0, feature, nil, [feature_body(:m, feature)])
       end
     end
 
@@ -130,37 +128,25 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
 
   describe '#modify_*_feature' do
     specify '定義済みフィーチャーを変更する' do
-      registry.define_feature(:foo) do
-        feature { def fizz; 'foo fizz'; end }
-      end
-      registry.modify_feature(:foo) do
-        feature { def buzz; 'foo buzz'; end }
-      end
+      registry.define_feature(:foo, nil, [
+        proc { feature(&feature_body(:fizz, 'foo fizz')) }
+      ])
+      registry.modify_feature(:foo, [
+        proc { feature(&feature_body(:buzz, 'foo buzz')) }
+      ])
 
-      registry.define_simple_feature(:bar) do
-        def fizz; 'bar fizz'; end
-      end
-      registry.modify_simple_feature(:bar) do
-        def buzz; 'bar buzz'; end
-      end
+      registry.define_simple_feature(:bar, nil, [feature_body(:fizz, 'bar fizz')])
+      registry.modify_simple_feature(:bar, [feature_body(:buzz, 'bar buzz')])
 
-      registry.define_list_feature(:baz) do
-        default_feature do
-          def fizz; 'baz fizz'; end
-        end
-      end
-      registry.modify_list_feature(:baz) do
-        default_feature do
-          def buzz; 'baz buzz'; end
-        end
-      end
+      registry.define_list_feature(:baz, nil, [
+        proc { default_feature(&feature_body(:fizz, 'baz fizz')) }
+      ])
+      registry.modify_list_feature(:baz, [
+        proc { default_feature(&feature_body(:buzz, 'baz buzz')) }
+      ])
 
-      registry.define_list_item_feature(:baz, :baz_0) do
-        def fizz; 'baz_0 fizz'; end
-      end
-      registry.modify_list_item_feature(:baz, :baz_0) do
-        def buzz; 'baz_0 buzz'; end
-      end
+      registry.define_list_item_feature(:baz, :baz_0, nil, [feature_body(:fizz, 'baz_0 fizz')])
+      registry.modify_list_item_feature(:baz, :baz_0, [feature_body(:buzz, 'baz_0 buzz')])
 
       factories = registry.build_factories
 
@@ -184,63 +170,63 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
     context '未定義のフィーチャーを指定した場合' do
       it 'BuilderErrorを起こす' do
         expect {
-          registry.define_feature(:foo)
-          registry.modify_feature(:bar)
+          registry.define_feature(:foo, nil, [])
+          registry.modify_feature(:bar, [])
         }.to raise_error RgGen::Core::BuilderError, 'unknown feature: bar'
 
         expect {
-          registry.define_simple_feature(:foo)
-          registry.modify_feature(:foo)
+          registry.define_simple_feature(:foo, nil, [])
+          registry.modify_feature(:foo, [])
         }.to raise_error RgGen::Core::BuilderError, 'unknown feature: foo'
 
         expect {
-          registry.define_list_feature(:foo)
-          registry.modify_feature(:foo)
+          registry.define_list_feature(:foo, nil, [])
+          registry.modify_feature(:foo, [])
         }.to raise_error RgGen::Core::BuilderError, 'unknown feature: foo'
 
         expect {
-          registry.define_simple_feature(:foo)
-          registry.modify_simple_feature(:bar)
+          registry.define_simple_feature(:foo, nil, [])
+          registry.modify_simple_feature(:bar, [])
         }.to raise_error RgGen::Core::BuilderError, 'unknown feature: bar'
 
         expect {
-          registry.define_feature(:foo)
-          registry.modify_simple_feature(:foo)
+          registry.define_feature(:foo, nil, [])
+          registry.modify_simple_feature(:foo, [])
         }.to raise_error RgGen::Core::BuilderError, 'unknown feature: foo'
 
         expect {
-          registry.define_list_feature(:foo)
-          registry.modify_simple_feature(:foo)
+          registry.define_list_feature(:foo, nil, [])
+          registry.modify_simple_feature(:foo, [])
         }.to raise_error RgGen::Core::BuilderError, 'unknown feature: foo'
 
         expect {
-          registry.define_list_feature(:foo)
-          registry.modify_list_feature(:bar)
+          registry.define_list_feature(:foo, nil, [])
+          registry.modify_list_feature(:bar, [])
         }.to raise_error RgGen::Core::BuilderError, 'unknown feature: bar'
 
         expect {
-          registry.define_feature(:foo)
-          registry.modify_list_feature(:foo)
+          registry.define_feature(:foo, nil, [])
+          registry.modify_list_feature(:foo, [])
         }.to raise_error RgGen::Core::BuilderError, 'unknown feature: foo'
 
         expect {
-          registry.define_simple_feature(:foo)
-          registry.modify_list_feature(:foo)
+          registry.define_simple_feature(:foo, nil, [])
+          registry.modify_list_feature(:foo, [])
         }.to raise_error RgGen::Core::BuilderError, 'unknown feature: foo'
 
         expect {
-          registry.define_list_feature(:foo)
-          registry.modify_list_item_feature(:bar, :bar_0)
+          registry.define_list_feature(:foo, nil, [])
+          registry.modify_list_item_feature(:bar, :bar_0, [])
         }.to raise_error RgGen::Core::BuilderError, 'unknown feature: bar'
 
         expect {
-          registry.define_feature(:foo)
-          registry.modify_list_item_feature(:foo, :foo_0)
+          registry.define_feature(:foo, nil, [])
+          registry.modify_list_item_feature(:foo, :foo_0, [])
         }.to raise_error RgGen::Core::BuilderError, 'unknown feature: foo'
 
         expect {
-          registry.define_simple_feature(:foo)
-          registry.modify_list_item_feature(:foo, :foo_0)
+          registry.define_simple_feature(:foo, nil, [])
+          registry.modify_list_item_feature(:foo, :foo_0, [])
         }.to raise_error RgGen::Core::BuilderError, 'unknown feature: foo'
       end
     end
@@ -248,87 +234,51 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
 
   context '同名のフィーチャーが複数回定義された場合' do
     before do
-      registry.define_feature(:foo_0) do
-        feature do
-          def m; 'foo_0!'; end
-        end
-      end
-      registry.define_feature(:foo_1) do
-        feature do
-          def m; 'foo_1!'; end
-        end
-      end
-      registry.define_feature(:foo_2) do
-        feature do
-          def m; 'foo_2!'; end
-        end
-      end
-      registry.define_simple_feature(:bar_0) do
-        def m; 'bar_0!'; end
-      end
-      registry.define_simple_feature(:bar_1) do
-        def m; 'bar_1!'; end
-      end
-      registry.define_simple_feature(:bar_2) do
-        def m; 'bar_2!'; end
-      end
-      registry.define_list_feature(:baz_0) do
-        default_feature do
-          def m; 'baz_0!'; end
-        end
-      end
-      registry.define_list_feature(:baz_1) do
-        default_feature do
-          def m; 'baz_1'; end
-        end
-      end
-      registry.define_list_feature(:baz_2) do
-        default_feature do
-          def m; 'baz_2'; end
-        end
-      end
+      registry.define_feature(:foo_0, nil, [
+        proc { feature(&feature_body(:m, 'foo_0!')) }
+      ])
+      registry.define_feature(:foo_1, nil, [
+        proc { feature(&feature_body(:m, 'foo_1!')) }
+      ])
+      registry.define_feature(:foo_2, nil, [
+        proc { feature(&feature_body(:m, 'foo_2!')) }
+      ])
+      registry.define_simple_feature(:bar_0, nil, [feature_body(:m, 'bar_0!')])
+      registry.define_simple_feature(:bar_1, nil, [feature_body(:m, 'bar_1!')])
+      registry.define_simple_feature(:bar_2, nil, [feature_body(:m, 'bar_2!')])
+      registry.define_list_feature(:baz_0, nil, [
+        proc { default_feature(&feature_body(:m, 'baz_0!')) }
+      ])
+      registry.define_list_feature(:baz_1, nil, [
+        proc { default_feature(&feature_body(:m, 'baz_1!')) }
+      ])
+      registry.define_list_feature(:baz_2, nil, [
+        proc { default_feature(&feature_body(:m, 'baz_2!')) }
+      ])
     end
 
     specify '後に定義されたフィーチャーが生成される' do
-      registry.define_feature(:foo_0) do
-        feature do
-          def m; 'foo_0!!'; end
-        end
-      end
-      registry.define_simple_feature(:foo_1) do
-        def m; 'foo_1!!'; end
-      end
-      registry.define_list_feature(:foo_2) do
-        default_feature do
-          def m; 'foo_2!!'; end
-        end
-      end
-      registry.define_simple_feature(:bar_0) do
-        def m; 'bar_0!!'; end
-      end
-      registry.define_list_feature(:bar_1) do
-        default_feature do
-          def m; 'bar_1!!'; end
-        end
-      end
-      registry.define_feature(:bar_2) do
-        feature do
-          def m; 'bar_2!!'; end
-        end
-      end
-      registry.define_list_feature(:baz_0) do
-        default_feature do
-          def m; 'baz_0!!'; end
-        end
-      end
-      registry.define_feature(:baz_1) do
-        feature do
-          def m; 'baz_1!!'; end
-        end
-      end
-      registry.define_simple_feature(:baz_2) do
-        def m; 'baz_2!!'; end
-      end
+      registry.define_feature(:foo_0, nil, [
+        proc { feature(&feature_body(:m, 'foo_0!!')) }
+      ])
+      registry.define_simple_feature(:foo_1, nil, [feature_body(:m, 'foo_1!!')])
+      registry.define_list_feature(:foo_2, nil, [
+        proc { default_feature(&feature_body(:m, 'foo_2!!')) }
+      ])
+      registry.define_simple_feature(:bar_0, nil, [feature_body(:m, 'bar_0!!')])
+      registry.define_list_feature(:bar_1, nil, [
+        proc { default_feature(&feature_body(:m, 'bar_1!!')) }
+      ])
+      registry.define_feature(:bar_2, nil, [
+        proc { feature(&feature_body(:m, 'bar_2!!')) }
+      ])
+      registry.define_list_feature(:baz_0, nil, [
+        proc { default_feature(&feature_body(:m, 'baz_0!!')) }
+      ])
+      registry.define_feature(:baz_1, nil, [
+        proc { feature(&feature_body(:m, 'baz_1!!')) }
+      ])
+      registry.define_simple_feature(:baz_2, nil, [feature_body(:m, 'baz_2!!')])
       factories = registry.build_factories
 
       feature = factories[:foo_0].create(component)
@@ -358,19 +308,14 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
     let(:context) { Object.new }
 
     specify 'フィーチャー内で共通コンテキストを参照できる' do
-      registry.define_feature(:foo, context) do
-      end
-      registry.define_simple_feature(:bar, context) do
-      end
-      registry.define_list_feature(:baz, context) do
-        default_feature {}
-      end
-      registry.define_list_item_feature(:baz, :baz_0) do
-      end
-      registry.define_list_feature(:qux) do
-      end
-      registry.define_list_item_feature(:qux, :qux_0, context) do
-      end
+      registry.define_feature(:foo, context, [])
+      registry.define_simple_feature(:bar, context, [])
+      registry.define_list_feature(:baz, context, [
+        proc { default_feature {} }
+      ])
+      registry.define_list_item_feature(:baz, :baz_0, nil, [])
+      registry.define_list_feature(:qux, nil, [])
+      registry.define_list_item_feature(:qux, :qux_0, context, [])
       factories = registry.build_factories
 
       feature = factories[:foo].create(component)
@@ -392,23 +337,21 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
 
   context '未定義のリストフィーチャーを定義しようとした場合' do
     before do
-      registry.define_feature(:foo) do
-      end
-      registry.define_simple_feature(:bar) do
-      end
+      registry.define_feature(:foo, nil, [])
+      registry.define_simple_feature(:bar, nil, [])
     end
 
     specify 'BuilderErrorが発生する' do
       expect {
-        registry.define_list_item_feature(:foo, :foo_0)
+        registry.define_list_item_feature(:foo, :foo_0, nil, [])
       }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown feature: foo'
 
       expect {
-        registry.define_list_item_feature(:bar, :bar_0)
+        registry.define_list_item_feature(:bar, :bar_0, nil, [])
       }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown feature: bar'
 
       expect {
-        registry.define_list_item_feature(:baz, :baz_0)
+        registry.define_list_item_feature(:baz, :baz_0, nil, [])
       }.to raise_rggen_error RgGen::Core::BuilderError, 'unknown feature: baz'
     end
   end
@@ -416,29 +359,23 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
   describe '#delete' do
     before do
       [:foo_0, :foo_1].each do |feature|
-        registry.define_feature(feature) do
-          feature { define_method(:m) { feature } }
-        end
+        registry.define_feature(feature, nil, [
+          proc { feature(&feature_body(:m, feature)) }
+        ])
       end
       [:bar_0, :bar_1].each do |feature|
-        registry.define_simple_feature(feature) do
-          define_method(:m) { feature }
-        end
+        registry.define_simple_feature(feature, nil, [feature_body(:m, feature)])
       end
       [:baz_0, :baz_1].each do |feature|
-        registry.define_list_feature(feature) do
-          define_default_feature { define_method(:m) { feature } }
-        end
+        registry.define_list_feature(feature, nil, [
+          proc { default_feature(&feature_body(:m, feature)) }
+        ])
       end
       [:baz_0_0, :baz_0_1, :baz_0_2, :baz_0_3].each do |feature|
-        registry.define_list_item_feature(:baz_0, feature) do
-          define_method(:m) { feature }
-        end
+        registry.define_list_item_feature(:baz_0, feature, nil, [feature_body(:m, feature)])
       end
       [:baz_1_0, :baz_1_1, :baz_1_2, :baz_1_3].each do |feature|
-        registry.define_list_item_feature(:baz_1, feature) do
-          define_method(:m) { feature }
-        end
+        registry.define_list_item_feature(:baz_1, feature, nil, [feature_body(:m, feature)])
       end
     end
 
@@ -469,29 +406,23 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
   describe '#delete_all' do
     before do
       [:foo_0, :foo_1].each do |feature|
-        registry.define_feature(feature) do
-          feature { define_method(:m) { feature } }
-        end
+        registry.define_feature(feature, nil, [
+          proc { feature(&feature_body(:m, feature)) }
+        ])
       end
       [:bar_0, :bar_1].each do |feature|
-        registry.define_simple_feature(feature) do
-          define_method(:m) { feature }
-        end
+        registry.define_simple_feature(feature, nil, [feature_body(:m, feature)])
       end
       [:baz_0, :baz_1].each do |feature|
-        registry.define_list_feature(feature) do
-          define_default_feature { define_method(:m) { feature } }
-        end
+        registry.define_list_feature(feature, nil, [
+          proc { default_feature(&feature_body(:m, feature)) }
+        ])
       end
       [:baz_0_0, :baz_0_1, :baz_0_2, :baz_0_3].each do |feature|
-        registry.define_list_item_feature(:baz_0, feature) do
-          define_method(:m) { feature }
-        end
+        registry.define_list_item_feature(:baz_0, feature, nil, [feature_body(:m, feature)])
       end
       [:baz_1_0, :baz_1_1, :baz_1_2, :baz_1_3].each do |feature|
-        registry.define_list_item_feature(:baz_1, feature) do
-          define_method(:m) { feature }
-        end
+        registry.define_list_item_feature(:baz_1, feature, nil, [feature_body(:m, feature)])
       end
     end
 
@@ -503,10 +434,10 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
 
   describe '#feature?' do
     before do
-      registry.define_simple_feature(:foo_0)
-      registry.define_simple_feature(:bar_0)
-      registry.define_list_feature(:baz_0)
-      registry.define_list_item_feature(:baz_0, :baz_0_0)
+      registry.define_simple_feature(:foo_0, nil, [])
+      registry.define_simple_feature(:bar_0, nil, [])
+      registry.define_list_feature(:baz_0, nil, [])
+      registry.define_list_item_feature(:baz_0, :baz_0_0, nil, [])
     end
 
     it '定義済みフィーチャーかどうかを返す' do
@@ -525,22 +456,22 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
   describe '#enabled_features' do
     before do
       [:foo_0, :foo_1].each do |feature|
-        registry.define_feature(feature) {}
+        registry.define_feature(feature, nil, [])
       end
       [:bar_0, :bar_1].each do |feature|
-        registry.define_simple_feature(feature) {}
+        registry.define_simple_feature(feature, nil, [])
       end
       [:baz_0].each do |feature|
-        registry.define_list_feature(feature) {}
+        registry.define_list_feature(feature, nil, [])
       end
       [:baz_0_0, :baz_0_1, :baz_0_2].each do |feature|
-        registry.define_list_item_feature(:baz_0, feature) {}
+        registry.define_list_item_feature(:baz_0, feature, nil, [])
       end
       [:baz_1].each do |feature|
-        registry.define_list_feature(feature) {}
+        registry.define_list_feature(feature, nil, [])
       end
       [:baz_1_0, :baz_1_1, :baz_1_2].each do |feature|
-        registry.define_list_item_feature(:baz_1, feature) {}
+        registry.define_list_item_feature(:baz_1, feature, nil, [])
       end
     end
 

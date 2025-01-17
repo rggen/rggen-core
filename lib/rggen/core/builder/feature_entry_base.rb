@@ -12,8 +12,8 @@ module RgGen
         attr_reader :registry
         attr_reader :name
 
-        def modify(&)
-          eval_body(&)
+        def eval_bodies(bodies)
+          bodies.each { |body| eval_body(&body) }
         end
 
         def match_entry_type?(entry_type)

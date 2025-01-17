@@ -23,7 +23,8 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
 
   def create_entry(context = nil, &body)
     entry = described_class.new(feature_registry, feature_name)
-    entry.setup(feature_base, factory_base, context, &body)
+    entry.setup(feature_base, factory_base, context)
+    entry.eval_bodies([body])
     entry
   end
 
@@ -37,8 +38,8 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
 
     specify '#define_factory/#factoryでファクトリの定義を行える' do
       entry = create_entry do
-        define_factory { def foo; 'foo!'; end }
-        factory { def bar; 'bar!'; end }
+        define_factory { def foo = 'foo!' }
+        factory { def bar = 'bar!' }
       end
 
       factory = entry.build_factory(nil)
@@ -51,8 +52,8 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
     specify '生成したファクトリで、#define_feature/#featureで定義したフィーチャーを生成できる' do
       entry = create_entry do
         define_factory(&default_factory_body)
-        define_feature(:foo) { def m; 'foo!'; end }
-        feature(:bar) { def m; 'bar!'; end }
+        define_feature(:foo, nil, [proc { def m = 'foo!' }])
+        feature(:bar, nil, [proc { def m = 'bar!' }])
       end
       factory = entry.build_factory(nil)
 
@@ -67,8 +68,8 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
       specify '#modify_featureで既存のフィーチャーを変更できる' do
         entry = create_entry do
           define_factory(&default_factory_body)
-          define_feature(:foo) { def m; 'foo!'; end }
-          modify_feature(:foo) { def m; 'foo!!'; end }
+          define_feature(:foo, nil, [proc { def m = 'foo!' }])
+          modify_feature(:foo, [proc { def m = 'foo!!' }])
         end
         factory = entry.build_factory(nil)
 
@@ -80,8 +81,8 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
         it 'BuilderErrorを起こす' do
           expect {
             create_entry do
-              define_feature(:foo)
-              modify_feature(:bar)
+              define_feature(:foo, nil, [])
+              modify_feature(:bar, [])
             end
           }.to raise_error RgGen::Core::BuilderError, 'unknown feature: bar'
         end
@@ -92,8 +93,8 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
       specify '最後に定義されたフィーチャーが生成される' do
         entry = create_entry do
           define_factory(&default_factory_body)
-          define_feature(:foo) { def fizz; 'fizz'; end }
-          define_feature(:foo) { def buzz; 'buzz'; end }
+          define_feature(:foo, nil, [proc { def fizz = 'fizz' }])
+          define_feature(:foo, nil, [proc { def buzz = 'buzz' }])
         end
         factory = entry.build_factory(nil)
 
@@ -113,9 +114,9 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
               (@target_features.key?(key) && key) || (raise exception)
             end
           end
-          define_feature(:foo)
-          define_feature(:bar)
-          define_feature(:baz)
+          define_feature(:foo, nil, [])
+          define_feature(:bar, nil, [])
+          define_feature(:baz, nil, [])
         end
 
         factory = entry.build_factory(nil)
@@ -137,9 +138,9 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
               (@target_features.key?(key) && key) || (raise exception)
             end
           end
-          define_feature(:foo)
-          define_feature(:bar)
-          define_feature(:baz)
+          define_feature(:foo, nil, [])
+          define_feature(:bar, nil, [])
+          define_feature(:baz, nil, [])
         end
 
         factory = entry.build_factory([:foo, :bar])
@@ -158,8 +159,8 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
         specify '#define_deault_feature/default_featureで定義した既定フィーチャーが生成される' do
           entry = create_entry do
             define_factory(&default_factory_body)
-            define_default_feature { def fizz; 'fizz!'; end}
-            default_feature { def buzz; 'buzz!'; end}
+            define_default_feature { def fizz = 'fizz!' }
+            default_feature { def buzz = 'buzz!' }
           end
 
           feature = entry.build_factory(nil).create(component, :foo)
@@ -173,10 +174,10 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
       specify '#define_base_feature/base_featureで各フィーチャーの親フィーチャーを定義できる' do
         entry = create_entry do
           define_factory(&default_factory_body)
-          define_base_feature { def fizz; 'fizz!'; end }
-          base_feature { def buzz; 'buzz!'; end }
-          define_feature(:foo) {}
-          define_feature(:bar) {}
+          define_base_feature { def fizz = 'fizz!' }
+          base_feature { def buzz = 'buzz!' }
+          define_feature(:foo, nil, [])
+          define_feature(:bar, nil, [])
           define_default_feature {}
         end
 
@@ -194,12 +195,12 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
         create_entry do
           define_factory(&default_factory_body)
           define_default_feature do
-            def m; 'default'; end
+            def m = 'default'
           end
-          define_feature(:foo) { def m; 'foo'; end }
-          define_feature(:bar) { def m; 'bar'; end }
-          define_feature(:baz) { def m; 'baz'; end }
-          define_feature(:qux) { def m; 'qux'; end }
+          define_feature(:foo, nil, [proc { def m = 'foo' }])
+          define_feature(:bar, nil, [proc { def m = 'bar' }])
+          define_feature(:baz, nil, [proc { def m = 'baz' }])
+          define_feature(:qux, nil, [proc { def m = 'qux' }])
         end
       end
 
@@ -236,7 +237,7 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
     specify 'エントリ生成時に指定した名称が、生成されるフィーチャーの名称になる' do
       entry = create_entry do
         define_factory(&default_factory_body)
-        define_feature(:foo)
+        define_feature(:foo, nil, [])
         define_default_feature
       end
 
@@ -255,7 +256,7 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
 
         entry = create_entry(shared_context) do
           define_factory(&default_factory_body)
-          define_feature(:foo)
+          define_feature(:foo, nil, [])
           define_default_feature
         end
 
@@ -275,8 +276,8 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
 
         entry = create_entry do
           define_factory(&default_factory_body)
-          define_feature(:foo, shared_contexts[:foo])
-          define_feature(:bar, shared_contexts[:bar])
+          define_feature(:foo, shared_contexts[:foo], [])
+          define_feature(:bar, shared_contexts[:bar], [])
         end
 
         factory = entry.build_factory(nil)
@@ -294,7 +295,7 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
 
         entry = create_entry(shared_context)
         expect {
-          entry.define_feature(:foo, shared_context)
+          entry.define_feature(:foo, shared_context, [])
         }.to raise_rggen_error RgGen::Core::BuilderError, 'shared context has already been set'
       end
     end
@@ -303,8 +304,8 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
   describe '#feature?' do
     let(:entry) do
       create_entry do
-        define_feature(:foo)
-        define_feature(:bar)
+        define_feature(:foo, nil, [])
+        define_feature(:bar, nil, [])
       end
     end
 
