@@ -42,7 +42,7 @@ module RgGen
               args <<
                 if key != :use_shared_context
                   @proxy_config[key]
-                elsif @proxy_config
+                elsif @proxy_config[key]
                   layer.shared_context
                 end
             end
