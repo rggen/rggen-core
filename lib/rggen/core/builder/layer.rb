@@ -5,27 +5,49 @@ module RgGen
     module Builder
       class Layer
         class Proxy
-          def initialize(list_name, feature_name)
-            @list_name = list_name
-            @feature_name = feature_name
+          def initialize(**proxy_config)
+            @proxy_config = proxy_config
           end
 
-          attr_reader :list_name
-          attr_reader :feature_name
+          def feature_name
+            @proxy_config[:feature_name]
+          end
+
+          def list_name
+            @proxy_config[:list_name]
+          end
 
           def register_execution(registry, &body)
-            @executions ||= []
-            @executions << { registry:, body: }
+            @executions ||= Hash.new { |h, k| h[k] = [] }
+            @executions[registry] << body
           end
 
           def execute(layer, method_name, &)
             Docile.dsl_eval(layer, &)
             return unless @executions
 
-            args = [list_name, feature_name, layer.shared_context].compact
-            @executions.each do |execution|
-              execution[:registry].__send__(method_name, *args, &execution[:body])
+            args = execution_args(layer)
+            @executions.each do |(registry, bodies)|
+              registry.__send__(method_name, *args, bodies)
             end
+          end
+
+          private
+
+          def execution_args(layer)
+            args = []
+            [:list_name, :feature_name, :use_shared_context].each do |key|
+              next unless @proxy_config.key?(key)
+
+              args <<
+                if key != :use_shared_context
+                  @proxy_config[key]
+                elsif @proxy_config
+                  layer.shared_context
+                end
+            end
+
+            args
           end
         end
 
@@ -37,6 +59,13 @@ module RgGen
         def add_feature_registry(name, registry)
           @feature_registries[name] = registry
           define_proxy_call(name)
+        end
+
+        def component(name, &)
+          registory =
+            @feature_registries
+              .fetch(name) { raise BuilderError.new("unknown component: #{name}") }
+          block_given? && @proxy.register_execution(registory, &)
         end
 
         def shared_context(&)
@@ -56,49 +85,51 @@ module RgGen
 
         def define_feature(feature_names, &)
           Array(feature_names).each do |feature_name|
-            do_proxy_call(__method__, nil, feature_name, &)
+            do_proxy_call(__method__, feature_name:, use_shared_context: true, &)
           end
         end
 
         def modify_feature(feature_names, &)
           Array(feature_names).each do |feature_name|
-            do_proxy_call(__method__, nil, feature_name, &)
+            do_proxy_call(__method__, feature_name:, &)
           end
         end
 
         def define_simple_feature(feature_names, &)
           Array(feature_names).each do |feature_name|
-            do_proxy_call(__method__, nil, feature_name, &)
+            do_proxy_call(__method__, feature_name:, use_shared_context: true, &)
           end
         end
 
         def modify_simple_feature(feature_names, &)
           Array(feature_names).each do |feature_name|
-            do_proxy_call(__method__, nil, feature_name, &)
+            do_proxy_call(__method__, feature_name:, &)
           end
         end
 
         def define_list_feature(list_names, &)
           Array(list_names).each do |list_name|
-            do_proxy_call(__method__, list_name, nil, &)
+            do_proxy_call(__method__, list_name:, use_shared_context: true, &)
           end
         end
 
         def modify_list_feature(list_names, &)
           Array(list_names).each do |list_name|
-            do_proxy_call(__method__, list_name, nil, &)
+            do_proxy_call(__method__, list_name:, &)
           end
         end
 
         def define_list_item_feature(list_name, feature_names, &)
           Array(feature_names).each do |feature_name|
-            do_proxy_call(__method__, list_name, feature_name, &)
+            do_proxy_call(
+              __method__, list_name:, feature_name:, use_shared_context: true, &
+            )
           end
         end
 
         def modify_list_item_feature(list_name, feature_names, &)
           Array(feature_names).each do |feature_name|
-            do_proxy_call(__method__, list_name, feature_name, &)
+            do_proxy_call(__method__, list_name:, feature_name:, &)
           end
         end
 
@@ -126,12 +157,12 @@ module RgGen
 
         def define_proxy_call(name)
           define_singleton_method(name) do |&body|
-            @proxy.register_execution(@feature_registries[__method__], &body)
+            component(__method__, &body)
           end
         end
 
-        def do_proxy_call(method_name, list_name, feature_name, &)
-          @proxy = Proxy.new(list_name, feature_name)
+        def do_proxy_call(method_name, **proxy_config, &)
+          @proxy = Proxy.new(**proxy_config)
           @proxy.execute(self, method_name, &)
           remove_instance_variable(:@proxy)
         end

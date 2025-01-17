@@ -11,11 +11,10 @@ module RgGen
           @features = {}
         end
 
-        def setup(base_feature, base_factory, context, &)
+        def setup(base_feature, base_factory, context)
           @base_feature = Class.new(base_feature)
           @factory = Class.new(base_factory)
           attach_shared_context(context, @base_feature, @factory, self)
-          eval_body(&)
         end
 
         def define_factory(&)
@@ -30,22 +29,22 @@ module RgGen
 
         alias_method :base_feature, :define_base_feature
 
-        def define_feature(feature_name, context = nil, &body)
+        def define_feature(feature_name, context, bodies)
           feature = @features[feature_name] = Class.new(@base_feature)
           if context
             feature.method_defined?(:shared_context) &&
               (raise BuilderError.new('shared context has already been set'))
             attach_shared_context(context, feature)
           end
-          body && feature.class_exec(feature_name, &body)
+          eval_feature_bodies(feature, feature_name, bodies)
         end
 
         alias_method :feature, :define_feature
 
-        def modify_feature(feature_name, &body)
+        def modify_feature(feature_name, bodies)
           @features.key?(feature_name) ||
             (raise BuilderError.new("unknown feature: #{feature_name}"))
-          body && @features[feature_name].class_exec(feature_name, &body)
+          eval_feature_bodies(@features[feature_name], feature_name, bodies)
         end
 
         def define_default_feature(&body)
@@ -83,6 +82,10 @@ module RgGen
 
         def target_feature
           @default_feature
+        end
+
+        def eval_feature_bodies(feature, feature_name, bodies)
+          bodies.each { |body| feature.class_exec(feature_name, &body) }
         end
       end
     end

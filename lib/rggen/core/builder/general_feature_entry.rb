@@ -6,11 +6,10 @@ module RgGen
       class GeneralFeatureEntry < FeatureEntryBase
         include Base::SharedContext
 
-        def setup(base_feature, base_factory, context, &)
+        def setup(base_feature, base_factory, context)
           @feature = Class.new(base_feature)
           @factory = Class.new(base_factory)
           attach_shared_context(context, @feature, @factory, self)
-          eval_body(&)
         end
 
         def define_factory(&)

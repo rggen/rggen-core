@@ -19,7 +19,8 @@ RSpec.describe RgGen::Core::Builder::SimpleFeatureEntry do
 
   def create_entry(shared_context, &body)
     entry = described_class.new(feature_registry, feature_name)
-    entry.setup(feature_base_class, factory_class, shared_context, &body)
+    entry.setup(feature_base_class, factory_class, shared_context)
+    entry.eval_bodies([body])
     entry
   end
 
@@ -32,7 +33,7 @@ RSpec.describe RgGen::Core::Builder::SimpleFeatureEntry do
   end
 
   specify '#build_facotryで生成したファクトリは、定義したフィーチャーを生成する' do
-    entry = create_entry(nil) { def foo; 'foo!'; end }
+    entry = create_entry(nil) { def foo = 'foo!' }
     factory = entry.build_factory([])
     entry = factory.create(component)
 

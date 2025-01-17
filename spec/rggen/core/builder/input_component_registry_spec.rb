@@ -35,10 +35,12 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
       end
 
       [:foo, :bar, :baz, :qux].each do |property_name|
-        builder.feature_registres[0].define_simple_feature(property_name) do
-          property property_name
-          build { |v| instance_variable_set("@#{property_name}", v.to_i) }
-        end
+        builder.feature_registres[0].define_simple_feature(property_name, nil, [
+          proc do
+            property property_name
+            build { |v| instance_variable_set("@#{property_name}", v.to_i) }
+          end
+        ])
       end
     end
 
