@@ -26,7 +26,8 @@ module RgGen
         :enable,
         :enable_all,
         :delete,
-        :setup_plugin
+        :setup_plugin,
+        :update_plugin,
       ].each do |method_name|
         def_delegator :'RgGen.builder', method_name
       end
