@@ -4,8 +4,12 @@ RSpec.describe RgGen::Core::InputBase::Verifier do
   describe '#verify' do
     let(:feature) do
       klass = Class.new do
-        def error(message)
-          raise message
+        def error(message, position = nil)
+          if position
+            raise "#{message} #{position}"
+          else
+            raise message
+          end
         end
       end
       klass.new
@@ -41,6 +45,20 @@ RSpec.describe RgGen::Core::InputBase::Verifier do
           allow(feature).to receive(:bar).and_return('error!')
           verifier = described_class.new { error_condition { true }; message { |v| "#{v} #{bar}" } }
           expect { verifier.verify(feature, 'bar') }.to raise_error 'bar error!'
+        end
+      end
+
+      context '#positionが与えられている場合' do
+        specify '#positionの評価結果がエラーの位置情報になる' do
+          error_message = 'error!'
+          error_position = double('error position')
+          verifier = described_class.new do
+            error_condition { true }
+            message { error_message }
+            position { error_position }
+          end
+
+          expect { verifier.verify(feature) }.to raise_error "#{error_message} #{error_position}"
         end
       end
     end
