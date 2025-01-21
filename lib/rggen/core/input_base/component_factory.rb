@@ -55,19 +55,20 @@ module RgGen
         end
 
         def create_features(component, *sources)
-          create_active_features(component, sources.last)
-          create_passive_features(component)
+          create_active_features(component, sources)
+          create_passive_features(component, sources)
         end
 
-        def create_active_features(component, input_data)
+        def create_active_features(component, sources)
           active_feature_factories.each do |name, factory|
-            create_feature(component, factory, input_data[name])
+            input_data = sources.last[name]
+            create_feature(component, factory, *sources[0..-2], input_data)
           end
         end
 
-        def create_passive_features(component)
+        def create_passive_features(component, sources)
           passive_feature_factories.each_value do |factory|
-            create_feature(component, factory)
+            create_feature(component, factory, *sources[0..-2])
           end
         end
 

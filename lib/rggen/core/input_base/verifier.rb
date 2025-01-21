@@ -20,6 +20,10 @@ module RgGen
           @message = block
         end
 
+        def position(&block)
+          @position = block
+        end
+
         def verify(feature, *values)
           if @error_checker
             feature.instance_exec(*values, &@error_checker)
@@ -31,8 +35,11 @@ module RgGen
         private
 
         def default_error_check(feature, values)
-          feature.instance_exec(*values, &@condition) &&
-            feature.__send__(:error, feature.instance_exec(*values, &@message))
+          return unless feature.instance_exec(*values, &@condition)
+
+          message = feature.instance_exec(*values, &@message)
+          position = @position && feature.instance_exec(*values, &@position)
+          feature.__send__(:error, message, position)
         end
       end
     end

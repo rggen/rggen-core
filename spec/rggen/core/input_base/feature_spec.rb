@@ -370,7 +370,7 @@ RSpec.describe RgGen::Core::InputBase::Feature do
           message { message_baz_0 }
         end
 
-        def error(message)
+        def error(message, _position)
           raise message
         end
       end
@@ -491,7 +491,7 @@ RSpec.describe RgGen::Core::InputBase::Feature do
             message { message_baz_1 }
           end
 
-          def error(message)
+          def error(message, _position)
             raise message
           end
         end
@@ -546,7 +546,7 @@ RSpec.describe RgGen::Core::InputBase::Feature do
             message { message_baz_1 }
           end
 
-          def error(message)
+          def error(message, _position)
             raise message
           end
         end

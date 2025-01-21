@@ -97,16 +97,41 @@ RSpec.describe RgGen::Core::InputBase::ComponentFactory do
 
     describe 'フィーチャーの生成' do
       describe '能動フィーチャーの生成' do
-        it '生成したコンポーネントと、引数の末尾から取り出した入力値を引数として、能動フィーチャーを生成する' do
-          expect(foo_feature_factories[:foo_0]).to receive(:create).with(equal(component), equal(input_data[:foo_0])).and_call_original
-          expect(foo_feature_factories[:foo_1]).to receive(:create).with(equal(component), equal(input_data[:foo_1])).and_call_original
+        it '生成したコンポーネントと、引数の末尾を入力値として、能動フィーチャーを生成する' do
+          expect(foo_feature_factories[:foo_0])
+            .to receive(:create)
+            .with(equal(component), equal(input_data[:foo_0]))
+            .and_call_original
+          expect(foo_feature_factories[:foo_1])
+            .to receive(:create)
+            .with(equal(component), equal(input_data[:foo_1]))
+            .and_call_original
+          foo_factory.create(parent, input_data)
+
+          expect(foo_feature_factories[:foo_0])
+            .to receive(:create)
+            .with(equal(component), equal(other_input_data), equal(input_data[:foo_0]))
+            .and_call_original
+          expect(foo_feature_factories[:foo_1])
+            .to receive(:create)
+            .with(equal(component), equal(other_input_data), equal(input_data[:foo_1]))
+            .and_call_original
           foo_factory.create(parent, other_input_data, input_data)
         end
       end
 
       describe '受動フィーチャーの生成' do
-        it '生成したコンポーネントを引数として、受動フィーチャーを生成する' do
-          expect(foo_feature_factories[:foo_2]).to receive(:create).with(equal(component)).and_call_original
+        it '生成したコンポーネントと与えられた引数の末尾以外を引数として、受動フィーチャーを生成する' do
+          expect(foo_feature_factories[:foo_2])
+            .to receive(:create)
+            .with(equal(component))
+            .and_call_original
+          foo_factory.create(parent, input_data)
+
+          expect(foo_feature_factories[:foo_2])
+            .to receive(:create)
+            .with(equal(component), equal(other_input_data))
+            .and_call_original
           foo_factory.create(parent, other_input_data, input_data)
         end
       end
@@ -199,8 +224,12 @@ RSpec.describe RgGen::Core::InputBase::ComponentFactory do
 
           foo_factory.create(other_input_data, input_files)
 
-          expect(foo_feature_factories[:foo_0]).to have_received(:create).with(anything, equal(input_datas[1][:foo_0]))
-          expect(bar_factory).to have_received(:create).with(anything, anything, equal(input_datas[0]))
+          expect(foo_feature_factories[:foo_0])
+            .to have_received(:create)
+            .with(anything, anything, equal(input_datas[1][:foo_0]))
+          expect(bar_factory)
+            .to have_received(:create)
+            .with(anything, anything, equal(input_datas[0]))
         end
       end
 
@@ -215,9 +244,11 @@ RSpec.describe RgGen::Core::InputBase::ComponentFactory do
       context '空のファイルリストを与えた場合' do
         it '欠損値使って、自身の組み立てを行う' do
           expect(foo_feature_factories[:foo_0])
-            .to receive(:create).with(anything, equal(RgGen::Core::InputBase::NAValue))
+            .to receive(:create)
+            .with(anything, anything, equal(RgGen::Core::InputBase::NAValue))
           expect(foo_feature_factories[:foo_1])
-            .to receive(:create).with(anything, equal(RgGen::Core::InputBase::NAValue))
+            .to receive(:create)
+            .with(anything, anything, equal(RgGen::Core::InputBase::NAValue))
           expect(bar_factory)
             .not_to receive(:create)
           foo_factory.create(other_input_data, [])
