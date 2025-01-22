@@ -33,6 +33,10 @@ RSpec.describe RgGen::Core::InputBase::Feature do
       parent = define_feature { property :foo; property :bar }
       feature = define_feature(parent) { property :baz }
       expect(feature.properties).to match [:foo, :bar, :baz]
+
+      feature = define_feature(parent)
+      parent.class_eval { property :baz }
+      expect(feature.properties).to match [:foo, :bar, :baz]
     end
 
     context '同名のプロパティを複数定義した場合' do
@@ -83,6 +87,16 @@ RSpec.describe RgGen::Core::InputBase::Feature do
 
       feature = create_feature(define_feature { ignore_empty_value false })
       expect(feature.ignore_empty_value?).to be_falsey
+
+      parent = define_feature
+      feature = create_feature(parent)
+      parent.class_eval { ignore_empty_value true }
+      expect(feature.ignore_empty_value?).to be_truthy
+
+      parent = define_feature
+      feature = create_feature(parent)
+      parent.class_eval { ignore_empty_value false }
+      expect(feature.ignore_empty_value?).to be_falsey
     end
   end
 
@@ -101,10 +115,6 @@ RSpec.describe RgGen::Core::InputBase::Feature do
       create_feature(feature.class) do
         build { |*args| bar(*args.map(&method(:extract_value))) }
       end
-    end
-
-    let(:grandchild_feature) do
-      create_feature(child_feature.class)
     end
 
     let(:value) { Object.new }
@@ -172,8 +182,18 @@ RSpec.describe RgGen::Core::InputBase::Feature do
     end
 
     specify '登録された組み立てブロックは、継承される' do
+      grandchild_feature = create_feature(child_feature.class)
       expect(grandchild_feature).to receive(:foo).with(equal(value))
       expect(grandchild_feature).to receive(:bar).with(equal(value))
+      grandchild_feature.build(input_value_without_options)
+
+      grandchild_feature = create_feature(child_feature.class)
+      feature.class.class_eval { build { |*args| baz(*args.map(&method(:extract_value))) } }
+      child_feature.class.class_eval { build { |*args| qux(*args.map(&method(:extract_value))) } }
+      expect(grandchild_feature).to receive(:foo).with(equal(value))
+      expect(grandchild_feature).to receive(:baz).with(equal(value))
+      expect(grandchild_feature).to receive(:bar).with(equal(value))
+      expect(grandchild_feature).to receive(:qux).with(equal(value))
       grandchild_feature.build(input_value_without_options)
     end
 
@@ -185,17 +205,13 @@ RSpec.describe RgGen::Core::InputBase::Feature do
 
     specify '組みてたブロックの登録があるフィーチャーを能動フィーチャーとする' do
       feature = create_feature { build {} }
-      expect(feature).to be_active_feature
       expect(feature.class).to be_active_feature
-      expect(feature).not_to be_passive_feature
       expect(feature.class).not_to be_passive_feature
     end
 
     specify '組みてたブロックの登録がないフィーチャーを受動フィーチャーとする' do
       feature = create_feature
-      expect(feature).not_to be_active_feature
       expect(feature.class).not_to be_active_feature
-      expect(feature).to be_passive_feature
       expect(feature.class).to be_passive_feature
     end
   end
@@ -213,18 +229,24 @@ RSpec.describe RgGen::Core::InputBase::Feature do
       end
     end
 
-    let(:grandchild_feature) do
-      create_feature(child_feature.class)
-    end
-
     it 'フィーチャー組み立て後の後処理として、.post_buildで登録したブロックを実行しする' do
       expect(feature).to receive(:foo)
       feature.post_build
     end
 
     specify '登録された後処理ブロックは継承される' do
+      grandchild_feature = create_feature(child_feature.class)
       expect(grandchild_feature).to receive(:foo)
       expect(grandchild_feature).to receive(:bar)
+      grandchild_feature.post_build
+
+      grandchild_feature = create_feature(child_feature.class)
+      feature.class.class_eval { post_build { baz } }
+      child_feature.class.class_eval { post_build { qux } }
+      expect(grandchild_feature).to receive(:foo)
+      expect(grandchild_feature).to receive(:baz)
+      expect(grandchild_feature).to receive(:bar)
+      expect(grandchild_feature).to receive(:qux)
       grandchild_feature.post_build
     end
 
@@ -345,11 +367,20 @@ RSpec.describe RgGen::Core::InputBase::Feature do
     end
 
     specify 'パターンは継承される' do
-      feature = create_feature(define_feature {
+      parent = define_feature do
         input_pattern /foo/
         build {}
-      })
+      end
+
+      feature = create_feature(parent)
       feature.build(create_input_value(:foo))
+      expect(feature.send(:pattern_matched?)).to be true
+
+      feature = create_feature(parent)
+      parent.class_eval { input_pattern /baz/ }
+      feature.build(create_input_value(:foo))
+      expect(feature.send(:pattern_matched?)).to be false
+      feature.build(create_input_value(:baz))
       expect(feature.send(:pattern_matched?)).to be true
     end
   end
@@ -393,10 +424,6 @@ RSpec.describe RgGen::Core::InputBase::Feature do
       end
     end
 
-    let(:grandchild_feature) do
-      create_feature(child_feature.class)
-    end
-
     context '検証範囲が:featureの場合' do
       it '.verify(:feature)で登録された検証ブロックを実行し、フィーチャーの検証を行う' do
         expect(feature).to receive(:condition_foo_0).and_return(true)
@@ -434,6 +461,8 @@ RSpec.describe RgGen::Core::InputBase::Feature do
     end
 
     specify '登録された検証ブロックは継承される' do
+      grandchild_feature = create_feature(child_feature.class)
+
       expect(grandchild_feature).to receive(:condition_foo_0).and_return(false)
       expect(grandchild_feature).to receive(:condition_foo_1).and_return(false)
       grandchild_feature.verify(:feature)
@@ -444,6 +473,54 @@ RSpec.describe RgGen::Core::InputBase::Feature do
 
       expect(grandchild_feature).to receive(:condition_baz_0).and_return(false)
       expect(grandchild_feature).to receive(:condition_baz_1).and_return(false)
+      grandchild_feature.verify(:all)
+
+      grandchild_feature = create_feature(child_feature.class)
+      feature.class.class_eval do
+        verify(:feature) do
+          error_condition { condition_foo_2 }
+          message {}
+        end
+        verify(:component) do
+          error_condition { condition_bar_2 }
+          message {}
+        end
+        verify(:all) do
+          error_condition { condition_baz_2 }
+          message {}
+        end
+      end
+      child_feature.class.class_eval do
+        verify(:feature) do
+          error_condition { condition_foo_3 }
+          message {}
+        end
+        verify(:component) do
+          error_condition { condition_bar_3 }
+          message {}
+        end
+        verify(:all) do
+          error_condition { condition_baz_3 }
+          message {}
+        end
+      end
+
+      expect(grandchild_feature).to receive(:condition_foo_0).and_return(false)
+      expect(grandchild_feature).to receive(:condition_foo_2).and_return(false)
+      expect(grandchild_feature).to receive(:condition_foo_1).and_return(false)
+      expect(grandchild_feature).to receive(:condition_foo_3).and_return(false)
+      grandchild_feature.verify(:feature)
+
+      expect(grandchild_feature).to receive(:condition_bar_0).and_return(false)
+      expect(grandchild_feature).to receive(:condition_bar_2).and_return(false)
+      expect(grandchild_feature).to receive(:condition_bar_1).and_return(false)
+      expect(grandchild_feature).to receive(:condition_bar_3).and_return(false)
+      grandchild_feature.verify(:component)
+
+      expect(grandchild_feature).to receive(:condition_baz_0).and_return(false)
+      expect(grandchild_feature).to receive(:condition_baz_2).and_return(false)
+      expect(grandchild_feature).to receive(:condition_baz_1).and_return(false)
+      expect(grandchild_feature).to receive(:condition_baz_3).and_return(false)
       grandchild_feature.verify(:all)
     end
 
@@ -608,14 +685,26 @@ RSpec.describe RgGen::Core::InputBase::Feature do
         create_feature do
           printable(:foo)
           printable(:bar) { 2 * bar }
-          def foo; 1; end
-          def bar; 2; end
+          def foo = 1
+          def bar = 2
         end
       end
 
       specify '.printableで指定された表示可能オブジェクトは子クラスに引き継がれる' do
         child_feature = create_feature(feature.class)
         expect(child_feature.printables).to match([[:foo, 1], [:bar, 4]])
+
+        child_feature = create_feature(feature.class) do
+          printable(:qux) { qux }
+          def qux = 4
+        end
+        feature.class.class_eval do
+          printable(:baz) { baz }
+          def baz = 3
+        end
+        expect(child_feature.printables).to match([
+          [:foo, 1], [:bar, 4], [:baz, 3], [:qux, 4]
+        ])
       end
 
       specify '子クラスでのブロックの再指定は、親クラスに影響しない' do

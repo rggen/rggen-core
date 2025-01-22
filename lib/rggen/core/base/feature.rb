@@ -4,6 +4,7 @@ module RgGen
   module Core
     module Base
       class Feature
+        extend FeatureVariable
         extend InternalStruct
         extend SharedContext
         extend Forwardable

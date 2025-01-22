@@ -73,16 +73,32 @@ module RgGen::Core::Utility
         expect(object.bar).to eq attributes[:bar]
         expect(object.baz).to eq :default_baz
       end
+
+      context '未定義のアトリビュートが指定された場合' do
+        it '無視される' do
+          object = create_test_object do
+            define_attribute :foo, :default_foo
+            define_attribute :baz, :default_baz
+          end
+
+          object.apply_attributes(**attributes)
+
+          expect(object.foo).to eq attributes[:foo]
+          expect(object.baz).to eq :default_baz
+        end
+      end
     end
 
     specify '定義したアトリビュートは子クラスにも引き継がれる' do
       parent = create_test_class do
         define_attribute :foo, :default_foo
         define_attribute :bar, :default_bar
-        define_attribute :baz, :default_baz
       end
 
       object = Class.new(parent).new
+      parent.class_eval do
+        define_attribute :baz, :default_baz
+      end
       object.apply_attributes(**attributes)
 
       expect(object.foo).to eq attributes[:foo]
