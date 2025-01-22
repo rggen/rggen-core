@@ -4,6 +4,8 @@ module RgGen
   module Core
     module InputBase
       class ComponentFactory < Base::ComponentFactory
+        include RaiseError
+
         class << self
           def enable_no_children_error
             @enable_no_children_error = true

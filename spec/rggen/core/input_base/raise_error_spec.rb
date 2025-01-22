@@ -10,16 +10,12 @@ RSpec.describe RgGen::Core::InputBase::RaiseError do
   end
 
   let(:exception) do
-    RgGen::Core::RuntimeError
+    RgGen::Core::SourceError
   end
 
   let(:object) do
     klass = Class.new do
       include RgGen::Core::InputBase::RaiseError
-
-      def initialize(exception)
-        @error_exception = exception
-      end
 
       attr_reader :error_exception
       attr_writer :position
@@ -28,7 +24,7 @@ RSpec.describe RgGen::Core::InputBase::RaiseError do
         error *argv
       end
     end
-    klass.new(exception)
+    klass.new
   end
 
   def input_value(position)

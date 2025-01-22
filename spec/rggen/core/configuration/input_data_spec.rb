@@ -18,22 +18,18 @@ RSpec.describe RgGen::Core::Configuration::InputData do
       RgGen::Core::InputBase::InputValue.new(value, position)
     end
 
-    def raise_configuration_error(message)
-      raise_error RgGen::Core::Configuration::ConfigurationError, message
-    end
-
     context '入力値名が入力値リスト上にない場合' do
-      it 'ConfigurationErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect { input_data.value(:baz, input_value(0)) }
-          .to raise_configuration_error 'unknown configuration field is given: baz'
+          .to raise_source_error 'unknown configuration field is given: baz'
         expect { input_data.value('baz', input_value(0)) }
-          .to raise_configuration_error 'unknown configuration field is given: baz'
+          .to raise_source_error 'unknown configuration field is given: baz'
 
         expect { input_data[:baz] = input_value(0) }
-          .to raise_configuration_error 'unknown configuration field is given: baz'
+          .to raise_source_error 'unknown configuration field is given: baz'
 
         expect { input_data['baz'] = input_value(0) }
-          .to raise_configuration_error 'unknown configuration field is given: baz'
+          .to raise_source_error 'unknown configuration field is given: baz'
 
         expect { input_data.value(:foo, input_value(0)) }
           .not_to raise_error

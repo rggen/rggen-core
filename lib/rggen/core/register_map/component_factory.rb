@@ -4,8 +4,6 @@ module RgGen
   module Core
     module RegisterMap
       class ComponentFactory < InputBase::ComponentFactory
-        include RaiseError
-
         private
 
         def select_actual_sources(configuration, *_)

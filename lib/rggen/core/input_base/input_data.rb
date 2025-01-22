@@ -4,6 +4,8 @@ module RgGen
   module Core
     module InputBase
       class InputData
+        include RaiseError
+
         def initialize(layer, valid_value_lists, *_args)
           @layer = layer
           @valid_value_lists = valid_value_lists

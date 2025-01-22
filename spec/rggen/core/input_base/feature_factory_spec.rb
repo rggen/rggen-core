@@ -13,15 +13,8 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
     Class.new(RgGen::Core::InputBase::Feature)
   end
 
-  let(:exception) do
-    Class.new(RgGen::Core::RgGenError)
-  end
-
   let(:feature_factory) do
-    e = exception
-    Class.new(described_class) do
-      define_method(:error_exception) { e }
-    end
+    Class.new(described_class)
   end
 
   describe '#create' do
@@ -354,7 +347,7 @@ RSpec.describe RgGen::Core::InputBase::FeatureFactory do
 
           expect {
             factory(allowed_options: allowed_options).create(component, create_input_value([0, baz: 1, qux: 2]))
-          }.to raise_error exception
+          }.to raise_source_error
         end
       end
 

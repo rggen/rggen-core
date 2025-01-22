@@ -133,10 +133,6 @@ RSpec.describe RgGen::Core::RegisterMap::ComponentFactory do
     allow(File).to receive(:binread).with(file).and_return(json)
   end
 
-  def raise_register_map_error(message = nil, position = nil)
-    raise_rggen_error(RgGen::Core::RegisterMap::RegisterMapError, message, position)
-  end
-
   describe '#create' do
     let(:file) { 'foo.json' }
 
@@ -314,18 +310,18 @@ RSpec.describe RgGen::Core::RegisterMap::ComponentFactory do
 
     describe '子コンポーネントの有無の確認' do
       context '子コンポーネントの指定がない場合' do
-        it 'RegisterMapErrorを起こす' do
+        it 'SoruceErrorを起こす' do
           setup_read_data({})
           expect {
             root_component_factory.create(configuration, [file])
-          }.to raise_register_map_error 'no register blocks are given'
+          }.to raise_source_error 'no register blocks are given'
 
           setup_read_data({
             register_blocks: [{}]
           })
           expect {
             root_component_factory.create(configuration, [file])
-          }.to raise_register_map_error 'neither register files nor registers are given'
+          }.to raise_source_error 'neither register files nor registers are given'
 
           setup_read_data({
             register_blocks: [
@@ -334,7 +330,7 @@ RSpec.describe RgGen::Core::RegisterMap::ComponentFactory do
           })
           expect {
             root_component_factory.create(configuration, [file])
-          }.to raise_register_map_error 'neither register files nor registers are given'
+          }.to raise_source_error 'neither register files nor registers are given'
 
           setup_read_data({
             register_blocks: [
@@ -343,12 +339,12 @@ RSpec.describe RgGen::Core::RegisterMap::ComponentFactory do
           })
           expect {
             root_component_factory.create(configuration, [file])
-          }.to raise_register_map_error 'no bit fields are given'
+          }.to raise_source_error 'no bit fields are given'
         end
       end
 
       context '#need_no_childrenが指定された場合' do
-        it 'RegisterMapErrorは起こさない' do
+        it 'SoruceErrorは起こさない' do
           setup_read_data({
             register_blocks: [ { baz: true }]
           })
@@ -379,7 +375,7 @@ RSpec.describe RgGen::Core::RegisterMap::ComponentFactory do
       context 'ComponentFacotry.disable_no_children_errorが指定された場合' do
         after { described_class.enable_no_children_error }
 
-        it 'RegisterMapErrorは起こさない' do
+        it 'SoruceErrorは起こさない' do
           described_class.disable_no_children_error
 
           setup_read_data({})

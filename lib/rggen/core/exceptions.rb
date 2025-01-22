@@ -25,13 +25,13 @@ module RgGen
     class PluginError < RgGenError
     end
 
-    class RuntimeError < RgGenError
+    class LoadError < RgGenError
     end
 
-    class LoadError < Core::RuntimeError
+    class SourceError < RgGenError
     end
 
-    class GeneratorError < Core::RuntimeError
+    class GeneratorError < RgGenError
     end
   end
 end

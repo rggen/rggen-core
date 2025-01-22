@@ -2,7 +2,7 @@
 
 RSpec.describe RgGen::Core::InputBase::OptionArrayParser do
   let(:parser) do
-    described_class.new(RgGen::Core::RuntimeError)
+    described_class.new
   end
 
   let(:position) do
