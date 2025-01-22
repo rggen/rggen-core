@@ -4,6 +4,8 @@ module RgGen
   module Core
     module InputBase
       class Loader
+        include RaiseError
+
         def self.support_types(types = nil)
           types && (@support_types ||= []).concat(types.map(&:to_sym))
           @support_types

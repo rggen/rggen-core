@@ -5,22 +5,12 @@ RSpec.describe RgGen::Core::InputBase::ConversionUtility do
     Struct.new(:x, :y).new(1, 2)
   end
 
-  let(:exception) do
-    RgGen::Core::RuntimeError
-  end
-
   let(:object) do
     klass = Class.new do
       include RgGen::Core::InputBase::RaiseError
       include RgGen::Core::InputBase::ConversionUtility
-
-      def initialize(error_exception)
-        @error_exception = error_exception
-      end
-
-      attr_reader :error_exception
     end
-    klass.new(exception)
+    klass.new
   end
 
   def input_value(value)
@@ -67,11 +57,11 @@ RSpec.describe RgGen::Core::InputBase::ConversionUtility do
         [nil, true, false, '', 'foo', '0x1gh', :foo, Object.new].each do |value|
           expect {
             to_int(value, position, &block)
-          }.to raise_error exception, "cannot convert #{value.inspect} into integer -- #{position}"
+          }.to raise_source_error "cannot convert #{value.inspect} into integer", position
 
           expect {
             to_int(input_value(value), &block)
-          }.to raise_error exception, "cannot convert #{value.inspect} into integer -- #{position}"
+          }.to raise_source_error "cannot convert #{value.inspect} into integer", position
         end
       end
     end

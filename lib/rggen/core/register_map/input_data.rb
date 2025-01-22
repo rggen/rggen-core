@@ -4,8 +4,6 @@ module RgGen
   module Core
     module RegisterMap
       class InputData < InputBase::InputData
-        include RaiseError
-
         module Root
           def register_block(value_list = nil, &)
             child(:register_block, value_list, &)

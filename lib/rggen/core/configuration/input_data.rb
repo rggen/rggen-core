@@ -4,8 +4,6 @@ module RgGen
   module Core
     module Configuration
       class InputData < InputBase::InputData
-        include RaiseError
-
         def initialize(valid_value_lists, &)
           super(nil, valid_value_lists, &)
         end

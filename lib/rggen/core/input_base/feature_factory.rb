@@ -5,6 +5,7 @@ module RgGen
     module InputBase
       class FeatureFactory < Base::FeatureFactory
         include Utility::TypeChecker
+        include RaiseError
 
         class << self
           def convert_value(&block)
@@ -66,7 +67,7 @@ module RgGen
 
         def parse_input_value(input_value, value_format)
           format, options = value_format
-          VALUE_PARSERS[format].new(error_exception, **options).parse(input_value)
+          VALUE_PARSERS[format].new(**options).parse(input_value)
         end
 
         def override_input_value(input_value, parsed_value, options)

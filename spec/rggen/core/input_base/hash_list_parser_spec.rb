@@ -2,11 +2,7 @@
 
 RSpec.describe RgGen::Core::InputBase::HashListParser do
   let(:parser) do
-    described_class.new(exception)
-  end
-
-  let(:exception) do
-    RgGen::Core::RuntimeError
+    described_class.new
   end
 
   let(:position) do
@@ -83,11 +79,11 @@ RSpec.describe RgGen::Core::InputBase::HashListParser do
         ['foo', 'foo 1', 'foo: 1, bar', 1, true, false, Object.new].each do |value|
           expect {
             parse(value)
-          }.to raise_error exception, "cannot convert #{value.inspect} into hash -- #{position}"
+          }.to raise_source_error "cannot convert #{value.inspect} into hash", position
 
           expect {
             parse([value])
-          }.to raise_error exception, "cannot convert #{value.inspect} into hash -- #{position}"
+          }.to raise_source_error "cannot convert #{value.inspect} into hash", position
         end
       end
     end

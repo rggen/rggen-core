@@ -1,17 +1,13 @@
 # frozen_string_literal: true
 
 RSpec.describe RgGen::Core::InputBase::OptionHashParser do
-  let(:exception) do
-    RgGen::Core::RuntimeError
-  end
-
   let(:position) do
     Struct.new(:x, :y).new(1, 2)
   end
 
   def parser(allowed_options: [:foo, :bar, :baz], multiple_values: false)
     described_class
-      .new(exception, allowed_options: allowed_options, multiple_values: multiple_values)
+      .new(allowed_options: allowed_options, multiple_values: multiple_values)
   end
 
   def create_input_value(value)
@@ -125,12 +121,12 @@ RSpec.describe RgGen::Core::InputBase::OptionHashParser do
         input_value = create_input_value(values.join(','))
         expect {
           parser.parse(input_value)
-        }.to raise_error exception, "multiple input values are given: #{values} -- #{position}"
+        }.to raise_source_error "multiple input values are given: #{values}", position
 
         input_value = create_input_value("#{values.join(',')}: foo: 2, bar: 3")
         expect {
           parser.parse(input_value)
-        }.to raise_error exception, "multiple input values are given: #{values} -- #{position}"
+        }.to raise_source_error "multiple input values are given: #{values}", position
       end
     end
   end
@@ -141,14 +137,14 @@ RSpec.describe RgGen::Core::InputBase::OptionHashParser do
         input_value = create_input_value([0, { foo: 1 }, value, { bar: 2 }])
         expect {
           parser.parse(input_value)
-        }.to raise_error exception, "invalid option is given: #{value.inspect} -- #{position}"
+        }.to raise_source_error "invalid option is given: #{value.inspect}", position
       end
 
       options = 'foo: 1, bar'
       input_value = create_input_value("0: #{options}")
       expect {
         parser.parse(input_value)
-      }.to raise_error exception, "invalid options are given: #{options.inspect} -- #{position}"
+      }.to raise_source_error "invalid options are given: #{options.inspect}", position
     end
   end
 
@@ -158,19 +154,19 @@ RSpec.describe RgGen::Core::InputBase::OptionHashParser do
       input_value = create_input_value(options)
       expect {
         parser.parse(input_value)
-      }.to raise_error exception, "no input values are given: #{options.inspect} -- #{position}"
+      }.to raise_source_error "no input values are given: #{options.inspect}", position
 
       options = [{ foo: 0, bar: 1 }]
       input_value = create_input_value(options)
       expect {
         parser.parse(input_value)
-      }.to raise_error exception, "no input values are given: #{options.inspect} -- #{position}"
+      }.to raise_source_error "no input values are given: #{options.inspect}", position
 
       options = ':foo: 0, bar: 1'
       input_value = create_input_value(options)
       expect {
         parser.parse(input_value)
-      }.to raise_error exception, "no input values are given: #{options.inspect} -- #{position}"
+      }.to raise_source_error "no input values are given: #{options.inspect}", position
     end
   end
 
@@ -179,7 +175,7 @@ RSpec.describe RgGen::Core::InputBase::OptionHashParser do
       input_value = create_input_value([0, foo: 1, fizz: 2, bar: 3, buzz: 4])
       expect {
         parser.parse(input_value)
-      }.to raise_error exception, "unknown options are given: #{[:fizz, :buzz]} -- #{position}"
+      }.to raise_source_error "unknown options are given: #{[:fizz, :buzz]}", position
     end
   end
 

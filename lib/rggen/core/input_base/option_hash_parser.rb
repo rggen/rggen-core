@@ -4,7 +4,7 @@ module RgGen
   module Core
     module InputBase
       class OptionHashParser < InputValueParser
-        def initialize(exception, allowed_options: nil, multiple_values: false)
+        def initialize(allowed_options: nil, multiple_values: false)
           super
           @allowed_options = allowed_options
           @multiple_values = multiple_values

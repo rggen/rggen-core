@@ -18,7 +18,7 @@ module RgGen
 
         def error(message, position = nil)
           pos = extract_error_position(position)
-          raise error_exception.new(message, pos)
+          raise SourceError.new(message, pos)
         end
 
         def extract_error_position(position)
