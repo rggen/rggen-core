@@ -10,99 +10,81 @@ module RgGen
         include ConversionUtility
 
         class << self
-          def property(name, ...)
-            Property.define(self, name, ...)
-            properties.include?(name) || properties << name
-          end
-
-          alias_method :field, :property
-
           def properties
-            @properties ||= []
+            feature_array_variable_get(:@properties)
           end
-
-          def ignore_empty_value(value = nil)
-            @ignore_empty_value = value unless value.nil?
-            @ignore_empty_value
-          end
-
-          def ignore_empty_value?
-            @ignore_empty_value.nil? || @ignore_empty_value
-          end
-
-          def build(&block)
-            (@builders ||= []) << block
-          end
-
-          attr_reader :builders
-
-          def post_build(&block)
-            (@post_builders ||= []) << block
-          end
-
-          attr_reader :post_builders
 
           def active_feature?
             !passive_feature?
           end
 
           def passive_feature?
-            builders.nil?
+            feature_array_variable_get(:@builders).nil?
+          end
+
+          private
+
+          def property(name, ...)
+            Property.define(self, name, ...)
+            properties&.include?(name) ||
+              feature_array_variable_push(:@properties, name)
+          end
+
+          alias_method :field, :property
+
+          def ignore_empty_value(value)
+            @ignore_empty_value = value
+          end
+
+          def build(&block)
+            feature_array_variable_push(:@builders, block)
+          end
+
+          def post_build(&block)
+            feature_array_variable_push(:@post_builders, block)
           end
 
           def input_pattern(pattern_or_patterns, ...)
             @input_matcher = InputMatcher.new(pattern_or_patterns, ...)
           end
 
-          attr_reader :input_matcher
-
           def verify(scope, prepend: false, &)
-            ((@verifiers ||= {})[scope] ||= [])
-              .__send__(prepend && :prepend || :push, create_verifier(&))
+            verifyier = create_verifier(&)
+            if prepend
+              feature_hash_array_variable_prepend(:@verifiers, scope, verifyier)
+            else
+              feature_hash_array_variable_push(:@verifiers, scope, verifyier)
+            end
           end
-
-          attr_reader :verifiers
-
-          def printable(name, &body)
-            (@printables ||= {})[name] = body
-          end
-
-          attr_reader :printables
-
-          def inherited(subclass)
-            super
-            export_instance_variable(:@properties, subclass, &:dup)
-            export_instance_variable(:@ignore_empty_value, subclass)
-            export_instance_variable(:@builders, subclass, &:dup)
-            export_instance_variable(:@post_builders, subclass, &:dup)
-            export_instance_variable(:@input_matcher, subclass)
-            export_instance_variable(:@printables, subclass, &:dup)
-            export_verifiers(subclass) if @verifiers
-          end
-
-          private
 
           def create_verifier(&)
             Verifier.new(&)
           end
 
-          def export_verifiers(subclass)
-            subclass
-              .instance_variable_set(:@verifiers, @verifiers.transform_values(&:dup))
+          def printable(name, &body)
+            feature_hash_variable_store(:@printables, name, body)
           end
         end
 
-        def_delegator :'self.class', :properties
-        def_delegator :'self.class', :active_feature?
-        def_delegator :'self.class', :passive_feature?
-        def_delegator :'self.class', :ignore_empty_value?
+        def properties
+          feature_array_variable_get(:@properties)
+        end
 
         def build(*args)
-          self.class.builders && do_build(args)
+          builders = feature_array_variable_get(:@builders)
+          return unless builders
+
+          do_build(builders, args)
         end
 
         def post_build
-          self.class.post_builders&.each { |block| instance_exec(&block) }
+          feature_array_variable_get(:@post_builders)
+            &.each { |block| instance_exec(&block) }
+        end
+
+        def ignore_empty_value?
+          feaure_scala_variable_get(:@ignore_empty_value)
+            .then { _1.nil? || _1 }
         end
 
         def verify(scope)
@@ -110,11 +92,12 @@ module RgGen
         end
 
         def printables
-          helper.printables&.map { |name, body| [name, printable(name, &body)] }
+          feature_hash_variable_get(:@printables)
+            &.map { |name, body| [name, printable(name, &body)] }
         end
 
         def printable?
-          !helper.printables.nil?
+          !feature_hash_variable_get(:@printables).nil?
         end
 
         def inspect
@@ -136,23 +119,27 @@ module RgGen
 
         private
 
-        def do_build(args)
+        def do_build(builders, args)
           @position = args.last.position
           match_automatically? && match_pattern(args.last)
-          execute_build_blocks(args)
+          execute_build_blocks(builders, args)
         end
 
-        def execute_build_blocks(args)
+        def execute_build_blocks(builders, args)
           args = [*args, args.last.options] if args.last.with_options?
-          self.class.builders.each { |builder| instance_exec(*args, &builder) }
+          builders.each { |builder| instance_exec(*args, &builder) }
+        end
+
+        def input_matcher
+          feaure_scala_variable_get(:@input_matcher)
         end
 
         def match_automatically?
-          self.class.input_matcher&.match_automatically?
+          input_matcher&.match_automatically?
         end
 
         def match_pattern(rhs)
-          @match_data, @match_index = self.class.input_matcher&.match(rhs)
+          @match_data, @match_index = input_matcher&.match(rhs)
         end
 
         attr_reader :match_data
@@ -167,7 +154,10 @@ module RgGen
         end
 
         def do_verify(scope)
-          self.class.verifiers&.[](scope)&.each { |verifier| verifier.verify(self) }
+          verifiers = feature_hash_array_variable_get(:@verifiers)
+          return unless verifiers
+
+          verifiers[scope]&.each { |verifier| verifier.verify(self) }
           (@verified ||= {})[scope] = true
         end
 

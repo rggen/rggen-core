@@ -51,6 +51,21 @@ RSpec.describe RgGen::Core::OutputBase::Feature do
 
         expect(feature.instance_variable_get(:@foo)).to be component.foo
         expect(feature.instance_variable_get(:@bar)).to be component.bar
+
+        parent_feature = define_feature {}
+        feature = define_and_create_feature(parent_feature) do
+          pre_build { @bar = component.bar }
+        end
+        parent_feature.class_eval do
+          pre_build { @foo = component.foo }
+        end
+
+        allow(component).to receive(:foo).and_return('foo')
+        allow(component).to receive(:bar).and_return('bar')
+        feature.pre_build
+
+        expect(feature.instance_variable_get(:@foo)).to be component.foo
+        expect(feature.instance_variable_get(:@bar)).to be component.bar
       end
     end
 
@@ -86,6 +101,21 @@ RSpec.describe RgGen::Core::OutputBase::Feature do
         end
         feature = define_and_create_feature(parent_feature) do
           build { @bar = component.bar }
+        end
+
+        allow(component).to receive(:foo).and_return('foo')
+        allow(component).to receive(:bar).and_return('bar')
+        feature.build
+
+        expect(feature.instance_variable_get(:@foo)).to be component.foo
+        expect(feature.instance_variable_get(:@bar)).to be component.bar
+
+        parent_feature = define_feature
+        feature = define_and_create_feature(parent_feature) do
+          build { @bar = component.bar }
+        end
+        parent_feature.class_eval do
+          build { @foo = component.foo }
         end
 
         allow(component).to receive(:foo).and_return('foo')
@@ -200,15 +230,29 @@ RSpec.describe RgGen::Core::OutputBase::Feature do
     context '継承された場合' do
       specify 'コード生成ブロックは継承される' do
         parent_feature = define_feature do
-          send(phase, :foo) { 'foo' }
-          send(phase, :bar) { 'bar' }
+          send(phase, :foo) { 'foo_0' }
+          send(phase, :bar) { |c| c << 'bar_0' }
         end
         feature = define_and_create_feature(parent_feature)
 
-        expect(code).to receive(:<<). with('foo')
+        expect(code).to receive(:<<).with('foo_0')
         feature.generate_code(code, phase, :foo)
 
-        expect(code).to receive(:<<). with('bar')
+        expect(code).to receive(:<<).with('bar_0')
+        feature.generate_code(code, phase, :bar)
+
+        feature = define_and_create_feature(parent_feature)
+        parent_feature.class_eval do
+          send(phase, :foo) { 'foo_1' }
+          send(phase, :bar) { |c| c << 'bar_1' }
+        end
+
+        expect(code).to receive(:<<).with('foo_0')
+        expect(code).to receive(:<<).with('foo_1')
+        feature.generate_code(code, phase, :foo)
+
+        expect(code).to receive(:<<).with('bar_0')
+        expect(code).to receive(:<<).with('bar_1')
         feature.generate_code(code, phase, :bar)
       end
 
@@ -223,7 +267,6 @@ RSpec.describe RgGen::Core::OutputBase::Feature do
         expect(code).to receive(:<<).with('foo_0')
         expect(code).to receive(:<<).with('foo_1')
         feature.generate_code(code, phase, :foo)
-
 
         expect(code).to receive(:<<).with('foo_0')
         expect(code).not_to receive(:<<).with('foo_1')
@@ -309,6 +352,20 @@ RSpec.describe RgGen::Core::OutputBase::Feature do
 
           expect(File).to receive(:binwrite).with(match_string(feature.file_name), feature.file_content)
           feature.write_file
+
+          parent_feature = define_feature(feature_base)
+          feature = define_and_create_feature(parent_feature) do
+            def file_name; "#{object_id}_bar.txt"; end
+            def file_content; "#{object_id} bar !"; end
+          end
+          parent_feature.class_eval do
+            write_file '<%= file_name %>' do |f|
+              f << file_content
+            end
+          end
+
+          expect(File).to receive(:binwrite).with(match_string(feature.file_name), feature.file_content)
+          feature.write_file
         end
       end
 
@@ -355,6 +412,17 @@ RSpec.describe RgGen::Core::OutputBase::Feature do
         baz_feature = define_and_create_feature(bar_feature.class) do
           export :baz
         end
+
+        expect(foo_feature.exported_methods(:class)).to match [:foo]
+        expect(bar_feature.exported_methods(:class)).to match [:foo, :bar]
+        expect(baz_feature.exported_methods(:class)).to match [:foo, :bar, :baz]
+
+        foo_feature = define_and_create_feature {}
+        bar_feature = define_and_create_feature(foo_feature.class) {}
+        baz_feature = define_and_create_feature(bar_feature.class) {}
+        foo_feature.class.class_eval { export :foo }
+        bar_feature.class.class_eval { export :bar }
+        baz_feature.class.class_eval { export :baz }
 
         expect(foo_feature.exported_methods(:class)).to match [:foo]
         expect(bar_feature.exported_methods(:class)).to match [:foo, :bar]

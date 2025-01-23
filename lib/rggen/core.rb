@@ -31,6 +31,7 @@ require_relative 'core/utility/type_checker'
 
 require_relative 'core/exceptions'
 
+require_relative 'core/base/feature_variable'
 require_relative 'core/base/internal_struct'
 require_relative 'core/base/shared_context'
 require_relative 'core/base/component'
@@ -89,8 +90,8 @@ require_relative 'core/register_map'
 
 require_relative 'core/output_base/template_engine'
 require_relative 'core/output_base/erb_engine'
-require_relative 'core/output_base/code_generator'
 require_relative 'core/output_base/file_writer'
+require_relative 'core/output_base/code_generatable'
 require_relative 'core/output_base/raise_error'
 require_relative 'core/output_base/component'
 require_relative 'core/output_base/component_factory'

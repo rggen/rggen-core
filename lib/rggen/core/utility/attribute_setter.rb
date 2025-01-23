@@ -5,16 +5,14 @@ module RgGen
     module Utility
       module AttributeSetter
         module Extension
-          def attributes
-            @attributes ||= []
-          end
+          attr_reader :attributes
 
           private
 
           DEFAULT_VALUE = Object.new.freeze
 
           def define_attribute(name, default_value = nil)
-            attributes << name.to_sym
+            (@attributes ||= []) << name.to_sym
             variable_name = "@#{name}"
             define_method(name) do |value = DEFAULT_VALUE|
               if value.equal?(DEFAULT_VALUE)
@@ -24,11 +22,6 @@ module RgGen
               end
             end
           end
-
-          def inherited(subclass)
-            super
-            export_instance_variable(:@attributes, subclass, &:dup)
-          end
         end
 
         def self.included(class_or_module)
@@ -37,7 +30,7 @@ module RgGen
 
         def apply_attributes(**attributes)
           attributes.each do |name, value|
-            __send__(name, value) if self.class.attributes.include?(name)
+            __send__(name, value) if attribute?(name)
           end
         end
 
@@ -51,6 +44,16 @@ module RgGen
           else
             default_value
           end
+        end
+
+        def attribute?(name)
+          klass = self.class
+          while klass.respond_to?(:attributes)
+            return true if klass.attributes&.include?(name)
+            klass = klass.superclass
+          end
+
+          false
         end
       end
     end
