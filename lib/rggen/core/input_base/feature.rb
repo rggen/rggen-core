@@ -11,7 +11,7 @@ module RgGen
 
         class << self
           def properties
-            feature_array_variable_get(:@properties)
+            feature_hash_variable_get(:@properties)&.keys
           end
 
           def active_feature?
@@ -25,9 +25,10 @@ module RgGen
           private
 
           def property(name, ...)
-            Property.define(self, name, ...)
-            properties&.include?(name) ||
-              feature_array_variable_push(:@properties, name)
+            feature_hash_variable_store(:@properties, name, Property.new(name, ...))
+            return if method_defined?(name)
+
+            public alias_method(name, :property_method)
           end
 
           alias_method :field, :property
@@ -67,7 +68,7 @@ module RgGen
         end
 
         def properties
-          feature_array_variable_get(:@properties)
+          feature_hash_variable_get(:@properties)&.keys
         end
 
         def build(*args)
@@ -118,6 +119,10 @@ module RgGen
         end
 
         private
+
+        def property_method(...)
+          feature_hash_variable_fetch(:@properties, __callee__).evaluate(self, ...)
+        end
 
         def do_build(builders, args)
           @position = args.last.position

@@ -19,6 +19,10 @@ module RgGen
             self.class.feature_hash_variable_get(name)
           end
 
+          def feature_hash_variable_fetch(name, key)
+            self.class.feature_hash_variable_fetch(name, key)
+          end
+
           def feature_hash_array_variable_get(name)
             self.class.feature_hash_array_variable_get(name)
           end
@@ -32,12 +36,12 @@ module RgGen
           if instance_variable_defined?(name)
             instance_variable_get(name)
           else
-            parent_feature_variable_get(__method__, name)
+            call_parent_feature_variable_method(__method__, name)
           end
         end
 
         def feature_array_variable_get(name)
-          parent = parent_feature_variable_get(__method__, name)
+          parent = call_parent_feature_variable_method(__method__, name)
           own = instance_variable_get(name)
 
           if [parent, own] in [Array, Array]
@@ -48,7 +52,7 @@ module RgGen
         end
 
         def feature_hash_variable_get(name)
-          parent = parent_feature_variable_get(__method__, name)
+          parent = call_parent_feature_variable_method(__method__, name)
           own = instance_variable_get(name)
 
           if [parent, own] in [Hash, Hash]
@@ -58,8 +62,15 @@ module RgGen
           end
         end
 
+        def feature_hash_variable_fetch(name, key)
+          hash = instance_variable_get(name)
+          return hash[key] if hash&.key?(key)
+
+          call_parent_feature_variable_method(__method__, name, key)
+        end
+
         def feature_hash_array_variable_get(name)
-          parent = parent_feature_variable_get(__method__, name)
+          parent = call_parent_feature_variable_method(__method__, name)
           own = instance_variable_get(name)
 
           if [parent, own] in [Hash, Hash]
@@ -101,10 +112,10 @@ module RgGen
           feature_hash_array_variable_update(name, :prepend, key, value)
         end
 
-        def parent_feature_variable_get(method, name)
+        def call_parent_feature_variable_method(method, ...)
           return unless superclass.respond_to?(method, true)
 
-          superclass.__send__(method, name)
+          superclass.__send__(method, ...)
         end
       end
     end
