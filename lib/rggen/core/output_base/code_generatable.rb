@@ -13,6 +13,9 @@ module RgGen
             .to_h { |phase| [phase, :"@#{phase}_blocks"] }
             .freeze
 
+        TEMPLATE_PROCESSOR =
+          ->(path, location) { process_template(path, location) }
+
         module Extension
           private
 
@@ -27,9 +30,9 @@ module RgGen
               if options[:from_template]
                 path = extract_template_path(options)
                 location = caller_locations(2, 1).first
-                -> { process_template(path, location) }
-              else
-                body
+                [TEMPLATE_PROCESSOR, path, location]
+              elsif block_given?
+                [body]
               end
             return unless block
 
@@ -55,11 +58,13 @@ module RgGen
           blocks = feature_hash_array_variable_get(VARIABLE_NAMES[phase])
           return unless blocks
 
-          blocks[kind]&.each do |block|
-            if block.arity.zero?
-              code << instance_exec(&block)
+          blocks[kind]&.each do |block_and_args|
+            block = block_and_args[0]
+            args = block_and_args[1..]
+            if block.arity == (args&.size || 0)
+              code << instance_exec(*args, &block)
             else
-              instance_exec(code, &block)
+              instance_exec(code, *args, &block)
             end
           end
         end

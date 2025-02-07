@@ -30,13 +30,28 @@ RSpec.describe RgGen::Core::InputBase::Feature do
     end
 
     specify '定義したプロパティは継承される' do
-      parent = define_feature { property :foo; property :bar }
-      feature = define_feature(parent) { property :baz }
-      expect(feature.properties).to match [:foo, :bar, :baz]
+      parent = define_feature do
+        property :foo, default: 0
+        property :bar, default: 1
+      end
 
-      feature = define_feature(parent)
-      parent.class_eval { property :baz }
+      feature = create_feature(parent)
+      expect(feature.properties).to match [:foo, :bar]
+      expect(feature.foo).to eq 0
+      expect(feature.bar).to eq 1
+
+      feature = create_feature(parent) { property :baz, default: 2 }
       expect(feature.properties).to match [:foo, :bar, :baz]
+      expect(feature.foo).to eq 0
+      expect(feature.bar).to eq 1
+      expect(feature.baz).to eq 2
+
+      feature = create_feature(parent)
+      parent.class_eval { property :baz, default: 3 }
+      expect(feature.properties).to match [:foo, :bar, :baz]
+      expect(feature.foo).to eq 0
+      expect(feature.bar).to eq 1
+      expect(feature.baz).to eq 3
     end
 
     context '同名のプロパティを複数定義した場合' do
