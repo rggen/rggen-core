@@ -319,14 +319,6 @@ RSpec.describe RgGen::Core::CLI do
       expect(bit_fields[0].name).to eq 'bit_field_0'
       expect(bit_fields[1].name).to eq 'bit_field_1'
     end
-
-    context 'レジスタマップの指定がない場合' do
-      it 'LoadErrorを起こす' do
-        expect {
-          cli.run(['--plugin', setup_file])
-        }.to raise_rggen_error RgGen::Core::LoadError, 'no register map files are given'
-      end
-    end
   end
 
   describe 'ファイルの書き出し' do

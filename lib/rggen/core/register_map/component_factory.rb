@@ -14,6 +14,13 @@ module RgGen
           InputData.new(:root, valid_value_lists, configuration, &)
         end
 
+        def handle_empty_input(input_data)
+          loader = find_loader { !_1.require_input_file? }
+          raise LoadError.new('no register map files are given') unless loader
+
+          loader.load_data(input_data, valid_value_lists)
+        end
+
         def find_child_factory(_configuration, register_map)
           component_factories[register_map.layer]
         end

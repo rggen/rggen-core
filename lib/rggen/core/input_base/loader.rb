@@ -11,6 +11,10 @@ module RgGen
           @support_types
         end
 
+        def self.require_no_input_file
+          @require_input_file = false
+        end
+
         def initialize(extractors, ignore_values)
           @extractors = extractors
           @ignore_values = ignore_values
@@ -22,19 +26,33 @@ module RgGen
           types&.any? { |type| type.casecmp?(ext) } || false
         end
 
-        def load_file(file, input_data, valid_value_lists)
+        def require_input_file?
+          loader = self.class
+          !loader.instance_variable_defined?(:@require_input_file) ||
+            loader.instance_variable_get(:@require_input_file)
+        end
+
+        def load_data(input_data, valid_value_lists, file = nil)
+          if require_input_file?
+            load_file(input_data, valid_value_lists, file)
+          else
+            load_builtin_data(input_data)
+          end
+        end
+
+        def load_file(input_data, valid_value_lists, file)
           File.readable?(file) ||
             (raise Core::LoadError.new('cannot load such file', file))
           @input_data = input_data
           @valid_value_lists = valid_value_lists
-          format(read_file(file), input_data, input_data.layer, file)
+          format_data(read_file(file), input_data, input_data.layer, file)
         end
 
         private
 
         attr_reader :input_data
 
-        def format(read_data, input_data, layer, file)
+        def format_data(read_data, input_data, layer, file)
           layer_data =
             format_layer_data(read_data, layer, file) ||
             format_layer_data_by_extractors(read_data, layer)
@@ -45,7 +63,7 @@ module RgGen
 
         def format_sub_layer(read_data, input_data, layer, file)
           format_sub_layer_data(read_data, layer, file)&.each do |(sub_layer, data)|
-            format(data, input_data.child(sub_layer), sub_layer, file)
+            format_data(data, input_data.child(sub_layer), sub_layer, file)
           end
         end
 

@@ -38,22 +38,33 @@ RSpec.describe RgGen::Core::Configuration::ComponentFactory do
   end
 
   describe '#create' do
-    let(:feature_values) do
-      { foo: rand(99), bar: rand(99), baz: rand(99) }
+    context '入力ファイルが与えられた場合' do
+      it '入力ファイルの内容でコンフィグレーションコンポーネントの生成を行う' do
+        feature_values = { foo: rand(99), bar: rand(99), baz: rand(99) }
+        file = 'foo.json'
+
+        allow(File).to receive(:readable?).with(file).and_return(true)
+        allow(File).to receive(:binread).with(file).and_return(JSON.dump(feature_values))
+
+        configuration = factory.create([file])
+        expect(configuration).to have_attributes(feature_values)
+      end
     end
 
-    let(:file_content) { JSON.dump(feature_values) }
+    context '入力ファイルが未指定の場合' do
+      it '欠損値を使ってコンフィグレーションコンポーネントの生成を行う' do
+        na_value = RgGen::Core::InputBase::NAValue
 
-    let(:file) { 'foo.json' }
+        expect(foo_feature_factory)
+          .to receive(:create).with(anything, equal(na_value)).and_call_original
+        expect(bar_feature_factory)
+          .to receive(:create).with(anything, equal(na_value)).and_call_original
+        expect(baz_feature_factory)
+          .to receive(:create).with(anything, equal(na_value)).and_call_original
 
-    before do
-      allow(File).to receive(:readable?).with(file).and_return(true)
-      allow(File).to receive(:binread).with(file).and_return(file_content)
-    end
-
-    it 'コンフィグレーションコンポーネントの生成と組み立てを行う' do
-      configuration = factory.create([file])
-      expect(configuration).to have_attributes(feature_values)
+        configuration = factory.create([])
+        expect(configuration).to have_attributes(foo: be_nil, bar: be_nil, baz: be_nil)
+      end
     end
   end
 end

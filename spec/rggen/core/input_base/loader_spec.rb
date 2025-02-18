@@ -45,7 +45,17 @@ RSpec.describe RgGen::Core::InputBase::Loader do
     end
   end
 
-  describe '#load_file' do
+  describe '#require_input_file?' do
+    it '入力ファイルを必要としているかを返す' do
+      loader = define_loader {}.new([], [])
+      expect(loader.require_input_file?).to be true
+
+      loader = define_loader { require_no_input_file }.new([], [])
+      expect(loader.require_input_file?).to be false
+    end
+  end
+
+  describe '#load_data' do
     let(:valid_value_lists) do
       {
         foo: [:fizz_0, :buzz_0],
@@ -68,16 +78,6 @@ RSpec.describe RgGen::Core::InputBase::Loader do
 
     let(:baz_data) do
       bar_data.flat_map(&:children)
-    end
-
-    let(:file_content) do
-      <<~'FILE'
-        [
-          [:a, :b],
-          [[:c, :d], [[:e, :f]], [[:g, :h]]],
-          [[:i, :j], [[:k, :l]], [[:m, :n]]]
-        ]
-      FILE
     end
 
     let(:file_name) { 'foo_bar_baz.rb' }
@@ -105,15 +105,26 @@ RSpec.describe RgGen::Core::InputBase::Loader do
       end
     end
 
-    before do
+    def setup_input_file(file_name, contents = nil)
+      file_contents = contents || <<~'FILE'
+        [
+          [:a, :b],
+          [[:c, :d], [[:e, :f]], [[:g, :h]]],
+          [[:i, :j], [[:k, :l]], [[:m, :n]]]
+        ]
+      FILE
+
       allow(File).to receive(:readable?).with(file_name).and_return(true)
-      allow(File).to receive(:read).with(file_name).and_return(file_content)
+      allow(File).to receive(:read).with(file_name).and_return(file_contents)
     end
 
-    context '#format_layer_dataが定義されている場合' do
-      specify '#format_layer_dataの戻り値が、その階層の入力データとなる' do
+    context '読み出し可能な入力ファイルが指定された場合' do
+      it '指定されたファイルから入力データを読み出す' do
         loader = simple_loader.new([], {})
-        loader.load_file(file_name, input_data, valid_value_lists)
+
+        setup_input_file(file_name)
+        loader.load_data(input_data, valid_value_lists, file_name)
+
         expect(foo_data).to have_values([:fizz_0, :a], [:buzz_0, :b])
         expect(bar_data[0]).to have_values([:fizz_1, :c], [:buzz_1, :d])
         expect(baz_data[0]).to have_values([:fizz_2, :e], [:buzz_2, :f])
@@ -121,6 +132,16 @@ RSpec.describe RgGen::Core::InputBase::Loader do
         expect(bar_data[1]).to have_values([:fizz_1, :i], [:buzz_1, :j])
         expect(baz_data[2]).to have_values([:fizz_2, :k], [:buzz_2, :l])
         expect(baz_data[3]).to have_values([:fizz_2, :m], [:buzz_2, :n])
+      end
+    end
+
+    context '読み出しできない入力ファイルが指定された場合' do
+      it 'LoadErrorを起こす' do
+        allow(File).to receive(:readable?).with(file_name).and_return(false)
+
+        expect {
+          loader_base.new([], {}).load_file(input_data, valid_value_lists, file_name)
+        }.to raise_rggen_error RgGen::Core::LoadError, 'cannot load such file', file_name
       end
     end
 
@@ -136,7 +157,9 @@ RSpec.describe RgGen::Core::InputBase::Loader do
         ]
         loader = loader_base.new(extractors, {})
 
-        loader.load_file(file_name, input_data, valid_value_lists)
+        setup_input_file(file_name)
+        loader.load_data(input_data, valid_value_lists, file_name)
+
         expect(foo_data).to have_values([:fizz_0, :a], [:buzz_0, :b])
         expect(bar_data[0]).to have_values([:fizz_1, :c], [:buzz_1, :d])
         expect(baz_data[0]).to have_values([:fizz_2, :e], [:buzz_2, :f])
@@ -153,7 +176,9 @@ RSpec.describe RgGen::Core::InputBase::Loader do
           ]
           loader = loader_base.new(extractors, {})
 
-          loader.load_file(file_name, input_data, valid_value_lists)
+          setup_input_file(file_name)
+          loader.load_data(input_data, valid_value_lists, file_name)
+
           expect(foo_data).to have_value(:fizz_0, :a)
           expect(foo_data).not_to have_value(:buzz_0)
         end
@@ -167,7 +192,9 @@ RSpec.describe RgGen::Core::InputBase::Loader do
           ]
           loader = loader_base.new(extractors, {})
 
-          loader.load_file(file_name, input_data, valid_value_lists)
+          setup_input_file(file_name)
+          loader.load_data(input_data, valid_value_lists, file_name)
+
           expect(foo_data).to have_value(:fizz_0, :a)
           expect(foo_data).not_to have_value(:buzz_0)
         end
@@ -181,7 +208,9 @@ RSpec.describe RgGen::Core::InputBase::Loader do
           ]
           loader = loader_base.new(extractors, {})
 
-          loader.load_file(file_name, input_data, valid_value_lists)
+          setup_input_file(file_name)
+          loader.load_data(input_data, valid_value_lists, file_name)
+
           expect(foo_data).to have_value(:fizz_0, :A)
         end
       end
@@ -194,7 +223,10 @@ RSpec.describe RgGen::Core::InputBase::Loader do
 
       specify '指定された値は無視される' do
         loader = simple_loader.new([], ignore_values)
-        loader.load_file(file_name, input_data, valid_value_lists)
+
+        setup_input_file(file_name)
+        loader.load_data(input_data, valid_value_lists, file_name)
+
         expect(foo_data).to have_value(:buzz_0, :b)
         expect(foo_data).not_to have_value(:fizz_0)
         expect(bar_data[0]).to have_value(:fizz_1, :c)
@@ -214,7 +246,9 @@ RSpec.describe RgGen::Core::InputBase::Loader do
         ]
         loader = loader_base.new(extractors, ignore_values)
 
-        loader.load_file(file_name, input_data, valid_value_lists)
+        setup_input_file(file_name)
+        loader.load_data(input_data, valid_value_lists, file_name)
+
         expect(foo_data).to have_value(:buzz_0, :b)
         expect(foo_data).not_to have_value(:fizz_0)
         expect(bar_data[0]).to have_value(:fizz_1, :c)
@@ -224,17 +258,30 @@ RSpec.describe RgGen::Core::InputBase::Loader do
       end
     end
 
-    context 'ファイルが存在しない場合' do
-      let(:invalid_file_name) { 'baz.rb' }
+    context 'require_no_input_fileが指定された場合' do
+      specify '組み込みのデータを入力データとする' do
+        loader = define_loader(loader_base) do
+          require_no_input_file
 
-      before do
-        allow(File).to receive(:readable?).with(invalid_file_name).and_return(false)
-      end
+          def load_builtin_data(input_data)
+            input_data[:fizz_0] = :a
+            input_data[:buzz_0] = :b
+            input_data.child(:bar) do
+              fizz_1 :c
+              buzz_1 :d
+              child(:baz) do
+                fizz_2 :e
+                buzz_2 :f
+              end
+            end
+          end
+        end
 
-      it 'LoadErrorを起こす' do
-        expect {
-          loader_base.new([], {}).load_file(invalid_file_name, input_data, valid_value_lists)
-        }.to raise_rggen_error RgGen::Core::LoadError, 'cannot load such file', invalid_file_name
+        loader.new([], {}).load_data(input_data, valid_value_lists)
+
+        expect(foo_data).to have_values([:fizz_0, :a], [:buzz_0, :b])
+        expect(bar_data[0]).to have_values([:fizz_1, :c], [:buzz_1, :d])
+        expect(baz_data[0]).to have_values([:fizz_2, :e], [:buzz_2, :f])
       end
     end
   end

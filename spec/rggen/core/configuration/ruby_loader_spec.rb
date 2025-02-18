@@ -42,12 +42,12 @@ RSpec.describe RgGen::Core::Configuration::RubyLoader do
     end
 
     it '入力したファイルを元に、入力データを組み立てる' do
-      loader.load_file(file, input_data, valid_value_lists)
+      loader.load_data(input_data, valid_value_lists, file)
       expect(input_data).to have_values([:foo, 0], [:bar, 1], [:baz, 2])
     end
 
     it '位置情報に入力ファイルでの位置を設定する' do
-      loader.load_file(file, input_data, valid_value_lists)
+      loader.load_data(input_data, valid_value_lists, file)
       expect(input_data[:foo].position).to have_attributes(path: file, lineno: 1)
       expect(input_data[:bar].position).to have_attributes(path: file, lineno: 2)
       expect(input_data[:baz].position).to have_attributes(path: file, lineno: 3)

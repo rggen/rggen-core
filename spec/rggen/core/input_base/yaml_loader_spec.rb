@@ -54,7 +54,7 @@ RSpec.describe RgGen::Core::InputBase::YAMLLoader do
     end
 
     specify '読みだした値は位置情報を持つ' do
-      loader.load_file(file, input_data, valid_value_lists)
+      loader.load_data(input_data, valid_value_lists, file)
       expect(input_data[:foo]).to match_value(0, position(1, 6))
       expect(input_data[:bar]).to match_value(
         match([match_value(1, position(2, 7)), match_value(2, position(2, 10))]),

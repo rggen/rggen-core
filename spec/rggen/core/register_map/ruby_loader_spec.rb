@@ -96,7 +96,7 @@ RSpec.describe RgGen::Core::RegisterMap::RubyLoader do
     end
 
     it '入力したフィアルを元に、入力データを組み立てる' do
-      loader.load_file(file, input_data, valid_value_lists)
+      loader.load_data(input_data, valid_value_lists, file)
       expect(register_blocks).to match [
         have_value(:foo, 'foo_0'), have_value(:foo, 'foo_1')
       ]
@@ -114,7 +114,7 @@ RSpec.describe RgGen::Core::RegisterMap::RubyLoader do
     end
 
     it '位置情報に入力ファイルでの位置を設定する' do
-      loader.load_file(file, input_data, valid_value_lists)
+      loader.load_data(input_data, valid_value_lists, file)
       expect(register_blocks[0][:foo].position).to have_attributes(path: file, lineno: 2)
       expect(registers[0][:baz].position).to have_attributes(path: file, lineno: 4)
       expect(bit_fields[0][:qux].position).to have_attributes(path: file, lineno: 5)

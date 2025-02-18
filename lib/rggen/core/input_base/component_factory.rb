@@ -26,26 +26,35 @@ module RgGen
 
         def preprocess(args)
           if root_factory?
-            [*args[0..-2], load_files(args)]
+            [*args[0..-2], load_inputs(args)]
           else
             args
           end
         end
 
-        def load_files(args)
+        def load_inputs(args)
           files = args.last
           create_input_data(*args[0..-2]) do |input_data|
-            files.each { |file| load_file(file, input_data) }
+            if files.empty?
+              handle_empty_input(input_data)
+            else
+              files.each { |file| load_file(input_data, file) }
+            end
           end
         end
 
-        def load_file(file, input_data)
-          find_loader(file).load_file(file, input_data, valid_value_lists)
+        def handle_empty_input(_input_data)
         end
 
-        def find_loader(file)
-          loaders.reverse_each.find { |l| l.support?(file) } ||
-            (raise Core::LoadError.new('unsupported file type', file))
+        def load_file(input_data, file)
+          loader = find_loader { _1.support?(file) }
+          raise Core::LoadError.new('unsupported file type', file) unless loader
+
+          loader.load_data(input_data, valid_value_lists, file)
+        end
+
+        def find_loader(&)
+          loaders.reverse_each.find(&)
         end
 
         def valid_value_lists
