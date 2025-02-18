@@ -42,7 +42,7 @@ RSpec.describe RgGen::Core::Configuration::TOMLLoader do
     end
 
     it '入力ファイルを元に、入力データを組み立てる' do
-      loader.load_file(file, input_data, valid_value_lists)
+      loader.load_data(input_data, valid_value_lists, file)
       expect(input_data).to have_values([:foo, 0, file], [:bar, 1, file], [:baz, 2, file])
     end
   end

@@ -128,18 +128,19 @@ RSpec.describe RgGen::Core::RegisterMap::ComponentFactory do
       end
   end
 
-  def setup_read_data(data)
-    json = JSON.dump(data)
-    allow(File).to receive(:binread).with(file).and_return(json)
-  end
-
   describe '#create' do
-    let(:file) { 'foo.json' }
+    let(:file) do
+      'foo.json'
+    end
 
-    let(:configuration) { RgGen::Core::Configuration::Component.new(nil, 'configuration', nil) }
+    let(:configuration) do
+      RgGen::Core::Configuration::Component.new(nil, 'configuration', nil)
+    end
 
-    before do
+    def setup_read_data(data)
+      json = JSON.dump(data)
       allow(File).to receive(:readable?).with(file).and_return(true)
+      allow(File).to receive(:binread).with(file).and_return(json)
     end
 
     describe '#コンポーネントの生成' do
@@ -206,10 +207,7 @@ RSpec.describe RgGen::Core::RegisterMap::ComponentFactory do
         }
       end
 
-      it 'レジスタマップコンポーネントの生成と組み立てを行う' do
-        setup_read_data(feature_values)
-        root = root_component_factory.create(configuration, [file])
-
+      def check_data(root)
         register_block = root.register_blocks[0]
         expect(register_block).to have_properties({
           foo: feature_values.dig(:register_blocks, 0, :foo),
@@ -305,6 +303,45 @@ RSpec.describe RgGen::Core::RegisterMap::ComponentFactory do
           foo: feature_values.dig(:register_blocks, 1, :registers, 0, :bit_fields, 1, :foo),
           bar: feature_values.dig(:register_blocks, 1, :registers, 0, :bit_fields, 1, :bar)
         })
+      end
+
+      context '入力ファイルが与えられた場合' do
+        it '入力ファイルを元にレジスタマップコンポーネントの生成と組み立てを行う' do
+          setup_read_data(feature_values)
+
+          root = root_component_factory.create(configuration, [file])
+          check_data(root)
+        end
+      end
+
+      context '入力ファイルが未指定で、入力ファイルを必要としないローダーが登録されていない場合' do
+        it 'LoadErrorを起こす' do
+          expect {
+            root_component_factory.create(configuration, [])
+          }.to raise_rggen_error RgGen::Core::LoadError, 'no register map files are given'
+        end
+      end
+
+      context '入力ファイルが未指定で、入力ファイルを必要としないローダーが登録されている場合' do
+        it 'ローだ組み込みのデータでレジスタマップコンポーネントの生成と組み立てを行う' do
+          loader_class = Class.new(RgGen::Core::RegisterMap::Loader) do
+            include RgGen::Core::RegisterMap::HashLoader
+            require_no_input_file
+
+            attr_writer :feature_values
+
+            def load_builtin_data(input_data)
+              format_data(@feature_values, input_data, input_data.layer, '')
+            end
+          end
+
+          loader = loader_class.new([], {})
+          loader.feature_values = feature_values
+          root_component_factory.loaders << loader
+
+          root = root_component_factory.create(configuration, [])
+          check_data(root)
+        end
       end
     end
 

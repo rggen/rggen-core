@@ -27,8 +27,6 @@ module RgGen
       end
 
       def load_register_map(builder, files)
-        files.empty? &&
-          (raise Core::LoadError.new('no register map files are given'))
         @register_map =
           builder
             .build_factory(:input, :register_map)

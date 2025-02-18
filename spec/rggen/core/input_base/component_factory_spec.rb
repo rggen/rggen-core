@@ -210,12 +210,16 @@ RSpec.describe RgGen::Core::InputBase::ComponentFactory do
         end
 
         it '対応するローダを使って、ファイルを読み出す' do
-          expect(rb_loaders[0]).not_to receive(:load_file)
-          allow(rb_loaders[1]).to receive(:load_file).and_call_original
+          expect(rb_loaders[0]).not_to receive(:load_data)
+          allow(rb_loaders[1]).to receive(:load_data).and_call_original
 
           foo_factory.create(other_input_data, input_files)
-          expect(rb_loaders[1]).to have_received(:load_file).with(input_files[0], equal(input_datas[1]), valid_value_lists)
-          expect(rb_loaders[1]).to have_received(:load_file).with(input_files[1], equal(input_datas[1]), valid_value_lists)
+          expect(rb_loaders[1])
+            .to have_received(:load_data)
+            .with(equal(input_datas[1]), match(valid_value_lists), input_files[0])
+          expect(rb_loaders[1])
+            .to have_received(:load_data)
+            .with(equal(input_datas[1]), match(valid_value_lists), input_files[1])
         end
 
         specify '読み出したデータは、自身、及び、配下のコンポーネントの組み立てに使われる' do
@@ -238,20 +242,6 @@ RSpec.describe RgGen::Core::InputBase::ComponentFactory do
           expect {
             foo_factory.create(other_input_data, ['foo.txt'])
           }.to raise_rggen_error RgGen::Core::LoadError, 'unsupported file type', 'foo.txt'
-        end
-      end
-
-      context '空のファイルリストを与えた場合' do
-        it '欠損値使って、自身の組み立てを行う' do
-          expect(foo_feature_factories[:foo_0])
-            .to receive(:create)
-            .with(anything, anything, equal(RgGen::Core::InputBase::NAValue))
-          expect(foo_feature_factories[:foo_1])
-            .to receive(:create)
-            .with(anything, anything, equal(RgGen::Core::InputBase::NAValue))
-          expect(bar_factory)
-            .not_to receive(:create)
-          foo_factory.create(other_input_data, [])
         end
       end
     end

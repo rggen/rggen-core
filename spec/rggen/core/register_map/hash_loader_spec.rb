@@ -4,9 +4,9 @@ RSpec.describe RgGen::Core::RegisterMap::HashLoader do
   let(:loader) do
     loader_class = Class.new(RgGen::Core::RegisterMap::Loader) do
       include RgGen::Core::RegisterMap::HashLoader
-      attr_accessor :load_data
+      attr_accessor :hash_data
       def read_file(_file)
-        load_data
+        hash_data
       end
     end
     loader_class.new([], {})
@@ -50,7 +50,7 @@ RSpec.describe RgGen::Core::RegisterMap::HashLoader do
   end
 
   context '#read_fileがレジスタマップを表すHashを返す場合' do
-    let(:load_data) do
+    let(:hash_data) do
       {
         register_blocks: [
           {
@@ -120,8 +120,8 @@ RSpec.describe RgGen::Core::RegisterMap::HashLoader do
     end
 
     it '読み出したHashを使って、入力データを組み立てる' do
-      loader.load_data = load_data
-      loader.load_file(file, input_data, valid_value_lists)
+      loader.hash_data = hash_data
+      loader.load_data(input_data, valid_value_lists, file)
 
       expect(register_blocks).to match [
         have_values([:foo_0, 'foo_0'], [:foo_1, 'foo_1']),
@@ -145,7 +145,7 @@ RSpec.describe RgGen::Core::RegisterMap::HashLoader do
   end
 
   context '#read_fileがレジスタマップを表すArrayを返す場合' do
-    let(:load_data) do
+    let(:hash_data) do
       [
         {
           register_block: [
@@ -202,8 +202,8 @@ RSpec.describe RgGen::Core::RegisterMap::HashLoader do
     end
 
     it '読みだしたArrayを使って、入力データを組み立てる' do
-      loader.load_data = load_data
-      loader.load_file(file, input_data, valid_value_lists)
+      loader.hash_data = hash_data
+      loader.load_data(input_data, valid_value_lists, file)
 
       expect(register_blocks).to match [
         have_values([:foo_0, 'foo_0'], [:foo_1, 'foo_1']),
@@ -227,16 +227,16 @@ RSpec.describe RgGen::Core::RegisterMap::HashLoader do
   end
 
   context '#read_fileがHash以外を返す場合' do
-    let(:invalid_load_data) do
+    let(:invalid_data) do
       [0, Object.new, 'foo']
     end
 
     it 'LoadErrorを起こす' do
-      invalid_load_data.each do |load_data|
+      invalid_data.each do |data|
         expect {
-          loader.load_data = load_data
-          loader.load_file(file, input_data, valid_value_lists)
-        }.to raise_rggen_error RgGen::Core::LoadError, "can't convert #{load_data.class} into Hash", file
+          loader.hash_data = data
+          loader.load_data(input_data, valid_value_lists, file)
+        }.to raise_rggen_error RgGen::Core::LoadError, "can't convert #{data.class} into Hash", file
       end
     end
   end
@@ -248,14 +248,14 @@ RSpec.describe RgGen::Core::RegisterMap::HashLoader do
 
     it 'LoadErrorを起こす' do
       invalid_data.each do |data|
-        loader.load_data = { register_blocks: [data] }
+        loader.hash_data = { register_blocks: [data] }
         expect {
-          loader.load_file(file, input_data, valid_value_lists)
+          loader.load_data(input_data, valid_value_lists, file)
         }.to raise_rggen_error RgGen::Core::LoadError, "can't convert #{data.class} into Hash", file
 
-        loader.load_data = [register_block: [data]]
+        loader.hash_data = [register_block: [data]]
         expect {
-          loader.load_file(file, input_data, valid_value_lists)
+          loader.load_data(input_data, valid_value_lists, file)
         }.to raise_rggen_error RgGen::Core::LoadError, "can't convert #{data.class} into Hash", file
       end
     end
@@ -268,24 +268,24 @@ RSpec.describe RgGen::Core::RegisterMap::HashLoader do
 
     it 'LoadErrorを起こす' do
       invalid_data.each do |data|
-        loader.load_data = { register_blocks: [register_files: [data]] }
+        loader.hash_data = { register_blocks: [register_files: [data]] }
         expect {
-          loader.load_file(file, input_data, valid_value_lists)
+          loader.load_data(input_data, valid_value_lists, file)
         }.to raise_rggen_error RgGen::Core::LoadError, "can't convert #{data.class} into Hash", file
 
-        loader.load_data = { register_blocks: [register_files: [register_files: [data]]] }
+        loader.hash_data = { register_blocks: [register_files: [register_files: [data]]] }
         expect {
-          loader.load_file(file, input_data, valid_value_lists)
+          loader.load_data(input_data, valid_value_lists, file)
         }.to raise_rggen_error RgGen::Core::LoadError, "can't convert #{data.class} into Hash", file
 
-        loader.load_data = [register_block: [register_file: [data]]]
+        loader.hash_data = [register_block: [register_file: [data]]]
         expect {
-          loader.load_file(file, input_data, valid_value_lists)
+          loader.load_data(input_data, valid_value_lists, file)
         }.to raise_rggen_error RgGen::Core::LoadError, "can't convert #{data.class} into Hash", file
 
-        loader.load_data = [register_block: [register_file: [register_file: [data]]]]
+        loader.hash_data = [register_block: [register_file: [register_file: [data]]]]
         expect {
-          loader.load_file(file, input_data, valid_value_lists)
+          loader.load_data(input_data, valid_value_lists, file)
         }.to raise_rggen_error RgGen::Core::LoadError, "can't convert #{data.class} into Hash", file
       end
     end
@@ -298,24 +298,24 @@ RSpec.describe RgGen::Core::RegisterMap::HashLoader do
 
     it 'LoadErrorを起こす' do
       invalid_data.each do |data|
-        loader.load_data = { register_blocks: [registers: [data]] }
+        loader.hash_data = { register_blocks: [registers: [data]] }
         expect {
-          loader.load_file(file, input_data, valid_value_lists)
+          loader.load_data(input_data, valid_value_lists, file)
         }.to raise_rggen_error RgGen::Core::LoadError, "can't convert #{data.class} into Hash", file
 
-        loader.load_data = { register_blocks: [register_files: [registers: [data]]] }
+        loader.hash_data = { register_blocks: [register_files: [registers: [data]]] }
         expect {
-          loader.load_file(file, input_data, valid_value_lists)
+          loader.load_data(input_data, valid_value_lists, file)
         }.to raise_rggen_error RgGen::Core::LoadError, "can't convert #{data.class} into Hash", file
 
-        loader.load_data = [register_block: [register: [data]]]
+        loader.hash_data = [register_block: [register: [data]]]
         expect {
-          loader.load_file(file, input_data, valid_value_lists)
+          loader.load_data(input_data, valid_value_lists, file)
         }.to raise_rggen_error RgGen::Core::LoadError, "can't convert #{data.class} into Hash", file
 
-        loader.load_data = [register_block: [register_file: [register: [data]]]]
+        loader.hash_data = [register_block: [register_file: [register: [data]]]]
         expect {
-          loader.load_file(file, input_data, valid_value_lists)
+          loader.load_data(input_data, valid_value_lists, file)
         }.to raise_rggen_error RgGen::Core::LoadError, "can't convert #{data.class} into Hash", file
       end
     end
@@ -328,14 +328,14 @@ RSpec.describe RgGen::Core::RegisterMap::HashLoader do
 
     it 'LoadErrorを起こす' do
       invalid_data.each do |data|
-        loader.load_data = { register_blocks: [registers: [bit_fields: [data]]] }
+        loader.hash_data = { register_blocks: [registers: [bit_fields: [data]]] }
         expect {
-          loader.load_file(file, input_data, valid_value_lists)
+          loader.load_data(input_data, valid_value_lists, file)
         }.to raise_rggen_error RgGen::Core::LoadError, "can't convert #{data.class} into Hash", file
 
-        loader.load_data = [register_block: [register: [bit_field: [data]]]]
+        loader.hash_data = [register_block: [register: [bit_field: [data]]]]
         expect {
-          loader.load_file(file, input_data, valid_value_lists)
+          loader.load_data(input_data, valid_value_lists, file)
         }.to raise_rggen_error RgGen::Core::LoadError, "can't convert #{data.class} into Hash", file
       end
     end

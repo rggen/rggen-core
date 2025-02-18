@@ -96,7 +96,7 @@ RSpec.describe RgGen::Core::RegisterMap::YAMLLoader do
     end
 
     it '入力したYAMLファイルを元に、入力データを組み立てる' do
-      loader.load_file(file, input_data, valid_value_lists)
+      loader.load_data(input_data, valid_value_lists, file)
       expect(register_blocks).to match [
         have_value(:foo, 'foo_0'), have_value(:foo, 'foo_1')
       ]

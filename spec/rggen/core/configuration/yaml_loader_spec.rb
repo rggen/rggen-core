@@ -53,7 +53,7 @@ RSpec.describe RgGen::Core::Configuration::YAMLLoader do
     end
 
     it '入力ファイルを元に、入力データを組み立てる' do
-      loader.load_file(file, input_data, valid_value_lists)
+      loader.load_data(input_data, valid_value_lists, file)
       expect(input_data).to have_values(
         [:foo, 0, position(1, 6)],
         [:bar, 1, position(2, 6)],

@@ -10,9 +10,9 @@ RSpec.describe RgGen::Core::Configuration::HashLoader do
   let(:loader) do
     loader_class = Class.new(RgGen::Core::Configuration::Loader) do
       include RgGen::Core::Configuration::HashLoader
-      attr_accessor :load_data
+      attr_accessor :hash_data
       def read_file(_file)
-        load_data
+        hash_data
       end
     end
     loader_class.new([], {})
@@ -25,11 +25,11 @@ RSpec.describe RgGen::Core::Configuration::HashLoader do
   end
 
   context '#read_dataがHashを返す場合' do
-    let(:load_data) { { foo: 0, bar: 1 } }
+    let(:hash_data) { { foo: 0, bar: 1 } }
 
     before do
-      loader.load_data = load_data
-      loader.load_file(file, input_data, valid_value_lists)
+      loader.hash_data = hash_data
+      loader.load_data(input_data, valid_value_lists, file)
     end
 
     it '読み出したHashを使って、入力データを組み立てる' do
@@ -41,8 +41,8 @@ RSpec.describe RgGen::Core::Configuration::HashLoader do
 
   context '#read_dataがnilを返す場合' do
     before do
-      loader.load_data = nil
-      loader.load_file(file, input_data, valid_value_lists)
+      loader.hash_data = nil
+      loader.load_data(input_data, valid_value_lists, file)
     end
 
     it '空のHashとして、入力データを組み立てる' do
@@ -54,8 +54,8 @@ RSpec.describe RgGen::Core::Configuration::HashLoader do
 
   context '#read_dataが空の配列を返す場合' do
     before do
-      loader.load_data = []
-      loader.load_file(file, input_data, valid_value_lists)
+      loader.hash_data = []
+      loader.load_data(input_data, valid_value_lists, file)
     end
 
     it '空のHashとして、入力データを組み立てる' do
@@ -73,8 +73,8 @@ RSpec.describe RgGen::Core::Configuration::HashLoader do
     it 'LoadErrorを起こす' do
       invalid_load_data.each do |load_data|
         expect {
-          loader.load_data = load_data
-          loader.load_file(file, input_data, valid_value_lists)
+          loader.hash_data = load_data
+          loader.load_data(input_data, valid_value_lists, file)
         }.to raise_rggen_error RgGen::Core::LoadError, "can't convert #{load_data.class} into Hash", file
       end
     end
