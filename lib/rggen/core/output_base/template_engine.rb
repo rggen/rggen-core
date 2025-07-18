@@ -17,8 +17,8 @@ module RgGen
         private
 
         def template(path)
-          @templates ||= {}
-          (@templates[path] ||= parse_template(path))
+          @templates ||= Hash.new { |h, k| h[k] = parse_template(k) }
+          @templates[path]
         end
       end
     end
