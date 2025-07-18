@@ -143,8 +143,8 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
 
     before do
       allow(ENV).to receive(:key?).with('RGGEN_NO_DEFAULT_PLUGINS').and_return(false)
+      allow(ENV).to receive(:key?).with('RGGEN_PLUGINS').and_return(false)
       allow(ENV).to receive(:[]).and_call_original
-      allow(ENV).to receive(:[]).with('RGGEN_PLUGINS').and_return(nil)
     end
 
     before do
@@ -216,6 +216,7 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
         setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo')
         setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar/baz')
 
+        allow(ENV).to receive(:key?).with('RGGEN_PLUGINS').and_return(true)
         allow(ENV).to receive(:[]).with('RGGEN_PLUGINS').and_return(plugins.join(':'))
         plugin_manager.load_plugins(['rggen-foo', ['rggen-foo-bar/baz', '0.2.0']], true)
       end

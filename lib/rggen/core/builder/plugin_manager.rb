@@ -167,10 +167,12 @@ module RgGen
         end
 
         def plugins_from_env
+          return unless ENV.key?('RGGEN_PLUGINS')
+
           ENV['RGGEN_PLUGINS']
-            &.split(':')
-            &.reject(&:blank?)
-            &.map { |entry| entry.split(',', 2) }
+            .split(':')
+            .reject(&:blank?)
+            .map { |entry| entry.split(',', 2) }
         end
 
         def do_normal_activation

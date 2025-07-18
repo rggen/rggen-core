@@ -141,8 +141,10 @@ module RgGen
         end
 
         def list_feature?(list_name, feature_name)
-          @feature_entries[list_name]&.match_entry_type?(:list) &&
-            @feature_entries[list_name]&.feature?(feature_name) || false
+          entry = @feature_entries[list_name]
+          return false unless entry
+
+          entry.match_entry_type?(:list) && entry.feature?(feature_name)
         end
       end
     end
