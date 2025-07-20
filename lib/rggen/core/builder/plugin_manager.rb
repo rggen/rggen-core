@@ -137,9 +137,12 @@ module RgGen
         end
 
         def find_gemspec_by_name(name, version)
-          Gem::Specification
-            .find_all_by_name(name, version)
-            .find { |s| !s.has_conflicts? }
+          specs = Gem::Specification.find_all_by_name(name, version)
+
+          spec = specs.find(&:activated?)
+          return spec if spec
+
+          specs.find { |spec| !spec.has_conflicts? }
         end
 
         def find_gemspec_by_path(path)

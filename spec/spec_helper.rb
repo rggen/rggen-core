@@ -15,3 +15,5 @@ end
 require 'rggen/core'
 
 RGGEN_CORE_ROOT = File.expand_path('..', __dir__)
+
+Bundler.reset!

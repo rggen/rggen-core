@@ -16,9 +16,3 @@ end
 for_ci do
   gem_bundled 'racc'
 end
-
-group :test do
-  ['rggen', 'rggen-foo', 'rggen-foo-bar']
-    .map { |plugin| [plugin, File.join(__dir__, 'spec', 'dummy_plugins', plugin)] }
-    .each { |(plugin, path)| gem plugin, path: }
-end
