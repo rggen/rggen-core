@@ -113,6 +113,7 @@ RSpec.describe RgGen::Core::CLI do
   before do
     allow(ENV).to receive(:key?).with('RGGEN_NO_DEFAULT_PLUGINS').and_return(true)
     allow(ENV).to receive(:key?).with('RGGEN_PLUGINS').and_return(false)
+    allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with('RGGEN_DEFAULT_CONFIGURATION_FILE').and_return(nil)
   end
 

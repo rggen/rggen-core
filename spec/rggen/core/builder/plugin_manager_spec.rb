@@ -6,7 +6,7 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     Dir
       .glob(File.join('**', setup_file), base: base)
       .map { |path| File.join(base, path) }
-      .first
+      .last
   end
 
   def setup_plugin_expectation(**args)
@@ -19,6 +19,29 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     if path
       expect(plugin_manager).to receive(:require).with(path)
     end
+
+    if !args.key?(:clear_loaded_spec) || args[:clear_loaded_spec]
+      @dummy_plugins.each do |spec|
+        spec.name == plugin &&
+          spec.instance_variable_set(:@activated, false)
+      end
+      Gem.loaded_specs.delete(plugin)
+    end
+  end
+
+  before(:all) do
+    @gem_path = Gem.path
+    dummy_plugins_path = File.join(RGGEN_CORE_ROOT, 'spec', 'dummy_plugins')
+    Gem.paths = { 'GEM_PATH' => dummy_plugins_path }
+
+    @dummy_plugins = []
+    @dummy_plugins.concat(Gem::Specification.find_all_by_name('rggen-foo'))
+    @dummy_plugins.concat(Gem::Specification.find_all_by_name('rggen-foo-bar'))
+    @dummy_plugins.concat(Gem::Specification.find_all_by_name('rggen'))
+  end
+
+  after(:all) do
+    Gem.paths = { 'GEM_PATH' => @gem_path.join(Gem.path_separator) }
   end
 
   let(:builder) do
@@ -52,11 +75,11 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
       context 'Gemとして管理されているプラグインのパスが指定された場合' do
         it '当該Gemを有効にし、指定されたプラグインを読み込む' do
           plugin_file = expand_setup_path('rggen/foo.rb')
-          setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: plugin_file)
+          setup_plugin_expectation(plugin: 'rggen-foo', version: '0.3.0', path: plugin_file)
           plugin_manager.load_plugin(plugin_file)
 
           plugin_file = expand_setup_path('rggen/foo/bar/baz.rb')
-          setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: plugin_file)
+          setup_plugin_expectation(plugin: 'rggen-foo', version: '0.3.0', path: plugin_file)
           plugin_manager.load_plugin(plugin_file)
 
           plugin_file = expand_setup_path('rggen/foo_bar.rb')
@@ -71,43 +94,55 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     end
 
     context 'プラグイン名が指定された場合' do
-      it '指定されたプラグイン名からファイル名を推定し、読み込む' do
-        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo')
+      it '指定されたプラグイン名を読み込む' do
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.3.0', path: 'rggen/foo')
         plugin_manager.load_plugin('rggen-foo')
 
-        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.3.0', path: 'rggen/foo')
         plugin_manager.load_plugin(:'rggen-foo')
 
-        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo')
-        plugin_manager.load_plugin('rggen-foo', '0.1.0')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.3.0', path: 'rggen/foo')
+        plugin_manager.load_plugin('rggen-foo', '0.3.0')
 
         setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar')
         plugin_manager.load_plugin('rggen-foo-bar', '0.2.0')
       end
     end
 
+    context '読み込み済みのプラグインが指定された場合' do
+      specify 'エラー無く読み込める' do
+        plugin_manager.load_plugin('rggen-foo', '0.1.0')
+
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo', clear_loaded_spec: false)
+        plugin_manager.load_plugin('rggen-foo')
+
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo', clear_loaded_spec: false)
+        plugin_manager.load_plugin('rggen-foo', '0.1.0')
+      end
+    end
+
     context 'プラグイン名と下位ディレクトリが指定された場合' do
-      it '指定されたプラグイン名と下位ディレクトリからファイル名を推定し、読み込む' do
-        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo/bar')
+      it '指定されたプラグイン名と下位ディレクトリからファイル名を推定し読み込む' do
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.3.0', path: 'rggen/foo/bar')
         plugin_manager.load_plugin('rggen-foo/bar')
 
         setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar/baz')
         plugin_manager.load_plugin('rggen-foo-bar/baz')
 
-        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo/bar/baz')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.3.0', path: 'rggen/foo/bar/baz')
         plugin_manager.load_plugin('rggen-foo/bar/baz')
 
-        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo/bar_baz')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.3.0', path: 'rggen/foo/bar_baz')
         plugin_manager.load_plugin('rggen-foo/bar_baz')
 
-        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo/bar')
-        plugin_manager.load_plugin('rggen-foo/bar', '0.1.0')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.3.0', path: 'rggen/foo/bar')
+        plugin_manager.load_plugin('rggen-foo/bar', '0.3.0')
 
         setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar/baz')
         plugin_manager.load_plugin('rggen-foo-bar/baz', '0.2.0')
 
-        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo/bar/baz')
-        plugin_manager.load_plugin('rggen-foo/bar/baz', '0.1.0')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.3.0', path: 'rggen/foo/bar/baz')
+        plugin_manager.load_plugin('rggen-foo/bar/baz', '0.3.0')
 
         setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar/baz')
         plugin_manager.load_plugin('rggen-foo-bar/baz', '0.2.0')
@@ -132,6 +167,11 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
         expect {
           plugin_manager.load_plugin('rggen-foo', '0.2.0')
         }.to raise_rggen_error RgGen::Core::PluginError, 'cannot load such plugin: rggen-foo (0.2.0)'
+
+        expect {
+          plugin_manager.load_plugin('rggen-foo', '0.1.0')
+          plugin_manager.load_plugin('rggen-foo', '0.3.0')
+        }.to raise_rggen_error RgGen::Core::PluginError, 'cannot load such plugin: rggen-foo (0.3.0)'
       end
     end
   end
@@ -159,7 +199,7 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
 
     it '既定プラグインと引数で指定されたプラグインを読み込む' do
       setup_plugin_expectation(plugin: 'rggen', path: default_plugins, version: RgGen::Core::VERSION)
-      setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo')
+      setup_plugin_expectation(plugin: 'rggen-foo', version: '0.3.0', path: 'rggen/foo')
       setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar/baz')
       plugin_manager.load_plugins(['rggen-foo', ['rggen-foo-bar/baz', '0.2.0']], false)
     end
@@ -174,7 +214,7 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     context 'rggen/defaultが読み込めない場合' do
       it '既定プラグインは読み込まない' do
         expect(plugin_manager).to_not receive(:load_plugin).with(default_plugins)
-        setup_plugin_expectation(plugin: 'rggen-foo', path: 'rggen/foo', version: '0.1.0')
+        setup_plugin_expectation(plugin: 'rggen-foo', path: 'rggen/foo', version: '0.3.0')
         setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar/baz')
 
         allow(Gem::Specification).to receive(:find_all_by_name).and_call_original
@@ -186,7 +226,7 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     context '環境変数RGGEN_NO_DEFAULT_PLUGINSが設定されている場合' do
       it '既定プラグインは読み込まない' do
         expect(plugin_manager).to_not receive(:load_plugin).with(default_plugins)
-        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.3.0', path: 'rggen/foo')
         setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar/baz')
 
         allow(ENV).to receive(:key?).with('RGGEN_NO_DEFAULT_PLUGINS').and_return(true)
@@ -197,7 +237,7 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     context '引数no_default_pluginにtrueが指定された場合' do
       it '既定プラグインは読み込まない' do
         expect(plugin_manager).to_not receive(:load_plugin).with(default_plugins)
-        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.3.0', path: 'rggen/foo')
         setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar/baz')
 
         plugin_manager.load_plugins(['rggen-foo', ['rggen-foo-bar/baz', '0.2.0']], true)
@@ -207,13 +247,13 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     context '環境変数RGGEN_PLUGINSが設定されている場合' do
       it 'RGGEN_PLUGINSで指定されたプラグインも追加で読み込む' do
         plugins = [
-          'rggen-foo/bar,0.1.0',
+          'rggen-foo/bar,0.3.0',
           expand_setup_path('rggen/foo_bar.rb')
         ]
 
-        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo/bar')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.3.0', path: 'rggen/foo/bar')
         setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: plugins[1])
-        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.1.0', path: 'rggen/foo')
+        setup_plugin_expectation(plugin: 'rggen-foo', version: '0.3.0', path: 'rggen/foo')
         setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar/baz')
 
         allow(ENV).to receive(:key?).with('RGGEN_PLUGINS').and_return(true)
@@ -238,7 +278,7 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
 
     before do
       list = plugins
-      plugin_manager.setup_plugin(:foo) { |plugin| list << plugin; plugin.version '0.1.0' }
+      plugin_manager.setup_plugin(:foo) { |plugin| list << plugin; plugin.version '0.3.0' }
       plugin_manager.setup_plugin(:bar) { |plugin| list << plugin; plugin.version '0.2.0' }
     end
 
@@ -261,7 +301,7 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     describe 'バージョン情報の収集' do
       specify '#version_infoでプラグインのバージョン一覧を取得できる' do
         expect(plugin_manager.version_info).to match([
-          'foo 0.1.0',
+          'foo 0.3.0',
           'bar 0.2.0'
         ])
       end
