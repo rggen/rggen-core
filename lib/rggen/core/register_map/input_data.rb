@@ -40,6 +40,7 @@ module RgGen
 
         def initialize(layer, valid_value_list, configuration)
           extend(LAYER_EXTENSIONS[layer])
+
           @configuration = configuration
           super(layer, valid_value_list)
         end

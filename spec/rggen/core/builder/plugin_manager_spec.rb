@@ -11,7 +11,9 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
 
   def setup_plugin_expectation(**args)
     plugin = args[:plugin]
-    version = args.key?(:version) && match_string(args[:version]) || nil
+    version = if args.key?(:version)
+      be_compatible_version(args[:ver])
+    end
     path = args[:path]
     if plugin
       expect(plugin_manager).to receive(:gem).with(plugin, version)
@@ -26,6 +28,13 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
           spec.instance_variable_set(:@activated, false)
       end
       Gem.loaded_specs.delete(plugin)
+    end
+  end
+
+  matcher :be_compatible_version do |expected|
+    match do |actual|
+      Gem::Requirement
+        .create(expected).satisfied_by?(actual)
     end
   end
 
@@ -181,6 +190,10 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
       'rggen/default'
     end
 
+    let(:default_plugins_version) do
+      "~> #{RgGen::Core::MAJOR}.#{RgGen::Core::MINOR}.0"
+    end
+
     before do
       allow(ENV).to receive(:key?).with('RGGEN_NO_DEFAULT_PLUGINS').and_return(false)
       allow(ENV).to receive(:key?).with('RGGEN_PLUGINS').and_return(false)
@@ -198,7 +211,7 @@ RSpec.describe RgGen::Core::Builder::PluginManager do
     end
 
     it '既定プラグインと引数で指定されたプラグインを読み込む' do
-      setup_plugin_expectation(plugin: 'rggen', path: default_plugins, version: RgGen::Core::VERSION)
+      setup_plugin_expectation(plugin: 'rggen', path: default_plugins, version: default_plugins_version)
       setup_plugin_expectation(plugin: 'rggen-foo', version: '0.3.0', path: 'rggen/foo')
       setup_plugin_expectation(plugin: 'rggen-foo-bar', version: '0.2.0', path: 'rggen/foo_bar/baz')
       plugin_manager.load_plugins(['rggen-foo', ['rggen-foo-bar/baz', '0.2.0']], false)
