@@ -2,7 +2,7 @@
 [![CI](https://github.com/rggen/rggen-core/workflows/CI/badge.svg)](https://github.com/rggen/rggen-core/actions?query=workflow%3ACI)
 [![Maintainability](https://qlty.sh/badges/40f53c48-7f4c-4094-9907-2736e69527b3/maintainability.svg)](https://qlty.sh/gh/rggen/projects/rggen-core)
 [![codecov](https://codecov.io/gh/rggen/rggen-core/branch/master/graph/badge.svg)](https://codecov.io/gh/rggen/rggen-core)
-[![Gitter](https://badges.gitter.im/rggen/rggen.svg)](https://gitter.im/rggen/rggen?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Discord](https://img.shields.io/discord/1406572699467124806?style=flat&logo=discord)](https://discord.com/invite/KWya83ZZxr)
 
 # RgGen::Core
 
@@ -38,7 +38,7 @@ Feedbacks, bug reports, questions and etc. are wellcome! You can post them by us
 
 * [GitHub Issue Tracker](https://github.com/rggen/rggen/issues)
 * [GitHub Discussions](https://github.com/rggen/rggen/discussions)
-* [Chat Room](https://gitter.im/rggen/rggen)
+* [Discord](https://discord.com/invite/KWya83ZZxr)
 * [Mailing List](https://groups.google.com/d/forum/rggen)
 * [Mail](mailto:rggen@googlegroups.com)
 
