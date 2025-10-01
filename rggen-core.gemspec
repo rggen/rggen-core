@@ -32,4 +32,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'erubi', '>= 1.7'
   spec.add_dependency 'facets', '>= 3.0'
   spec.add_dependency 'tomlrb', '>= 2.0'
+  spec.add_dependency 'yps', '>= 0.1.0'
 end

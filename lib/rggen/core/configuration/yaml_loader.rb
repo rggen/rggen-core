@@ -8,10 +8,6 @@ module RgGen
         include InputBase::YAMLLoader
 
         support_types [:yaml, :yml]
-
-        def read_file(file)
-          load_yaml(file)
-        end
       end
     end
   end

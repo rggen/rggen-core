@@ -6,9 +6,8 @@ module RgGen
       module JSONLoader
         private
 
-        def load_json(file)
-          json = File.binread(file)
-          JSON.parse(json, symbolize_names: true)
+        def read_file(file)
+          JSON.load_file(file, symbolize_names: true)
         end
       end
     end

@@ -2,11 +2,6 @@
 
 RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
   describe 'ローダーの定義/登録' do
-    def setup_file_access(file_name, load_data)
-      allow(File).to receive(:readable?).with(file_name).and_return(true)
-      allow(File).to receive(:binread).with(file_name).and_return(load_data)
-    end
-
     let(:builder) do
       klass = Class.new do
         attr_reader :feature_registres
@@ -49,7 +44,7 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
       registry.register_loaders :hash_based, [RgGen::Core::Configuration::YAMLLoader, RgGen::Core::Configuration::JSONLoader]
 
       values = [rand(99), rand(99), rand(99), rand(99)]
-      setup_file_access('test.rb', "foo #{values[0]}; bar #{values[1]}; baz #{values[2]}; qux #{values[3]}")
+      mock_file_read('test.rb', "foo #{values[0]}; bar #{values[1]}; baz #{values[2]}; qux #{values[3]}", no_args: true)
       component = registry.build_factory.create(['test.rb'])
       expect(component.foo).to eq values[0]
       expect(component.bar).to eq values[1]
@@ -57,7 +52,7 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
       expect(component.qux).to eq values[3]
 
       values = [rand(99), rand(99), rand(99), rand(99)]
-      setup_file_access('test.yaml', "{foo: #{values[0]}, bar: #{values[1]}, baz: #{values[2]}, qux: #{values[3]}}")
+      mock_file_io('test.yaml', "{foo: #{values[0]}, bar: #{values[1]}, baz: #{values[2]}, qux: #{values[3]}}")
       component = registry.build_factory.create(['test.yaml'])
       expect(component.foo).to eq values[0]
       expect(component.bar).to eq values[1]
@@ -65,7 +60,7 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
       expect(component.qux).to eq values[3]
 
       values = [rand(99), rand(99), rand(99), rand(99)]
-      setup_file_access('test.json', "{\"foo\": #{values[0]}, \"bar\": #{values[1]}, \"baz\": #{values[2]}, \"qux\": #{values[3]}}")
+      mock_file_read('test.json', "{\"foo\": #{values[0]}, \"bar\": #{values[1]}, \"baz\": #{values[2]}, \"qux\": #{values[3]}}")
       component = registry.build_factory.create(['test.json'])
       expect(component.foo).to eq values[0]
       expect(component.bar).to eq values[1]
@@ -83,7 +78,7 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
         end
 
         values = [rand(99), rand(99), rand(99), rand(99)]
-        setup_file_access('test.rb', "foo #{values[0]}; bar #{values[1]}; baz #{values[2]}; qux #{values[3]}")
+        mock_file_read('test.rb', "foo #{values[0]}; bar #{values[1]}; baz #{values[2]}; qux #{values[3]}", no_args: true)
         component = registry.build_factory.create(['test.rb'])
         expect(component.foo).to eq values[0]
         expect(component.bar).to eq values[1]
@@ -91,7 +86,7 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
         expect(component.qux).to eq values[3]
 
         values = [rand(99), rand(99), rand(99), rand(99)]
-        setup_file_access('test.yaml', "{foo: #{values[0]}, bar: #{values[1]}, baz: #{values[2]}, qux: #{values[3]}}")
+        mock_file_io('test.yaml', "{foo: #{values[0]}, bar: #{values[1]}, baz: #{values[2]}, qux: #{values[3]}}")
         component = registry.build_factory.create(['test.yaml'])
         expect(component.foo).to eq values[0]
         expect(component.bar).to eq values[1]
@@ -99,7 +94,7 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
         expect(component.qux).to eq values[3]
 
         values = [rand(99), rand(99), rand(99), rand(99)]
-        setup_file_access('test.json', "{\"foo\": #{values[0]}, \"bar\": #{values[1]}, \"baz\": #{values[2]}, \"qux\": #{values[3]}}")
+        mock_file_read('test.json', "{\"foo\": #{values[0]}, \"bar\": #{values[1]}, \"baz\": #{values[2]}, \"qux\": #{values[3]}}")
         component = registry.build_factory.create(['test.json'])
         expect(component.foo).to eq values[0]
         expect(component.bar).to eq values[1]
@@ -116,7 +111,7 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
         end
 
         values = [rand(99), rand(99), rand(99), rand(99)]
-        setup_file_access('test.yaml', "{foo: #{values[0]}, bar: #{values[1]}, baz: #{values[2]}, qux: #{values[3]}}")
+        mock_file_io('test.yaml', "{foo: #{values[0]}, bar: #{values[1]}, baz: #{values[2]}, qux: #{values[3]}}")
         component = registry.build_factory.create(['test.yaml'])
         expect(component.foo).to be_nil
         expect(component.bar).to be_nil
@@ -133,7 +128,7 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
         end
 
         values = [rand(99), rand(99), rand(99), rand(99)]
-        setup_file_access('test.yaml', "{foo: #{values[0]}, bar: #{values[1]}, baz: #{values[2]}, qux: #{values[3]}}")
+        mock_file_io('test.yaml', "{foo: #{values[0]}, bar: #{values[1]}, baz: #{values[2]}, qux: #{values[3]}}")
         component = registry.build_factory.create(['test.yaml'])
         expect(component.foo).to be_nil
         expect(component.bar).to be_nil
@@ -146,7 +141,7 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
       loader = Class.new(RgGen::Core::Configuration::Loader) do
         support_types [:yaml]
         def read_file(file)
-          YAML.load(File.binread(file))
+          YAML.load_file(file)
         end
       end
 
@@ -162,7 +157,7 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
       end
 
       values = [rand(99), rand(99), rand(99), rand(99)]
-      setup_file_access('test.yaml', "{foo: #{values[0]}, bar: #{values[1]}, baz: #{values[2]}, qux: #{values[3]}}")
+      mock_file_io('test.yaml', "{foo: #{values[0]}, bar: #{values[1]}, baz: #{values[2]}, qux: #{values[3]}}")
       component = registry.build_factory.create(['test.yaml'])
       expect(component.foo).to eq (values[0] * 2)
       expect(component.bar).to eq (values[1] * 3)

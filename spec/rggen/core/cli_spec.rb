@@ -122,10 +122,8 @@ RSpec.describe RgGen::Core::CLI do
   end
 
   before do
-    allow(File).to receive(:readable?).with(register_map_files[0]).and_return(true)
-    allow(File).to receive(:binread).with(register_map_files[0]).and_return(register_map_0)
-    allow(File).to receive(:readable?).with(register_map_files[1]).and_return(true)
-    allow(File).to receive(:binread).with(register_map_files[1]).and_return(register_map_1)
+    mock_file_read(register_map_files[0], register_map_0, no_args: true)
+    mock_file_read(register_map_files[1], register_map_1, no_args: true)
   end
 
   before do
@@ -272,8 +270,7 @@ RSpec.describe RgGen::Core::CLI do
 
     context 'コンフィグレーションファイルが指定された場合' do
       before do
-        allow(File).to receive(:readable?).with(configuration_file).and_return(true)
-        allow(File).to receive(:binread).with(configuration_file).and_return(configuration)
+        mock_file_read(configuration_file, configuration, no_args: true)
       end
 
       it 'コンフィグレーションの生成と、コンフィグレーションファイルの読み込みを行う' do

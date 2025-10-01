@@ -115,8 +115,7 @@ RSpec.describe RgGen::Core::RegisterMap::JSONLoader do
     end
 
     before do
-      allow(File).to receive(:readable?).and_return(true)
-      allow(File).to receive(:binread).and_return(file_content)
+      mock_file_read(file, file_content)
     end
 
     it '入力したJSONファイルを元に、入力データを組み立てる' do

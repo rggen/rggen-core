@@ -44,12 +44,11 @@ RSpec.describe RgGen::Core::Configuration::YAMLLoader do
     end
 
     before do
-      allow(File).to receive(:readable?).and_return(true)
-      allow(File).to receive(:binread).and_return(file_content)
+      mock_file_io(file, file_content)
     end
 
     def position(line, column)
-      RgGen::Core::InputBase::YAMLLoader::Position.new(file, line, column)
+      YPS::Position.new(file, line, column)
     end
 
     it '入力ファイルを元に、入力データを組み立てる' do

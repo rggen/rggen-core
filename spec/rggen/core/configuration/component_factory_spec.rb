@@ -42,9 +42,7 @@ RSpec.describe RgGen::Core::Configuration::ComponentFactory do
       it '入力ファイルの内容でコンフィグレーションコンポーネントの生成を行う' do
         feature_values = { foo: rand(99), bar: rand(99), baz: rand(99) }
         file = 'foo.json'
-
-        allow(File).to receive(:readable?).with(file).and_return(true)
-        allow(File).to receive(:binread).with(file).and_return(JSON.dump(feature_values))
+        mock_file_read(file, JSON.dump(feature_values))
 
         configuration = factory.create([file])
         expect(configuration).to have_attributes(feature_values)

@@ -91,8 +91,7 @@ RSpec.describe RgGen::Core::RegisterMap::YAMLLoader do
     end
 
     before do
-      allow(File).to receive(:readable?).and_return(true)
-      allow(File).to receive(:binread).and_return(file_content)
+      mock_file_io(file, file_content)
     end
 
     it '入力したYAMLファイルを元に、入力データを組み立てる' do

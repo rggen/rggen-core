@@ -139,8 +139,7 @@ RSpec.describe RgGen::Core::RegisterMap::ComponentFactory do
 
     def setup_read_data(data)
       json = JSON.dump(data)
-      allow(File).to receive(:readable?).with(file).and_return(true)
-      allow(File).to receive(:binread).with(file).and_return(json)
+      mock_file_read(file, json)
     end
 
     describe '#コンポーネントの生成' do
@@ -455,8 +454,7 @@ RSpec.describe RgGen::Core::RegisterMap::ComponentFactory do
       allow(configuration).to receive(:foo_3).and_return(3)
 
       file = 'foo.rb'
-      allow(File).to receive(:readable?).with(file).and_return(true)
-      allow(File).to receive(:binread).with(file).and_return(<<~'RUBY')
+      mock_file_read(file, <<~'RUBY', no_args: true)
         register_block do
           foo configuration.foo_0
           register_file do

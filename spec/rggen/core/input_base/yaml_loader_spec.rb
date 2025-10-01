@@ -7,10 +7,6 @@ RSpec.describe RgGen::Core::InputBase::YAMLLoader do
         include RgGen::Core::InputBase::YAMLLoader
         support_types [:yaml]
 
-        def read_file(file)
-          load_yaml(file)
-        end
-
         def format_layer_data(read_data, _layer, _file)
           Hash(read_data)
         end
@@ -45,12 +41,11 @@ RSpec.describe RgGen::Core::InputBase::YAMLLoader do
     end
 
     before do
-      allow(File).to receive(:readable?).and_return(true)
-      allow(File).to receive(:binread).and_return(file_content)
+      mock_file_io(file, file_content)
     end
 
     def position(line, column)
-      RgGen::Core::InputBase::YAMLLoader::Position.new(file, line, column)
+      YPS::Position.new(file, line, column)
     end
 
     specify '読みだした値は位置情報を持つ' do

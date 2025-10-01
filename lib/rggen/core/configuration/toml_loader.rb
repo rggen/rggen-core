@@ -8,10 +8,6 @@ module RgGen
         include InputBase::TOMLLoader
 
         support_types [:toml]
-
-        def read_file(file)
-          load_toml(file)
-        end
       end
     end
   end
