@@ -763,6 +763,14 @@ RSpec.describe RgGen::Core::Builder::Builder do
       }[configuration_file_format]
     end
 
+    def mock_configuration_read
+      case configuration_file_format
+      when :yaml then mock_file_io(configuration_file, configuration_file_content)
+      when :json then mock_file_read(configuration_file, configuration_file_content)
+      when :ruby then mock_file_read(configuration_file, configuration_file_content, no_args: true)
+      end
+    end
+
     let(:register_map_file_format) do
       [:yaml, :json, :ruby].sample
     end
@@ -840,6 +848,14 @@ RSpec.describe RgGen::Core::Builder::Builder do
       }[register_map_file_format]
     end
 
+    def mock_register_map_read
+      case register_map_file_format
+      when :yaml then mock_file_io(register_map_file, register_map_file_content)
+      when :json then mock_file_read(register_map_file, register_map_file_content)
+      when :ruby then mock_file_read(register_map_file, register_map_file_content, no_args: true)
+      end
+    end
+
     it 'Configuration/RegisterMapコンポーネントが登録される' do
       builder.register_input_components
 
@@ -861,15 +877,13 @@ RSpec.describe RgGen::Core::Builder::Builder do
         builder.enable(layer, :name)
       end
 
-      allow(File).to receive(:readable?).with(configuration_file).and_return(true)
-      allow(File).to receive(:binread).with(configuration_file).and_return(configuration_file_content)
+      mock_configuration_read
       factory = builder.build_factory(:input, :configuration)
 
       configuration = factory.create([configuration_file])
       expect(configuration.prefix).to eq 'foo'
 
-      allow(File).to receive(:readable?).with(register_map_file).and_return(true)
-      allow(File).to receive(:binread).with(register_map_file).and_return(register_map_file_content)
+      mock_register_map_read
       factory = builder.build_factory(:input, :register_map)
 
       register_map = factory.create(configuration, [register_map_file])

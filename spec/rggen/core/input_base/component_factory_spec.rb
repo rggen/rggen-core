@@ -187,9 +187,8 @@ RSpec.describe RgGen::Core::InputBase::ComponentFactory do
       end
 
       before do
-        allow(File).to receive(:readable?).and_return(true)
-        allow(File).to receive(:binread).with(input_files[0]).and_return(foo_load_data)
-        allow(File).to receive(:binread).with(input_files[1]).and_return(bar_load_data)
+        mock_file_read(input_files[0], foo_load_data, no_args: true)
+        mock_file_read(input_files[1], bar_load_data, no_args: true)
       end
 
       it '自身及び配下のコンポーネントの能動フィーチャー一覧を引数として、入力データを生成する' do

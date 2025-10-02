@@ -230,8 +230,8 @@ RSpec.describe RgGen::Core::InputBase::InputData do
     let(:position_bar_1) { bar_data[:bar_1].position }
 
     before do
-      allow(File).to receive(:binread).with('foo.rb').once.and_return(foo_rb)
-      allow(File).to receive(:binread).with('bar.rb').once.and_return(bar_rb)
+      mock_file_read('foo.rb', foo_rb, no_args: true, mock_readable: false)
+      mock_file_read('bar.rb', bar_rb, no_args: true, mock_readable: false)
     end
 
     before do

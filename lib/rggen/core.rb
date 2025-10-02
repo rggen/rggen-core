@@ -8,10 +8,9 @@ require 'forwardable'
 require 'optparse'
 require 'pathname'
 require 'singleton'
-
-autoload :JSON, 'json'
-autoload :Psych, 'yaml'
-autoload :Tomlrb, 'tomlrb'
+require 'json'
+require 'tomlrb'
+require 'yps'
 
 require_relative 'core/version'
 

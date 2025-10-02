@@ -48,7 +48,7 @@ module RgGen
         end
 
         def load_file(file)
-          build_by_block { instance_eval(File.binread(file), file, 1) }
+          build_by_block { instance_eval(File.read(file), file, 1) }
         end
 
         private

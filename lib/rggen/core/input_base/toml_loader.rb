@@ -6,9 +6,8 @@ module RgGen
       module TOMLLoader
         private
 
-        def load_toml(file)
-          toml = File.binread(file)
-          Tomlrb.parse(toml, symbolize_keys: true)
+        def read_file(file)
+          Tomlrb.load_file(file, symbolize_keys: true)
         end
       end
     end

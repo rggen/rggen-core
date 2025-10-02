@@ -8,10 +8,6 @@ module RgGen
         include InputBase::JSONLoader
 
         support_types [:json]
-
-        def read_file(file)
-          load_json(file)
-        end
       end
     end
   end
