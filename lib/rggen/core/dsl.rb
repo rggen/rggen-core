@@ -25,6 +25,7 @@ module RgGen
         :define_value_extractor,
         :enable,
         :enable_all,
+        :disable_all,
         :delete,
         :setup_plugin,
         :update_plugin

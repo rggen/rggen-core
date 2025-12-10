@@ -584,16 +584,50 @@ RSpec.describe RgGen::Core::Builder::Builder do
     end
   end
 
-  describe '#enable_all' do
+  describe '#enable_all/#disable_all' do
     before do
       default_component_registration
     end
 
-    it '全フィーチャーを有効化する' do
+    it '全フィーチャーを有効化/無効化する' do
       layers.each_value do |layer|
         expect(layer).to receive(:enable_all).with(no_args).and_call_original
       end
       builder.enable_all
+
+      layers.each_value do |layer|
+        expect(layer).to receive(:disable_all).with(no_args).and_call_original
+      end
+      builder.disable_all
+    end
+  end
+
+  describe '#disable_unused_output_features' do
+    before do
+      default_component_registration
+    end
+
+    it '使用しない生成器に所属する全てのフィーチャーを無効化する' do
+      used_writers = [:foo, :bar, :baz].sample([1, 2, 3].sample)
+      component_registries.each do |name, registry|
+        if [:configuration, :register_map, *used_writers].include?(name)
+          expect(registry).not_to receive(:disable_all_features)
+        else
+          expect(registry).to receive(:disable_all_features).with(no_args).and_call_original
+        end
+      end
+
+      builder.disable_unused_output_features(used_writers)
+    end
+
+    context '使用する生成器が未使用の場合' do
+      specify 'フィーチャーの無効化は行わない' do
+        component_registries.each do |name, registry|
+          expect(registry).not_to receive(:disable_all_features)
+        end
+
+        builder.disable_unused_output_features([])
+      end
     end
   end
 

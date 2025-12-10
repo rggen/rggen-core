@@ -143,6 +143,10 @@ module RgGen
           @feature_registries.each_value(&:enable_all)
         end
 
+        def disable_all
+          @feature_registries.each_value(&:disable_all)
+        end
+
         def delete(...)
           @feature_registries.each_value do |registry|
             registry.delete(...)

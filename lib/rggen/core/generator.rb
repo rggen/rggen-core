@@ -17,6 +17,8 @@ module RgGen
 
       def load_plugins(builder, options)
         builder.load_plugins(options[:plugins], options[:no_default_plugins])
+        builder.enable_all
+        builder.disable_unused_output_features(options[:enable])
       end
 
       def load_configuration(builder, file)

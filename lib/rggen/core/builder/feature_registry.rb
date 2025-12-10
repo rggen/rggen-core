@@ -44,16 +44,26 @@ module RgGen
         end
 
         def enable(list_name = nil, feature_names)
-          if list_name
-            (@enabled_features[list_name] ||= []).merge!(Array(feature_names))
-          else
-            Array(feature_names).each do |name|
-              @enabled_features.key?(name) || (@enabled_features[name] = nil)
+          Array(list_name || feature_names)
+            .each { |name| @enabled_features[name] ||= [] }
+
+          return unless list_name
+
+          @enabled_features[list_name].merge!(Array(feature_names))
+        end
+
+        def enable_all
+          disable_all
+          @feature_entries.each do |name, entry|
+            if entry.match_entry_type?(:list)
+              enable(name, entry.features)
+            else
+              enable(name)
             end
           end
         end
 
-        def enable_all
+        def disable_all
           @enabled_features.clear
         end
 
@@ -67,6 +77,7 @@ module RgGen
 
         def delete_all
           @feature_entries.clear
+          @enabled_features.clear
         end
 
         def feature?(list_name = nil, feature_name)
@@ -78,19 +89,16 @@ module RgGen
         end
 
         def enabled_features(list_name = nil)
-          if list_name
-            enabled_list_features(list_name)
-          else
-            @enabled_features.empty? && @feature_entries.keys ||
-              @enabled_features.keys & @feature_entries.keys
+          if !list_name
+            @enabled_features.keys.select { |name| feature?(name) }
+          elsif enabled_list?(list_name)
+            @enabled_features[list_name] & @feature_entries[list_name].features
           end
         end
 
         def build_factories
-          target_features =
-            (@enabled_features.empty? && @feature_entries || @enabled_features).keys
           @feature_entries
-            .slice(*target_features)
+            .slice(*@enabled_features.keys)
             .transform_values(&method(:build_factory))
         end
 
@@ -118,26 +126,9 @@ module RgGen
 
         def list_item_entry(list_name)
           entry = @feature_entries[list_name]
-          entry&.match_entry_type?(:list) ||
-            (raise BuilderError.new("unknown feature: #{list_name}"))
-          entry
-        end
+          return entry if entry&.match_entry_type?(:list)
 
-        def enabled_list_features(list_name)
-          return [] unless enabled_list?(list_name)
-          features = @feature_entries[list_name].features
-          (@enabled_features[list_name] || features) & features
-        end
-
-        def enabled_list?(list_name)
-          return false unless @feature_entries[list_name]&.match_entry_type?(:list)
-          return true if @enabled_features.empty?
-          return true if @enabled_features.key?(list_name)
-          false
-        end
-
-        def build_factory(entry)
-          entry.build_factory(@enabled_features[entry.name])
+          raise BuilderError.new("unknown feature: #{list_name}")
         end
 
         def list_feature?(list_name, feature_name)
@@ -145,6 +136,14 @@ module RgGen
           return false unless entry
 
           entry.match_entry_type?(:list) && entry.feature?(feature_name)
+        end
+
+        def enabled_list?(name)
+          @feature_entries[name]&.match_entry_type?(:list) && @enabled_features.key?(name)
+        end
+
+        def build_factory(entry)
+          entry.build_factory(@enabled_features[entry.name])
         end
       end
     end

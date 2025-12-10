@@ -410,6 +410,12 @@ RSpec.describe RgGen::Core::Builder::Layer do
       expect(buzz_feature_registry).to receive(:enable_all).and_call_original
       layer.enable_all
     end
+
+    specify '#disable_allで定義した全フィーチャーを無効化する' do
+      expect(fizz_feature_registry).to receive(:disable_all).and_call_original
+      expect(buzz_feature_registry).to receive(:disable_all).and_call_original
+      layer.disable_all
+    end
   end
 
   describe '定義済みフィーチャーの削除' do

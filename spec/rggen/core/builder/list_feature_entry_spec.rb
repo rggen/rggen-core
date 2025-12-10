@@ -55,7 +55,7 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
         define_feature(:foo, nil, [proc { def m = 'foo!' }])
         feature(:bar, nil, [proc { def m = 'bar!' }])
       end
-      factory = entry.build_factory(nil)
+      factory = entry.build_factory(entry.features)
 
       feature = factory.create(component, :foo)
       expect(feature.m).to eq 'foo!'
@@ -71,7 +71,7 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
           define_feature(:foo, nil, [proc { def m = 'foo!' }])
           modify_feature(:foo, [proc { def m = 'foo!!' }])
         end
-        factory = entry.build_factory(nil)
+        factory = entry.build_factory(entry.features)
 
         feature = factory.create(component, :foo)
         expect(feature.m).to eq 'foo!!'
@@ -96,7 +96,7 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
           define_feature(:foo, nil, [proc { def fizz = 'fizz' }])
           define_feature(:foo, nil, [proc { def buzz = 'buzz' }])
         end
-        factory = entry.build_factory(nil)
+        factory = entry.build_factory(entry.features)
 
         feature = factory.create(component, :foo)
         expect(feature.buzz).to eq 'buzz'
@@ -104,54 +104,39 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
       end
     end
 
-    context 'ファクトリ生成時にフィーチャーの指定がない場合' do
-      specify '定義したフィーチャーすべてを生成できる' do
-        exception = Class.new(StandardError)
+    specify 'ファクトリ生成時に指定したフィーチャーを生成できる' do
+      exception = Class.new(StandardError)
 
-        entry = create_entry do
-          define_factory do
-            define_method(:target_feature_key) do |key|
-              (@target_features.key?(key) && key) || (raise exception)
-            end
+      entry = create_entry do
+        define_factory do
+          define_method(:target_feature_key) do |key|
+            (@target_features.key?(key) && key) || (raise exception)
           end
-          define_feature(:foo, nil, [])
-          define_feature(:bar, nil, [])
-          define_feature(:baz, nil, [])
         end
-
-        factory = entry.build_factory(nil)
-        expect {
-          factory.create(component, :foo)
-          factory.create(component, :bar)
-          factory.create(component, :baz)
-        }.not_to raise_error
+        define_feature(:foo, nil, [])
+        define_feature(:bar, nil, [])
+        define_feature(:baz, nil, [])
       end
-    end
 
-    context 'ファクトリ生成時にフィーチャーの指定がある場合' do
-      specify 'ファクトリ生成時に指定したフィーチャーを生成できる' do
-        exception = Class.new(StandardError)
+      factory = entry.build_factory([:foo, :bar])
+      expect {
+        factory.create(component, :foo)
+        factory.create(component, :bar)
+      }.not_to raise_error
+      expect {
+        factory.create(component, :baz)
+      }.to raise_error exception
 
-        entry = create_entry do
-          define_factory do
-            define_method(:target_feature_key) do |key|
-              (@target_features.key?(key) && key) || (raise exception)
-            end
-          end
-          define_feature(:foo, nil, [])
-          define_feature(:bar, nil, [])
-          define_feature(:baz, nil, [])
-        end
-
-        factory = entry.build_factory([:foo, :bar])
-        expect {
-          factory.create(component, :foo)
-          factory.create(component, :bar)
-        }.not_to raise_error
-        expect {
-          factory.create(component, :baz)
-        }.to raise_error exception
-      end
+      factory = entry.build_factory([])
+      expect {
+        factory.create(component, :foo)
+      }.to raise_error exception
+      expect {
+        factory.create(component, :bar)
+      }.to raise_error exception
+      expect {
+        factory.create(component, :baz)
+      }.to raise_error exception
     end
 
     describe '既定フィーチャーの定義' do
@@ -221,7 +206,7 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
           entry.delete(:foo)
           entry.delete([:bar, :baz])
 
-          factory = entry.build_factory(nil)
+          factory = entry.build_factory(entry.features)
           [:foo, :bar, :baz, :qux].each do |feature_name|
             entry = factory.create(component, feature_name)
             if feature_name == :qux
@@ -280,7 +265,7 @@ RSpec.describe RgGen::Core::Builder::ListFeatureEntry do
           define_feature(:bar, shared_contexts[:bar], [])
         end
 
-        factory = entry.build_factory(nil)
+        factory = entry.build_factory(entry.features)
         features = {}
         features[:foo] = factory.create(component, :foo)
         features[:bar] = factory.create(component, :bar)

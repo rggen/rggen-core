@@ -24,6 +24,10 @@ module RgGen
           build_factories.first.tap(&:root_factory)
         end
 
+        def disable_all_features
+          @entries.each { |entry| entry.feature_registry&.disable_all }
+        end
+
         private
 
         def create_new_entry(layer, &)

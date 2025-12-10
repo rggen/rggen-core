@@ -77,7 +77,7 @@ module RgGen
         end
 
         def target_features(targets)
-          targets && @features.slice(*targets) || @features
+          @features.slice(*targets)
         end
 
         def target_feature
