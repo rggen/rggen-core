@@ -24,7 +24,7 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
     proc { define_method(method_name) { value } }
   end
 
-  describe 'build_factories/#enable/#enable_all' do
+  describe 'build_factories/#enable/#enable_all/disable_all' do
     before do
       [:foo_0, :foo_1, :foo_2].each do |feature|
         registry.define_feature(feature, nil, [
@@ -45,84 +45,73 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
       end
     end
 
-    context '#enableで対象フィーチャーの指定がない場合' do
-      it '定義したフィーチャーすべてのファクトリを生成する' do
+    describe '規定動作' do
+      specify '追加されたフィーチャーはすべて無効化されている' do
         factories = registry.build_factories
-        expect(factories.keys).to match([:foo_0, :foo_1, :foo_2, :bar_0, :bar_1, :bar_2, :baz_0])
-
-        expect(factories[:foo_0].create(component).m).to eq :foo_0
-        expect(factories[:foo_1].create(component).m).to eq :foo_1
-        expect(factories[:foo_2].create(component).m).to eq :foo_2
-        expect(factories[:bar_0].create(component).m).to eq :bar_0
-        expect(factories[:bar_1].create(component).m).to eq :bar_1
-        expect(factories[:bar_2].create(component).m).to eq :bar_2
-        expect(factories[:baz_0].create(component, :baz_0_0).m).to eq :baz_0_0
-        expect(factories[:baz_0].create(component, :baz_0_1).m).to eq :baz_0_1
-        expect(factories[:baz_0].create(component, :baz_0_2).m).to eq :baz_0_2
-        expect(factories[:baz_0].create(component, :baz_0_3).m).to eq :baz_0_3
+        expect(factories).to be_empty
       end
     end
 
-    context '#enableで対象フィーチャーの指定がある場合' do
-      it '指定したフィーチャーのファクトリを生成する' do
-        registry.enable(:baz_0)
-        factories = registry.build_factories
-        expect(factories.keys).to match([:baz_0])
-        expect(factories[:baz_0].create(component, :baz_0_0).m).to eq :baz_0_0
-        expect(factories[:baz_0].create(component, :baz_0_1).m).to eq :baz_0_1
-        expect(factories[:baz_0].create(component, :baz_0_2).m).to eq :baz_0_2
-        expect(factories[:baz_0].create(component, :baz_0_3).m).to eq :baz_0_3
+    specify '#disable_allですべてのフィーチャーが無効化される' do
+      registry.disable_all
 
-        registry.enable([:bar_2, :foo_0])
-        factories = registry.build_factories
-        expect(factories.keys).to match([:baz_0, :bar_2, :foo_0])
-        expect(factories[:foo_0].create(component).m).to eq :foo_0
-        expect(factories[:bar_2].create(component).m).to eq :bar_2
-        expect(factories[:baz_0].create(component, :baz_0_0).m).to eq :baz_0_0
-        expect(factories[:baz_0].create(component, :baz_0_1).m).to eq :baz_0_1
-        expect(factories[:baz_0].create(component, :baz_0_2).m).to eq :baz_0_2
-        expect(factories[:baz_0].create(component, :baz_0_3).m).to eq :baz_0_3
-
-        registry.enable(:baz_0, :baz_0_0)
-        registry.enable(:baz_0, [:baz_0_1, :baz_0_2])
-        factories = registry.build_factories
-        expect(factories.keys).to match([:baz_0, :bar_2, :foo_0])
-        expect(factories[:foo_0].create(component).m).to eq :foo_0
-        expect(factories[:bar_2].create(component).m).to eq :bar_2
-        expect(factories[:baz_0].create(component, :baz_0_0).m).to eq :baz_0_0
-        expect(factories[:baz_0].create(component, :baz_0_1).m).to eq :baz_0_1
-        expect(factories[:baz_0].create(component, :baz_0_2).m).to eq :baz_0_2
-        expect(factories[:baz_0].create(component, :baz_0_3).m).to eq :baz_0
-      end
+      factories = registry.build_factories
+      expect(factories).to be_empty
     end
 
-    context '#enable_allが呼ばれた場合' do
-      it '再度全フィーチャーを対象フィーチャーにする' do
-        registry.enable([:foo_0, :bar_0, :baz_0])
-        registry.enable(:baz_0, :baz_0_0)
-        factories = registry.build_factories
-        expect(factories.keys).to match([:foo_0, :bar_0, :baz_0])
-        expect(factories[:foo_0].create(component).m).to eq :foo_0
-        expect(factories[:bar_0].create(component).m).to eq :bar_0
-        expect(factories[:baz_0].create(component, :baz_0_0).m).to eq :baz_0_0
-        expect(factories[:baz_0].create(component, :baz_0_1).m).to eq :baz_0
-        expect(factories[:baz_0].create(component, :baz_0_2).m).to eq :baz_0
-        expect(factories[:baz_0].create(component, :baz_0_3).m).to eq :baz_0
+    specify '#enable_allで全フィーチャーをすべて有効化される' do
+      registry.disable_all
 
-        registry.enable_all
-        factories = registry.build_factories
-        expect(factories.keys).to match([:foo_0, :foo_1, :foo_2, :bar_0, :bar_1, :bar_2, :baz_0])
-        expect(factories[:foo_0].create(component).m).to eq :foo_0
-        expect(factories[:foo_1].create(component).m).to eq :foo_1
-        expect(factories[:foo_2].create(component).m).to eq :foo_2
-        expect(factories[:bar_0].create(component).m).to eq :bar_0
-        expect(factories[:bar_1].create(component).m).to eq :bar_1
-        expect(factories[:bar_2].create(component).m).to eq :bar_2
-        expect(factories[:baz_0].create(component, :baz_0_0).m).to eq :baz_0_0
-        expect(factories[:baz_0].create(component, :baz_0_1).m).to eq :baz_0_1
-        expect(factories[:baz_0].create(component, :baz_0_2).m).to eq :baz_0_2
-        expect(factories[:baz_0].create(component, :baz_0_3).m).to eq :baz_0_3
-      end
+      factories = registry.build_factories
+      expect(factories).to be_empty
+
+      registry.enable_all
+
+      factories = registry.build_factories
+      expect(factories.keys).to match([:foo_0, :foo_1, :foo_2, :bar_0, :bar_1, :bar_2, :baz_0])
+      expect(factories[:foo_0].create(component).m).to eq :foo_0
+      expect(factories[:foo_1].create(component).m).to eq :foo_1
+      expect(factories[:foo_2].create(component).m).to eq :foo_2
+      expect(factories[:bar_0].create(component).m).to eq :bar_0
+      expect(factories[:bar_1].create(component).m).to eq :bar_1
+      expect(factories[:bar_2].create(component).m).to eq :bar_2
+      expect(factories[:baz_0].create(component, :baz_0_0).m).to eq :baz_0_0
+      expect(factories[:baz_0].create(component, :baz_0_1).m).to eq :baz_0_1
+      expect(factories[:baz_0].create(component, :baz_0_2).m).to eq :baz_0_2
+      expect(factories[:baz_0].create(component, :baz_0_3).m).to eq :baz_0_3
+    end
+
+    specify '#eanbleで指定されたフィーチャーが有効化される' do
+      registry.disable_all
+
+      registry.enable(:baz_0)
+      factories = registry.build_factories
+      expect(factories.keys).to match([:baz_0])
+      expect(factories[:baz_0].create(component, :baz_0_0).m).to eq :baz_0
+      expect(factories[:baz_0].create(component, :baz_0_1).m).to eq :baz_0
+      expect(factories[:baz_0].create(component, :baz_0_2).m).to eq :baz_0
+      expect(factories[:baz_0].create(component, :baz_0_3).m).to eq :baz_0
+
+      registry.enable([:bar_2, :foo_0])
+      factories = registry.build_factories
+      expect(factories.keys).to match([:baz_0, :bar_2, :foo_0])
+      expect(factories[:foo_0].create(component).m).to eq :foo_0
+      expect(factories[:bar_2].create(component).m).to eq :bar_2
+      expect(factories[:baz_0].create(component, :baz_0_0).m).to eq :baz_0
+      expect(factories[:baz_0].create(component, :baz_0_1).m).to eq :baz_0
+      expect(factories[:baz_0].create(component, :baz_0_2).m).to eq :baz_0
+      expect(factories[:baz_0].create(component, :baz_0_3).m).to eq :baz_0
+
+      registry.enable(:baz_0, :baz_0_0)
+      registry.enable(:baz_0, [:baz_0_1, :baz_0_2])
+      factories = registry.build_factories
+      expect(factories.keys).to match([:baz_0, :bar_2, :foo_0])
+      expect(factories[:foo_0].create(component).m).to eq :foo_0
+      expect(factories[:bar_2].create(component).m).to eq :bar_2
+      expect(factories[:baz_0].create(component, :baz_0_0).m).to eq :baz_0_0
+      expect(factories[:baz_0].create(component, :baz_0_1).m).to eq :baz_0_1
+      expect(factories[:baz_0].create(component, :baz_0_2).m).to eq :baz_0_2
+      expect(factories[:baz_0].create(component, :baz_0_3).m).to eq :baz_0
     end
   end
 
@@ -148,6 +137,7 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
       registry.define_list_item_feature(:baz, :baz_0, nil, [feature_body(:fizz, 'baz_0 fizz')])
       registry.modify_list_item_feature(:baz, :baz_0, [feature_body(:buzz, 'baz_0 buzz')])
 
+      registry.enable_all
       factories = registry.build_factories
 
       feature = factories[:foo].create(component)
@@ -279,6 +269,8 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
         proc { feature(&feature_body(:m, 'baz_1!!')) }
       ])
       registry.define_simple_feature(:baz_2, nil, [feature_body(:m, 'baz_2!!')])
+
+      registry.enable_all
       factories = registry.build_factories
 
       feature = factories[:foo_0].create(component)
@@ -316,6 +308,8 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
       registry.define_list_item_feature(:baz, :baz_0, nil, [])
       registry.define_list_feature(:qux, nil, [])
       registry.define_list_item_feature(:qux, :qux_0, context, [])
+
+      registry.enable_all
       factories = registry.build_factories
 
       feature = factories[:foo].create(component)
@@ -377,6 +371,7 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
       [:baz_1_0, :baz_1_1, :baz_1_2, :baz_1_3].each do |feature|
         registry.define_list_item_feature(:baz_1, feature, nil, [feature_body(:m, feature)])
       end
+      registry.enable_all
     end
 
     context 'フィーチャー名が与えられた場合' do
@@ -477,31 +472,51 @@ RSpec.describe RgGen::Core::Builder::FeatureRegistry do
 
     context '無引数の場合' do
       it '定義済みかつ有効になっているフィーチャーの一覧を返す' do
+        expect(registry.enabled_features).to be_empty
+
+        registry.enable_all
         expect(registry.enabled_features).to match([:foo_0, :foo_1, :bar_0, :bar_1, :baz_0, :baz_1])
+
+        registry.disable_all
+        expect(registry.enabled_features).to be_empty
+
+        registry.enable([:qux_0, :qux_1])
+        expect(registry.enabled_features).to be_empty
 
         registry.enable([:bar_0, :foo_0, :baz_0])
         expect(registry.enabled_features).to match([:bar_0, :foo_0, :baz_0])
-
-        registry.enable_all
-        registry.enable([:qux_0, :qux_1])
-        expect(registry.enabled_features).to be_empty
       end
     end
 
-    context 'リスト名が与えられた場合' do
+    context '指定されたリスト名がリストでない場合' do
+      it 'nilを返す' do
+        expect(registry.enabled_features(:foo_0)).to be_nil
+      end
+    end
+
+    context '無効化されたリスト名が指定された場合' do
+      it 'nilを返す' do
+        registry.disable_all
+
+        expect(registry.enabled_features(:baz_0)).to be_nil
+      end
+    end
+
+    context '有効化されたリスト名が指定された場合' do
       it 'リスト内で定義済みかつ有効になっているフィーチャー名を返す' do
-        expect(registry.enabled_features(:foo_0)).to be_empty
-        expect(registry.enabled_features(:bar_0)).to be_empty
-        expect(registry.enabled_features(:baz_0)).to match([:baz_0_0, :baz_0_1, :baz_0_2])
-        expect(registry.enabled_features(:baz_1)).to match([:baz_1_0, :baz_1_1, :baz_1_2])
-        expect(registry.enabled_features(:qux_0)).to be_empty
+        registry.disable_all
 
         registry.enable(:baz_0)
-        expect(registry.enabled_features(:baz_0)).to match([:baz_0_0, :baz_0_1, :baz_0_2])
-        expect(registry.enabled_features(:baz_1)).to be_empty
+        expect(registry.enabled_features(:baz_0)).to be_empty
+        expect(registry.enabled_features(:baz_1)).to be_nil
 
-        registry.enable(:baz_0, [:baz_0_2, :baz_0_0])
-        expect(registry.enabled_features(:baz_0)).to match([:baz_0_2, :baz_0_0])
+        registry.enable(:baz_0, [:baz_0_0, :baz_0_2])
+        expect(registry.enabled_features(:baz_0)).to match([:baz_0_0, :baz_0_2])
+        expect(registry.enabled_features(:baz_1)).to be_nil
+
+        registry.enable_all
+        expect(registry.enabled_features(:baz_0)).to match([:baz_0_0, :baz_0_1, :baz_0_2])
+        expect(registry.enabled_features(:baz_1)).to match([:baz_1_0, :baz_1_1, :baz_1_2])
       end
     end
   end

@@ -220,4 +220,67 @@ RSpec.describe RgGen::Core::Builder::ComponentRegistry do
       end
     end
   end
+
+  describe '#disable_all_features' do
+    it '登録されたコンポーネントに所属するフィーチャー全てを無効化する' do
+      feature_registries = []
+
+      allow(builder).to receive(:add_feature_registry)
+      registry = create_registry do |r|
+        r.register_global_component do
+          component(
+            RgGen::Core::Base::Component,
+            RgGen::Core::Base::ComponentFactory
+          )
+          feature(
+            RgGen::Core::Base::Feature,
+            RgGen::Core::Base::FeatureFactory
+          )
+          feature_registries << feature_registry
+        end
+
+        r.register_component do
+          component(
+            RgGen::Core::Base::Component,
+            RgGen::Core::Base::ComponentFactory
+          )
+          feature(
+            RgGen::Core::Base::Feature,
+            RgGen::Core::Base::FeatureFactory
+          )
+          feature_registries << feature_registry
+        end
+
+        r.register_component(:foo) do
+          component(
+            RgGen::Core::Base::Component,
+            RgGen::Core::Base::ComponentFactory
+          )
+          feature(
+            RgGen::Core::Base::Feature,
+            RgGen::Core::Base::FeatureFactory
+          )
+          feature_registries << feature_registry
+        end
+
+        r.register_component([:bar, :baz]) do
+          component(
+            RgGen::Core::Base::Component,
+            RgGen::Core::Base::ComponentFactory
+          )
+          feature(
+            RgGen::Core::Base::Feature,
+            RgGen::Core::Base::FeatureFactory
+          )
+          feature_registries << feature_registry
+        end
+      end
+
+      feature_registries.each do |registry|
+        expect(registry).to receive(:disable_all)
+      end
+
+      registry.disable_all_features
+    end
+  end
 end

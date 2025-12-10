@@ -69,6 +69,20 @@ module RgGen
           @layers.each_value(&:enable_all)
         end
 
+        def disable_all
+          @layers.each_value(&:disable_all)
+        end
+
+        def disable_unused_output_features(used_writers)
+          return if used_writers.empty?
+
+          @component_registries[:output].each do |name, registry|
+            next if used_writers.include?(name)
+
+            registry.disable_all_features
+          end
+        end
+
         def build_factory(type, component)
           @component_registries[type][component].build_factory
         end
@@ -78,7 +92,7 @@ module RgGen
             if targets.empty?
               @component_registries[type]
             else
-              collect_component_factories(type, targets)
+              collect_component_registries(type, targets)
             end
           registries.each_value.map(&:build_factory)
         end
@@ -134,7 +148,7 @@ module RgGen
           body && Docile.dsl_eval(registries[name], &body) || registries[name]
         end
 
-        def collect_component_factories(type, targets)
+        def collect_component_registries(type, targets)
           unknown_components = targets - @component_registries[type].keys
           unknown_components.empty? ||
             (raise BuilderError.new("unknown component: #{unknown_components.first}"))

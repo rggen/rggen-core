@@ -4,10 +4,10 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
   describe 'ローダーの定義/登録' do
     let(:builder) do
       klass = Class.new do
-        attr_reader :feature_registres
+        attr_reader :feature_registries
         def add_feature_registry(_registry_name, _category, feature_registry)
-          @feature_registres ||= []
-          @feature_registres << feature_registry
+          @feature_registries ||= []
+          @feature_registries << feature_registry
         end
       end
       klass.new
@@ -30,13 +30,15 @@ RSpec.describe RgGen::Core::Builder::InputComponentRegistry do
       end
 
       [:foo, :bar, :baz, :qux].each do |property_name|
-        builder.feature_registres[0].define_simple_feature(property_name, nil, [
+        builder.feature_registries[0].define_simple_feature(property_name, nil, [
           proc do
             property property_name
             build { |v| instance_variable_set("@#{property_name}", v.to_i) }
           end
         ])
       end
+
+      builder.feature_registries.each { |registry| registry.enable_all }
     end
 
     specify '#register_loader/#register_loadersで登録したローダーを使うことができる' do

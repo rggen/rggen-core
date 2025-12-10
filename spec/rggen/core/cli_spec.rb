@@ -356,8 +356,18 @@ RSpec.describe RgGen::Core::CLI do
       end
     end
 
+    context '対象指定がない場合' do
+      it '全てのファイル形式の書き込みを行う' do
+        expect(builder).to receive(:disable_unused_output_features).with([]).and_call_original
+        expect(File).to receive(:binwrite).with(match_string('./foo_register_block_0.txt'), foo_file_content)
+        expect(File).to receive(:binwrite).with(match_string('./bar_register_block_0.txt'), bar_file_content)
+        cli.run(['--plugin', setup_file, register_map_files[0]])
+      end
+    end
+
     context '対象指定がある場合' do
       it '指定外のファイル形式は書き出さない' do
+        expect(builder).to receive(:disable_unused_output_features).with([:foo]).and_call_original
         expect(File).to receive(:binwrite).with(match_string('./foo_register_block_0.txt'), foo_file_content)
         expect(File).not_to receive(:binwrite).with(match_string('./bar_register_block_0.txt'), any_args)
         cli.run(['--plugin', setup_file, '--enable', 'foo', register_map_files[0]])
