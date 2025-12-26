@@ -4,7 +4,7 @@ module RgGen
   module Core
     module Base
       class Component
-        def initialize(parent, base_name, layer, *args)
+        def initialize(parent, base_name, layer, ...)
           @parent = parent
           @base_name = base_name
           @layer = layer
@@ -13,7 +13,7 @@ module RgGen
           @features = {}
           @depth = (parent&.depth || 0) + 1
           @component_index = parent&.children&.size || 0
-          post_initialize(*args)
+          post_initialize(...)
           block_given? && yield(self)
         end
 
