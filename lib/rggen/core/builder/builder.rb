@@ -61,8 +61,8 @@ module RgGen
           end
         end
 
-        def enable(layer, *args)
-          @layers[layer].enable(*args)
+        def enable(layer, ...)
+          @layers[layer].enable(...)
         end
 
         def enable_all
@@ -97,8 +97,8 @@ module RgGen
           registries.each_value.map(&:build_factory)
         end
 
-        def delete(layer, *args)
-          @layers.key?(layer) && @layers[layer].delete(*args)
+        def delete(layer, ...)
+          @layers.key?(layer) && @layers[layer].delete(...)
         end
 
         def register_input_components

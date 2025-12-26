@@ -26,7 +26,7 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(/^exe\//) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.required_ruby_version = Gem::Requirement.new('>= 3.1.0')
+  spec.required_ruby_version = Gem::Requirement.new('>= 3.2.0')
 
   spec.add_dependency 'docile', '>= 1.1.5', '!= 1.3.3'
   spec.add_dependency 'erubi', '>= 1.7'
