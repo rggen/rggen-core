@@ -39,7 +39,7 @@ RSpec.describe RgGen::Core::InputBase::InputData do
 
     specify '#[]=でも同様に設定できる' do
       foo_data[:foo_0] = foo_values[:foo_0]
-      foo_data[:foo_1, position] = foo_values[:foo_1]
+      foo_data[:foo_1] = foo_values[:foo_1], position
       foo_data[:foo_2] = input_value(foo_values[:foo_2])
 
       expect(foo_data).to have_value :foo_0, foo_values[:foo_0]

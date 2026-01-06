@@ -4,12 +4,12 @@ module RgGen
   module Core
     module InputBase
       class InputValue < ::SimpleDelegator
-        NoValue = Object.new
+        NO_VALUE = Object.new.freeze
 
-        def initialize(value, options = NoValue, position)
+        def initialize(value, position, options = NO_VALUE)
           super((value.is_a?(String) && value.strip) || value)
-          @options = options
           @position = position
+          @options = options
         end
 
         alias_method :value, :__getobj__
@@ -33,7 +33,7 @@ module RgGen
         end
 
         def with_options?
-          !@options.equal?(NoValue)
+          !@options.equal?(NO_VALUE)
         end
 
         def available?

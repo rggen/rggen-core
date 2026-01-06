@@ -43,7 +43,9 @@ module RgGen
           list_item_entry(list_name).modify_feature(feature_name, bodies)
         end
 
-        def enable(list_name = nil, feature_names)
+        def enable(list_name_or_feature_names, feature_names = nil)
+          feature_names, list_name =
+            [feature_names, list_name_or_feature_names].compact
           Array(list_name || feature_names)
             .each { |name| @enabled_features[name] ||= [] }
 
@@ -67,7 +69,9 @@ module RgGen
           @enabled_features.clear
         end
 
-        def delete(list_name = nil, feature_names)
+        def delete(list_name_or_feature_names, feature_names = nil)
+          feature_names, list_name =
+            [feature_names, list_name_or_feature_names].compact
           if list_name
             @feature_entries[list_name]&.delete(feature_names)
           else
@@ -80,7 +84,9 @@ module RgGen
           @enabled_features.clear
         end
 
-        def feature?(list_name = nil, feature_name)
+        def feature?(list_name_or_feature_name, feature_name = nil)
+          feature_name, list_name =
+            [feature_name, list_name_or_feature_name].compact
           if list_name
             list_feature?(list_name, feature_name)
           else

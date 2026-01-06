@@ -138,7 +138,7 @@ RSpec.describe RgGen::Core::InputBase::Feature do
 
     let(:options) { [[], nil, false, Object.new].sample }
 
-    let(:input_value_with_options) { create_input_value(value, options, position) }
+    let(:input_value_with_options) { create_input_value(value, position, options) }
 
     let(:input_value_without_options) { create_input_value(value, position) }
 

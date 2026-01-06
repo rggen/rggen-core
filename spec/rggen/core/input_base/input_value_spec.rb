@@ -136,7 +136,7 @@ RSpec.describe RgGen::Core::InputBase::InputValue do
     end
 
     let(:value_with_options) do
-      described_class.new(value, options, position)
+      described_class.new(value, position, options)
     end
 
     let(:value_without_options) do
