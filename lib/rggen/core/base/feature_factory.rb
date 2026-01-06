@@ -14,8 +14,8 @@ module RgGen
         attr_setter :target_feature
         attr_setter :target_features
 
-        def create_feature(component, *args)
-          klass, sub_feature_name = select_feature(*args)
+        def create_feature(component, ...)
+          klass, sub_feature_name = select_feature(...)
           klass.new(@feature_name, sub_feature_name, component) do |feature|
             feature.available? || break
             block_given? && yield(feature)
@@ -25,8 +25,8 @@ module RgGen
 
         private
 
-        def select_feature(*args)
-          key = @target_features && target_feature_key(*args)
+        def select_feature(...)
+          key = @target_features && target_feature_key(...)
           feature = (key && @target_features[key]) || @target_feature
           [feature, key]
         end

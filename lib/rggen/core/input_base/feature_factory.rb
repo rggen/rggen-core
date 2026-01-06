@@ -52,10 +52,7 @@ module RgGen
         end
 
         def process_active_input_value(input_value)
-          parsed_value, options =
-            if self.class.value_format
-              parse_input_value(input_value, self.class.value_format)
-            end
+          parsed_value, options = parse_input_value(input_value, self.class.value_format)
           override_input_value(input_value, parsed_value, options) || input_value
         end
 
@@ -66,13 +63,15 @@ module RgGen
         }.freeze
 
         def parse_input_value(input_value, value_format)
+          return unless value_format
+
           format, options = value_format
           VALUE_PARSERS[format].new(**options).parse(input_value)
         end
 
         def override_input_value(input_value, parsed_value, options)
           (convert_value(input_value, parsed_value) || parsed_value)
-            &.then { |v| InputValue.new(v, options, input_value.position) }
+            &.then { |v| InputValue.new(v, input_value.position, options) }
         end
 
         def convert_value(input_value, parsed_value)

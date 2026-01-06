@@ -87,12 +87,12 @@ module RgGen
         def finalize(_component)
         end
 
-        def create_feature(component, factory, *args)
-          factory.create(component, *args)
+        def create_feature(component, factory, ...)
+          factory.create(component, ...)
         end
 
-        def create_child(component, *args)
-          find_child_factory(*args).create(component, *args)
+        def create_child(component, ...)
+          find_child_factory(...).create(component, ...)
         end
       end
     end
